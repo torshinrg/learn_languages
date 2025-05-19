@@ -11,7 +11,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/buttons.dart';
 
 class StudyScreen extends StatefulWidget {
-  const StudyScreen({Key? key}) : super(key: key);
+  const StudyScreen({super.key});
   @override
   State<StudyScreen> createState() => _StudyScreenState();
 }

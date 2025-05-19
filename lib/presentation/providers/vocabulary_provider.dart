@@ -3,7 +3,6 @@
 import 'package:flutter/foundation.dart';
 import '../../core/constants.dart';
 import '../../domain/entities/word.dart';
-import '../../domain/entities/srs_data.dart';
 import '../../services/learning_service.dart';
 import '../../services/srs_service.dart';
 

@@ -7,10 +7,10 @@ class Flashcard extends StatelessWidget {
   final String text;
   final String? subText;
   const Flashcard({
-    Key? key,
+    super.key,
     required this.text,
     this.subText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

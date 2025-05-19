@@ -6,7 +6,7 @@ import '../../domain/entities/word.dart';
 import '../providers/vocabulary_provider.dart';
 
 class VocabularyScreen extends StatefulWidget {
-  const VocabularyScreen({Key? key}) : super(key: key);
+  const VocabularyScreen({super.key});
 
   @override
   State<VocabularyScreen> createState() => _VocabularyScreenState();

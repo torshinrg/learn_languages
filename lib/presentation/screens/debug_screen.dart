@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import '../../core/di.dart';
 import '../../domain/entities/srs_data.dart';
 import '../../domain/entities/word.dart';
@@ -10,7 +9,7 @@ import '../../services/learning_service.dart';
 import '../../services/srs_service.dart';
 
 class DebugScreen extends StatelessWidget {
-  const DebugScreen({Key? key}) : super(key: key);
+  const DebugScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

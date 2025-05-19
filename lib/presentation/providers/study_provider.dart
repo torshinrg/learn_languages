@@ -10,14 +10,17 @@ class StudyProvider extends ChangeNotifier {
   final LearningService _learning;
   final SRSService _srs;
   List<Word> _batch = [];
+  List<Word> _lastBatch = [];
 
   StudyProvider(this._learning, this._srs);
 
   List<Word> get batch => _batch;
+  List<Word> get lastBatch => _lastBatch;
 
   /// Load [count] words into the batch.
   Future<void> loadBatch(int count) async {
     _batch = await _learning.getDailyBatch(count);
+    _lastBatch = List.from(_batch);
     notifyListeners();
   }
 
@@ -26,6 +29,11 @@ class StudyProvider extends ChangeNotifier {
     if (_batch.isEmpty) return;
     final word = _batch.removeAt(0);
     await _learning.markLearned(word.id, success);
+    notifyListeners();
+  }
+
+  void resetToLastBatch() {
+    _batch = List.from(_lastBatch);
     notifyListeners();
   }
 

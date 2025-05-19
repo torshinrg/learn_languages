@@ -7,10 +7,10 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;  // allow null to disable
   const PrimaryButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,10 @@ class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;  // allow null to disable
   const SecondaryButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

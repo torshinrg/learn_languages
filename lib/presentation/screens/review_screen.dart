@@ -19,7 +19,7 @@ class PositionData {
 }
 
 class ReviewScreen extends StatefulWidget {
-  const ReviewScreen({Key? key}) : super(key: key);
+  const ReviewScreen({super.key});
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
 }
