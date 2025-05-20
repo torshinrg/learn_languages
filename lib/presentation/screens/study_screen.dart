@@ -1,14 +1,16 @@
-// lib/presentation/screens/study_screen.dart
+// File: lib/presentation/screens/study_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 import '../../domain/entities/audio_link.dart';
+import '../../domain/entities/sentence.dart';
 import '../../services/learning_service.dart';
 import '../providers/study_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/buttons.dart';
+import '../widgets/word_sentence_card.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -17,11 +19,10 @@ class StudyScreen extends StatefulWidget {
 }
 
 class _StudyScreenState extends State<StudyScreen> {
-  late StudyProvider _study;
-  late SettingsProvider _settings;
-  late AudioPlayer _audioPlayer;
+  late final StudyProvider _study;
+  late final SettingsProvider _settings;
+  late final AudioPlayer _audioPlayer;
 
-  // Sentece & audio state (copied from your old code)
   List<AudioLink> _audioLinks = [];
   bool _audioLoading = false;
   Duration _duration = Duration.zero;
@@ -29,9 +30,9 @@ class _StudyScreenState extends State<StudyScreen> {
   bool _isPlaying = false;
 
   final int _initialLimit = 3;
-  List<dynamic> _sentences = []; // your existing Sentence type
+  List<Sentence> _sentences = [];
   int _sentenceIndex = 0;
-  bool _batchLoaded   = false;
+  bool _batchLoaded = false;
   bool _initialLoaded = false;
 
   @override
@@ -41,14 +42,17 @@ class _StudyScreenState extends State<StudyScreen> {
     _settings = context.read<SettingsProvider>();
     _audioPlayer = AudioPlayer();
 
-    // Listen to audio events
+    // LISTENERS WITH MOUNTED CHECKS
     _audioPlayer.onDurationChanged.listen((d) {
+      if (!mounted) return;
       setState(() => _duration = d);
     });
     _audioPlayer.onPositionChanged.listen((p) {
+      if (!mounted) return;
       setState(() => _position = p);
     });
     _audioPlayer.onPlayerComplete.listen((_) {
+      if (!mounted) return;
       setState(() => _isPlaying = false);
     });
 
@@ -63,16 +67,17 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Future<void> _loadBatch() async {
     await _study.loadBatch(_settings.dailyCount);
+    if (!mounted) return;
     setState(() {
-      _batchLoaded   = true;
+      _batchLoaded = true;
       _initialLoaded = false;
-      _sentences     = [];
+      _sentences = [];
       _sentenceIndex = 0;
-      _audioLinks    = [];
-      _audioLoading  = false;
-      _duration      = Duration.zero;
-      _position      = Duration.zero;
-      _isPlaying     = false;
+      _audioLinks = [];
+      _audioLoading = false;
+      _duration = Duration.zero;
+      _position = Duration.zero;
+      _isPlaying = false;
     });
     await _loadExamplesForCurrent();
   }
@@ -81,44 +86,48 @@ class _StudyScreenState extends State<StudyScreen> {
     final batch = _study.batch;
     if (batch.isEmpty) return;
 
-    final wordText = batch.first.text;
-
-    // Phase 1: initial examples
+    // Phase 1
     final initial = await context
         .read<LearningService>()
-        .getInitialSentencesForWord(wordText, limit: _initialLimit);
+        .getInitialSentencesForWord(batch.first.text, limit: _initialLimit);
+
+    if (!mounted) return;
     setState(() {
-      _sentences     = initial;
+      _sentences = initial;
       _sentenceIndex = 0;
       _initialLoaded = true;
     });
 
-    // Fetch audio for the very first sentence
     await _loadAudioForSentence(initial[0].id);
 
-    // Phase 2: remaining examples
+    // Phase 2
     final rest = await context
         .read<LearningService>()
         .getRemainingSentencesForWord(
-      wordText,
+      batch.first.text,
       initial.map((s) => s.id).toList(),
     );
+    if (!mounted) return;
     setState(() => _sentences.addAll(rest));
   }
 
   Future<void> _loadAudioForSentence(String sentenceId) async {
+    if (!mounted) return;
     setState(() {
       _audioLoading = true;
-      _audioLinks   = [];
-      _duration     = Duration.zero;
-      _position     = Duration.zero;
-      _isPlaying    = false;
+      _audioLinks = [];
+      _duration = Duration.zero;
+      _position = Duration.zero;
+      _isPlaying = false;
     });
+
     final links = await context
         .read<LearningService>()
         .getAudioForSentence(sentenceId);
+
+    if (!mounted) return;
     setState(() {
-      _audioLinks   = links;
+      _audioLinks = links;
       _audioLoading = false;
     });
   }
@@ -126,57 +135,61 @@ class _StudyScreenState extends State<StudyScreen> {
   Future<void> _togglePlay(String audioId) async {
     if (_isPlaying) {
       await _audioPlayer.pause();
+      if (!mounted) return;
       setState(() => _isPlaying = false);
     } else {
-      final url = 'https://tatoeba.org/audio/download/$audioId';
-      await _audioPlayer.play(UrlSource(url));
+      await _audioPlayer.play(UrlSource('https://tatoeba.org/audio/download/$audioId'));
+      if (!mounted) return;
       setState(() => _isPlaying = true);
     }
   }
 
   Future<void> _markResult(bool success) async {
-    final initialTarget = _settings.dailyCount;
+    final target = _settings.dailyCount;
     await _study.markWord(success);
     await context.read<SettingsProvider>().incrementStudiedCount();
 
-    final studied = context.read<SettingsProvider>().studiedCount;
-    if (studied >= initialTarget) {
+    if (!mounted) return;
+    if (context.read<SettingsProvider>().studiedCount >= target) {
       await showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Done!'),
-          content: Text('You’ve completed $initialTarget words today 🎉'),
+          content: Text('You’ve completed $target words today 🎉'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
           ],
         ),
       );
+      if (!mounted) return;
       Navigator.of(context).pop();
       return;
     }
 
-    // next batch
+    // load next
+    if (!mounted) return;
     setState(() {
       _initialLoaded = false;
-      _sentences     = [];
+      _sentences = [];
       _sentenceIndex = 0;
-      _audioLinks    = [];
-      _audioLoading  = false;
-      _duration      = Duration.zero;
-      _position      = Duration.zero;
-      _isPlaying     = false;
+      _audioLinks = [];
+      _audioLoading = false;
+      _duration = Duration.zero;
+      _position = Duration.zero;
+      _isPlaying = false;
     });
     await _loadExamplesForCurrent();
   }
 
   Future<void> _skipCurrent() async {
     await _study.skipWord();
-    // immediately load examples for the next word
+    if (!mounted) return;
     await _loadExamplesForCurrent();
   }
 
   void _nextSentence() {
     if (_sentences.isEmpty) return;
+    if (!mounted) return;
     setState(() {
       _sentenceIndex = (_sentenceIndex + 1) % _sentences.length;
     });
@@ -185,9 +198,9 @@ class _StudyScreenState extends State<StudyScreen> {
 
   void _prevSentence() {
     if (_sentences.isEmpty) return;
+    if (!mounted) return;
     setState(() {
-      _sentenceIndex =
-          (_sentenceIndex - 1 + _sentences.length) % _sentences.length;
+      _sentenceIndex = (_sentenceIndex - 1 + _sentences.length) % _sentences.length;
     });
     _loadAudioForSentence(_sentences[_sentenceIndex].id);
   }
@@ -195,9 +208,6 @@ class _StudyScreenState extends State<StudyScreen> {
   @override
   Widget build(BuildContext context) {
     final batch = _study.batch;
-    final initialTarget = _settings.dailyCount;
-    final doneCount = initialTarget - batch.length;
-    final currentPosition = doneCount + 1;
 
     if (!_batchLoaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -206,165 +216,41 @@ class _StudyScreenState extends State<StudyScreen> {
       return const Scaffold(body: Center(child: Text('No words to study.')));
     }
 
+    final learnedSoFar = _settings.studiedCount;
+    final totalTarget = _settings.dailyCount;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Study ($currentPosition/$initialTarget)'),
-      ),
+      appBar: AppBar(title: Text('Study (${learnedSoFar+1}/$totalTarget)')),
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed-size word card
             Expanded(
-              flex: 6,
-              child: Center(
-                child: FractionallySizedBox(
-                  heightFactor: 0.6,
-                  widthFactor: 0.95,
-                  child: Card(
-                    margin: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: !_initialLoaded
-                          ? const Center(child: CircularProgressIndicator())
-                          : Column(
-                        children: [
-                          SelectableText(
-                            batch.first.text,
-                            style:
-                            Theme.of(context).textTheme.headlineSmall,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: _sentences.isEmpty
-                                ? const Center(child: Text('No example sentences.'))
-                                : SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  SelectableText(
-                                    _sentences[_sentenceIndex].spanish,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium!
-                                        .copyWith(fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  SelectableText(
-                                    _sentences[_sentenceIndex].english,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium!
-                                        .copyWith(
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey[700]),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              child: WordSentenceCard(
+                wordText: batch.first.text,
+                sentences: _sentences,
+                sentenceIndex: _sentenceIndex,
+                audioLinks: _audioLinks,
+                audioLoading: _audioLoading,
+                isPlaying: _isPlaying,
+                position: _position,
+                duration: _duration,
+                onToggleAudio: () => _togglePlay(_audioLinks.first.audioId),
+                onPrevSentence: _prevSentence,
+                onNextSentence: _nextSentence,
               ),
             ),
-
-            // Pinned audio section
-            if (_audioLoading)
-              const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()))
-            else if (_audioLinks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                          onPressed: () => _togglePlay(_audioLinks.first.audioId),
-                        ),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: _duration.inMilliseconds > 0
-                                ? _position.inMilliseconds / _duration.inMilliseconds
-                                : 0,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Recorded by ${_audioLinks.first.username}.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (_audioLinks.first.license.isNotEmpty)
-                      Text(
-                        'License: ${_audioLinks.first.license}.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                  ],
-                ),
-              )
-            else
-              const SizedBox(
-                height: 48,
-                child: Center(
-                  child: Text(
-                    'No audio available.',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
-
-      // Prev/Next + Mark buttons
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: _sentences.isNotEmpty ? _prevSentence : null,
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        _sentences.isNotEmpty
-                            ? '${_sentenceIndex + 1} / ${_sentences.length}'
-                            : '0 / 0',
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: _sentences.isNotEmpty ? _nextSentence : null,
-                  ),
-                ],
-              ),
+              PrimaryButton(label: 'Got it', onPressed: () => _markResult(true)),
               const SizedBox(height: 8),
-              PrimaryButton(
-                label: 'Got it',
-                onPressed: () => _markResult(true),
-              ),
-              const SizedBox(height: 8),
-              // Skip → drop word and fetch next
-              SecondaryButton(
-                label: 'Skip word',
-                onPressed: _skipCurrent,
-              ),
+              SecondaryButton(label: 'Skip word', onPressed: _skipCurrent),
             ],
           ),
         ),

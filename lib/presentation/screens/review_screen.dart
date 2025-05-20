@@ -1,22 +1,15 @@
-// lib/presentation/screens/review_screen.dart
+// File: lib/presentation/screens/review_screen.dart
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:audio_session/audio_session.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-
+import 'package:provider/provider.dart';
 import '../../domain/entities/audio_link.dart';
+import '../../domain/entities/sentence.dart';
 import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
-
-/// Combines position & duration into one object.
-class PositionData {
-  final Duration position;
-  final Duration duration;
-  PositionData(this.position, this.duration);
-}
+import '../widgets/word_sentence_card.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -27,10 +20,16 @@ class ReviewScreen extends StatefulWidget {
 class _ReviewScreenState extends State<ReviewScreen> {
   late final ReviewProvider _review;
   late final AudioPlayer _player;
-  late final Stream<PositionData> _positionDataStream;
 
   List<AudioLink> _links = [];
   bool _loadingAudio = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  bool _isPlaying = false;
+
+  late final StreamSubscription<Duration> _posSub;
+  late final StreamSubscription<Duration?> _durSub;
+  late final StreamSubscription<PlayerState> _stateSub;
 
   final Map<String, int> _qualityMap = {
     'Again': 0,
@@ -48,19 +47,22 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _loadWordsAndAudio();
   }
 
-  Future<void> _initAudio() async {
-    // Configure audio session for mobile focus
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
-
+  void _initAudio() {
     _player = AudioPlayer();
-    // Combine position & duration streams
-    _positionDataStream = Rx.combineLatest2<Duration, Duration?, PositionData>(
-      _player.positionStream,
-      _player.durationStream,
-          (position, duration) =>
-          PositionData(position, duration ?? Duration.zero),
-    );
+
+    // Listen and guard every setState behind mounted
+    _posSub = _player.positionStream.listen((p) {
+      if (!mounted) return;
+      setState(() => _position = p);
+    });
+    _durSub = _player.durationStream.listen((d) {
+      if (!mounted) return;
+      setState(() => _duration = d ?? Duration.zero);
+    });
+    _stateSub = _player.playerStateStream.listen((state) {
+      if (!mounted) return;
+      setState(() => _isPlaying = state.playing);
+    });
   }
 
   Future<void> _loadWordsAndAudio() async {
@@ -70,43 +72,45 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Future<void> _loadAudioForSentence(String sentenceId) async {
+    if (!mounted) return;
     setState(() {
       _loadingAudio = true;
       _links = [];
+      _position = Duration.zero;
+      _duration = Duration.zero;
+      _isPlaying = false;
     });
 
     final links = await context
         .read<LearningService>()
         .getAudioForSentence(sentenceId);
 
+    if (!mounted) return;
     setState(() {
       _links = links;
+      _loadingAudio = false;
     });
 
     if (links.isNotEmpty) {
-      final url =
-          'https://tatoeba.org/audio/download/${links.first.audioId}';
-      // Load new source & reset play state
+      final url = 'https://tatoeba.org/audio/download/${links.first.audioId}';
       await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
       await _player.pause();
     }
-
-    setState(() {
-      _loadingAudio = false;
-    });
   }
 
-  void _togglePlayPause() {
+  Future<void> _togglePlayPause() async {
     if (_player.playing) {
-      _player.pause();
+      await _player.pause();
     } else {
-      _player.play();
+      await _player.play();
     }
-    setState(() {}); // update icon
   }
 
   @override
   void dispose() {
+    _posSub.cancel();
+    _durSub.cancel();
+    _stateSub.cancel();
     _player.dispose();
     super.dispose();
   }
@@ -120,13 +124,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           if (review.dueWords.isEmpty) {
             return const Center(child: Text('No reviews due right now.'));
           }
-          final word     = review.currentWord!;
-          final sentence = review.initialLoaded ? review.currentSentence! : null;
-
           return SafeArea(
             child: Column(
               children: [
-                // Progress
+                // Progress indicator
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
@@ -135,182 +136,32 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   ),
                 ),
 
-                // Fixed-size flashcard
+                // Shared card + audio + nav
                 Expanded(
-                  child: Center(
-                    child: FractionallySizedBox(
-                      heightFactor: 0.6,
-                      widthFactor: 0.95,
-                      child: Card(
-                        margin: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: sentence == null
-                              ? const Center(child: CircularProgressIndicator())
-                              : Column(
-                            children: [
-                              Text(
-                                word.text,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall,
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        sentence.spanish,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium!
-                                            .copyWith(
-                                            fontWeight:
-                                            FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        sentence.english,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!
-                                            .copyWith(
-                                          fontStyle:
-                                          FontStyle.italic,
-                                          color: Colors.grey[700],
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Audio player section
-                if (_loadingAudio)
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: CircularProgressIndicator(),
-                  )
-                else if (_links.isNotEmpty)
-                  StreamBuilder<PositionData>(
-                    stream: _positionDataStream,
-                    builder: (_, snap) {
-                      final pos = snap.data?.position ?? Duration.zero;
-                      final dur = snap.data?.duration ?? Duration.zero;
-                      final percent =
-                      dur.inMilliseconds > 0
-                          ? pos.inMilliseconds / dur.inMilliseconds
-                          : 0.0;
-                      return Column(
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(_player.playing
-                                    ? Icons.pause
-                                    : Icons.play_arrow),
-                                onPressed: _togglePlayPause,
-                              ),
-                              Expanded(
-                                child: LinearProgressIndicator(value: percent),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${pos.inSeconds.toString().padLeft(2, '0')}/'
-                                    '${dur.inSeconds.toString().padLeft(2, '0')}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Recorded by ${_links.first.username}.',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          if (_links.first.license.isNotEmpty)
-                            Text(
-                              'License: ${_links.first.license}.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          if (_links.first.link.isNotEmpty)
-                            GestureDetector(
-                              onTap: () => launchUrlString(_links.first.link),
-                              child: Text(
-                                'Attribution',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(
-                                    decoration:
-                                    TextDecoration.underline),
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                        ],
-                      );
+                  child: WordSentenceCard(
+                    wordText: review.currentWord!.text,
+                    sentences: review.sentences,
+                    sentenceIndex: review.sentenceIndex,
+                    audioLinks: _links,
+                    audioLoading: _loadingAudio,
+                    isPlaying: _isPlaying,
+                    position: _position,
+                    duration: _duration,
+                    onToggleAudio: _togglePlayPause,
+                    onPrevSentence: () {
+                      review.prevSentence();
+                      final nxt = review.currentSentence;
+                      if (nxt != null) _loadAudioForSentence(nxt.id);
                     },
-                  )
-                else
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      'No audio available.',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-
-                // Sentence nav
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () {
-                          review.prevSentence();
-                          final nxt = review.currentSentence;
-                          if (nxt != null) _loadAudioForSentence(nxt.id);
-                        },
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            review.initialLoaded
-                                ? '${review.sentenceIndex + 1} / '
-                                '${review.sentences.length}'
-                                : '0 / 0',
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        onPressed: () {
-                          review.nextSentence();
-                          final nxt = review.currentSentence;
-                          if (nxt != null) _loadAudioForSentence(nxt.id);
-                        },
-                      ),
-                    ],
+                    onNextSentence: () {
+                      review.nextSentence();
+                      final nxt = review.currentSentence;
+                      if (nxt != null) _loadAudioForSentence(nxt.id);
+                    },
                   ),
                 ),
 
-                // Quality buttons with spacing
+                // Quality buttons
                 Padding(
                   padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -1,4 +1,4 @@
-// lib/services/learning_service.dart
+// File: lib/services/learning_service.dart
 
 import '../domain/entities/audio_link.dart';
 import '../domain/entities/word.dart';
@@ -21,29 +21,31 @@ class LearningService {
     required this.srsRepo,
   });
 
+  /// Original: mix of due + fresh
   Future<List<Word>> getDailyBatch(int count) async {
-    // 1) all scheduled entries
     final allSrs = await srsRepo.fetchAll();
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-
-    // 2) only those due now
     final due = await srsRepo.fetchDue();
     final dueWords = (await wordRepo.fetchAll())
         .where((w) => due.any((s) => s.wordId == w.id))
         .toList();
-
-    if (dueWords.length >= count) {
-      return dueWords.take(count).toList();
-    }
-
-    // 3) fill with truly fresh words (never scheduled)
+    if (dueWords.length >= count) return dueWords.take(count).toList();
     final needed = count - dueWords.length;
     final fresh = (await wordRepo.fetchAll())
         .where((w) => !scheduledIds.contains(w.id))
         .take(needed)
         .toList();
-
     return [...dueWords, ...fresh];
+  }
+
+  /// NEW: only words never scheduled in SRS
+  Future<List<Word>> getFreshBatch(int count) async {
+    final allSrs = await srsRepo.fetchAll();
+    final scheduledIds = allSrs.map((e) => e.wordId).toSet();
+    return (await wordRepo.fetchAll())
+        .where((w) => !scheduledIds.contains(w.id))
+        .take(count)
+        .toList();
   }
 
   Future<List<Word>> getAllWords() => wordRepo.fetchAll();
@@ -52,12 +54,13 @@ class LearningService {
     return srsRepo.scheduleNext(wordId, success);
   }
 
-  /// Phase 1: fetch up to [limit] random examples quickly.
-  Future<List<Sentence>> getInitialSentencesForWord(String wordText, {int limit = 3}) {
+  Future<List<Sentence>> getInitialSentencesForWord(
+      String wordText, {
+        int limit = 3,
+      }) {
     return sentenceRepo.fetchForWord(wordText, limit: limit);
   }
 
-  /// Phase 2: fetch *all* remaining examples (excluding [excludeIds]).
   Future<List<Sentence>> getRemainingSentencesForWord(
       String wordText,
       List<String> excludeIds,
@@ -75,7 +78,6 @@ class LearningService {
     final allWords = await wordRepo.fetchAll();
     return allWords.where((w) => srsList.any((s) => s.wordId == w.id)).toList();
   }
-
 
   Future<void> markWithQuality(String wordId, int quality) {
     return srsRepo.scheduleNextWithQuality(wordId, quality);

@@ -19,8 +19,7 @@ class StudyProvider extends ChangeNotifier {
 
   /// Load [count] words into the batch.
   Future<void> loadBatch(int count) async {
-    _batch = await _learning.getDailyBatch(count);
-    _lastBatch = List.from(_batch);
+    _batch = await _learning.getFreshBatch(count);
     notifyListeners();
   }
 
