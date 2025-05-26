@@ -1,9 +1,13 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:learn_languages/presentation/providers/notification_settings_provider.dart';
+import 'package:learn_languages/services/notification_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'core/di.dart';
+import 'core/navigation.dart';
 import 'services/learning_service.dart';
 import 'services/srs_service.dart';
 import 'presentation/providers/home_provider.dart';
@@ -12,10 +16,22 @@ import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/study_provider.dart';
 import 'presentation/providers/vocabulary_provider.dart';
 import 'presentation/screens/home_screen.dart';
+import 'package:timezone/data/latest.dart' as tz;
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
+  await NotificationService.init();
+  tz.initializeTimeZones();
+  final status = await Permission.notification.status;
+  print('🔑 [Main] Notification permission is $status');
+  if (status.isDenied) {
+    final result = await Permission.notification.request();
+    print('🔑 [Main] Request result: $result');
+  }
+
   runApp(const MyApp());
 }
 
@@ -26,6 +42,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<NotificationSettingsProvider>(
+          create: (_) => NotificationSettingsProvider(),
+        ),
         Provider<LearningService>(create: (_) => getIt<LearningService>()),
         Provider<SRSService>(create: (_) => getIt<SRSService>()),
         ChangeNotifierProvider<SettingsProvider>(
@@ -58,6 +77,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Learn Languages',
         theme: ThemeData(
           brightness: Brightness.light,                // force light mode

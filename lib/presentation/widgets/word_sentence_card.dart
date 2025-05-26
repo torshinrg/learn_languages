@@ -60,7 +60,7 @@ class WordSentenceCard extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      SelectableText(
                         wordText,
                         style: theme.textTheme.headlineSmall,
                         textAlign: TextAlign.center,
@@ -74,14 +74,14 @@ class WordSentenceCard extends StatelessWidget {
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
-                                Text(
+                                SelectableText(
                                   current.spanish,
                                   style: theme.textTheme.titleMedium!
                                       .copyWith(fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 12),
-                                Text(
+                                SelectableText(
                                   current.english,
                                   style: theme.textTheme.bodyMedium!
                                       .copyWith(

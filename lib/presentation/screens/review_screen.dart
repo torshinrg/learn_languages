@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/audio_link.dart';
-import '../../domain/entities/sentence.dart';
 import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
 import '../widgets/word_sentence_card.dart';

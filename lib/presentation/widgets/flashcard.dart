@@ -25,7 +25,7 @@ class Flashcard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
+            SelectableText(
               text,
               style: theme.textTheme.headlineSmall!
                   .copyWith(color: theme.primaryColor),
@@ -33,7 +33,7 @@ class Flashcard extends StatelessWidget {
             ),
             if (subText != null) ...[
               const SizedBox(height: 16),
-              Text(
+              SelectableText(
                 subText!,
                 style: theme.textTheme.titleMedium,
                 textAlign: TextAlign.center,

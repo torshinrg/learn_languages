@@ -17,6 +17,7 @@ import '../domain/repositories/i_sentence_repository.dart';
 import '../domain/repositories/i_srs_repository.dart';
 import '../domain/repositories/i_word_repository.dart';
 
+import '../services/notification_service.dart';
 import '../services/srs_service.dart';
 import '../services/learning_service.dart';
 import 'constants.dart';
@@ -42,6 +43,8 @@ Future<void> setupLocator() async {
     srsRepo: getIt<ISRSRepository>(),
     audioRepo: getIt<IAudioRepository>(),
   ));
+  getIt.registerLazySingleton<NotificationService>(() => NotificationService());
+
 }
 
 Future<Database> _initDatabase() async {

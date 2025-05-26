@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
+import '../providers/notification_settings_provider.dart';
 import '../providers/settings_provider.dart';
+import 'notification_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -89,6 +91,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: const Text('Save'),
               ),
             ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Study Reminders'),
+              subtitle: Text(
+                '${context.read<NotificationSettingsProvider>().times.length} per day',
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationSettingsScreen(),
+                ),
+              ),
+            ),
+
           ],
         ),
       ),
