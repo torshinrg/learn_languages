@@ -17,6 +17,7 @@ import '../domain/repositories/i_sentence_repository.dart';
 import '../domain/repositories/i_srs_repository.dart';
 import '../domain/repositories/i_word_repository.dart';
 
+import '../services/audio_check_service.dart';
 import '../services/notification_service.dart';
 import '../services/srs_service.dart';
 import '../services/learning_service.dart';
@@ -44,6 +45,7 @@ Future<void> setupLocator() async {
     audioRepo: getIt<IAudioRepository>(),
   ));
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
+  getIt.registerLazySingleton<AudioCheckService>(() => AudioCheckService());
 
 }
 

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/audio_link.dart';
 import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
-import '../widgets/word_sentence_card.dart';
+import '../widgets/interactive_word_sentence_card.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -80,9 +80,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _isPlaying = false;
     });
 
-    final links = await context
-        .read<LearningService>()
-        .getAudioForSentence(sentenceId);
+    final links = await context.read<LearningService>().getAudioForSentence(
+      sentenceId,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -137,7 +137,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
                 // Shared card + audio + nav
                 Expanded(
-                  child: WordSentenceCard(
+                  child: InteractiveWordSentenceCard(
                     wordText: review.currentWord!.text,
                     sentences: review.sentences,
                     sentenceIndex: review.sentenceIndex,
@@ -147,6 +147,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     position: _position,
                     duration: _duration,
                     onToggleAudio: _togglePlayPause,
+                    onReplayAudio: _togglePlayPause, // <— new
+
                     onPrevSentence: () {
                       review.prevSentence();
                       final nxt = review.currentSentence;
@@ -157,28 +159,33 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       final nxt = review.currentSentence;
                       if (nxt != null) _loadAudioForSentence(nxt.id);
                     },
+                    
+
                   ),
                 ),
 
                 // Quality buttons
                 Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Wrap(
                     spacing: 12,
                     runSpacing: 8,
                     alignment: WrapAlignment.spaceBetween,
-                    children: _qualityLabels.map((label) {
-                      return ElevatedButton(
-                        onPressed: () async {
-                          final q = _qualityMap[label]!;
-                          await review.markWord(q);
-                          final nxt = review.currentSentence;
-                          if (nxt != null) _loadAudioForSentence(nxt.id);
-                        },
-                        child: Text(label),
-                      );
-                    }).toList(),
+                    children:
+                        _qualityLabels.map((label) {
+                          return ElevatedButton(
+                            onPressed: () async {
+                              final q = _qualityMap[label]!;
+                              await review.markWord(q);
+                              final nxt = review.currentSentence;
+                              if (nxt != null) _loadAudioForSentence(nxt.id);
+                            },
+                            child: Text(label),
+                          );
+                        }).toList(),
                   ),
                 ),
               ],

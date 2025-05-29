@@ -10,7 +10,7 @@ import '../../services/learning_service.dart';
 import '../providers/study_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/buttons.dart';
-import '../widgets/word_sentence_card.dart';
+import '../widgets/interactive_word_sentence_card.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -51,9 +51,15 @@ class _StudyScreenState extends State<StudyScreen> {
       if (!mounted) return;
       setState(() => _position = p);
     });
-    _audioPlayer.onPlayerComplete.listen((_) {
+    _audioPlayer.onPlayerComplete.listen((_) async {
       if (!mounted) return;
       setState(() => _isPlaying = false);
+
+      // build the ref-URL
+      final refId = _audioLinks.isNotEmpty ? _audioLinks.first.audioId : null;
+      if (refId == null) return;
+
+
     });
 
     _loadBatch();
@@ -104,9 +110,9 @@ class _StudyScreenState extends State<StudyScreen> {
     final rest = await context
         .read<LearningService>()
         .getRemainingSentencesForWord(
-      batch.first.text,
-      initial.map((s) => s.id).toList(),
-    );
+          batch.first.text,
+          initial.map((s) => s.id).toList(),
+        );
     if (!mounted) return;
     setState(() => _sentences.addAll(rest));
   }
@@ -121,9 +127,9 @@ class _StudyScreenState extends State<StudyScreen> {
       _isPlaying = false;
     });
 
-    final links = await context
-        .read<LearningService>()
-        .getAudioForSentence(sentenceId);
+    final links = await context.read<LearningService>().getAudioForSentence(
+      sentenceId,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -138,7 +144,9 @@ class _StudyScreenState extends State<StudyScreen> {
       if (!mounted) return;
       setState(() => _isPlaying = false);
     } else {
-      await _audioPlayer.play(UrlSource('https://tatoeba.org/audio/download/$audioId'));
+      await _audioPlayer.play(
+        UrlSource('https://tatoeba.org/audio/download/$audioId'),
+      );
       if (!mounted) return;
       setState(() => _isPlaying = true);
     }
@@ -153,13 +161,17 @@ class _StudyScreenState extends State<StudyScreen> {
     if (context.read<SettingsProvider>().studiedCount >= target) {
       await showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Done!'),
-          content: Text('You’ve completed $target words today 🎉'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
+        builder:
+            (_) => AlertDialog(
+              title: const Text('Done!'),
+              content: Text('You’ve completed $target words today 🎉'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
       );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -200,7 +212,8 @@ class _StudyScreenState extends State<StudyScreen> {
     if (_sentences.isEmpty) return;
     if (!mounted) return;
     setState(() {
-      _sentenceIndex = (_sentenceIndex - 1 + _sentences.length) % _sentences.length;
+      _sentenceIndex =
+          (_sentenceIndex - 1 + _sentences.length) % _sentences.length;
     });
     _loadAudioForSentence(_sentences[_sentenceIndex].id);
   }
@@ -220,12 +233,12 @@ class _StudyScreenState extends State<StudyScreen> {
     final totalTarget = _settings.dailyCount;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Study (${learnedSoFar+1}/$totalTarget)')),
+      appBar: AppBar(title: Text('Study (${learnedSoFar + 1}/$totalTarget)')),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: WordSentenceCard(
+              child: InteractiveWordSentenceCard(
                 wordText: batch.first.text,
                 sentences: _sentences,
                 sentenceIndex: _sentenceIndex,
@@ -235,8 +248,13 @@ class _StudyScreenState extends State<StudyScreen> {
                 position: _position,
                 duration: _duration,
                 onToggleAudio: () => _togglePlay(_audioLinks.first.audioId),
+                onReplayAudio:
+                    () => _togglePlay(_audioLinks.first.audioId), // <— new
+
                 onPrevSentence: _prevSentence,
                 onNextSentence: _nextSentence,
+                
+
               ),
             ),
           ],
@@ -248,7 +266,10 @@ class _StudyScreenState extends State<StudyScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PrimaryButton(label: 'Got it', onPressed: () => _markResult(true)),
+              PrimaryButton(
+                label: 'Got it',
+                onPressed: () => _markResult(true),
+              ),
               const SizedBox(height: 8),
               SecondaryButton(label: 'Skip word', onPressed: _skipCurrent),
             ],

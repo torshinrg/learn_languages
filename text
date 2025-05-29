@@ -1,0 +1,4 @@
+error: The named parameter 'onReplayAudio' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/review_screen.dart:140)
+error: The named parameter 'onTapToSpeak' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/review_screen.dart:140)
+error: The named parameter 'onReplayAudio' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/study_screen.dart:254)
+error: The named parameter 'onTapToSpeak' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/study_screen.dart:254)
