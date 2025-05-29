@@ -1,6 +1,7 @@
 // lib/presentation/screens/settings_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:learn_languages/presentation/screens/custom_words_screen.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
 import '../providers/notification_settings_provider.dart';
@@ -40,9 +41,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _save() {
     final val = int.tryParse(_controller.text) ?? kDefaultDailyCount;
     context.read<SettingsProvider>().setDailyCount(val);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Saved: $val words/day')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Saved: $val words/day')));
   }
 
   @override
@@ -63,9 +64,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove),
-                  onPressed: settings.dailyCount > 1
-                      ? () => settings.setDailyCount(settings.dailyCount - 1)
-                      : null,
+                  onPressed:
+                      settings.dailyCount > 1
+                          ? () =>
+                              settings.setDailyCount(settings.dailyCount - 1)
+                          : null,
                 ),
                 Expanded(
                   child: TextField(
@@ -79,8 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed: () =>
-                      settings.setDailyCount(settings.dailyCount + 1),
+                  onPressed:
+                      () => settings.setDailyCount(settings.dailyCount + 1),
                 ),
               ],
             ),
@@ -97,14 +100,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: Text(
                 '${context.read<NotificationSettingsProvider>().times.length} per day',
               ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NotificationSettingsScreen(),
-                ),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationSettingsScreen(),
+                    ),
+                  ),
             ),
-
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Custom Words'),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CustomWordsScreen(),
+                    ),
+                  ),
+            ),
           ],
         ),
       ),

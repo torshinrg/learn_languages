@@ -41,8 +41,8 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> _loadDueCount() async {
-    final dueList = await _srsService.fetchDueData();
-    _dueCount = dueList.length;
+    final dueWords = await _learningService.getDueWords();
+    _dueCount = dueWords.length;
     notifyListeners();
   }
 

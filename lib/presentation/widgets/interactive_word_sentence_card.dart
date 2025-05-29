@@ -414,17 +414,18 @@ class _InteractiveWordSentenceCardState
               onPressed: _startRecording,
             ),
 
-          
-          const SizedBox(height: 4),
-                Text(
-                  'Recorded by ${widget.audioLinks.first.username}.',
-                  style: theme.bodySmall,
-                ),
-                if (widget.audioLinks.first.license.isNotEmpty)
-                  Text(
-                    'License: ${widget.audioLinks.first.license}.',
-                    style: theme.bodySmall,
-                  ),
+          if (widget.audioLinks.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Recorded by ${widget.audioLinks.first.username}.',
+              style: theme.bodySmall,
+            ),
+            if (widget.audioLinks.first.license.isNotEmpty)
+              Text(
+                'License: ${widget.audioLinks.first.license}.',
+                style: theme.bodySmall,
+              ),
+          ],
         ],
       ),
     );

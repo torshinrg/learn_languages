@@ -1,35 +1,40 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
-import 'package:learn_languages/presentation/providers/notification_settings_provider.dart';
+import 'package:learn_languages/services/learning_service.dart';
 import 'package:learn_languages/services/notification_service.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:learn_languages/services/srs_service.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/di.dart';
 import 'core/navigation.dart';
-import 'services/learning_service.dart';
-import 'services/srs_service.dart';
+import 'domain/repositories/i_custom_word_repository.dart';
+import 'presentation/widgets/share_handler.dart';
+import 'presentation/providers/custom_words_provider.dart';
 import 'presentation/providers/home_provider.dart';
+import 'presentation/providers/notification_settings_provider.dart';
 import 'presentation/providers/review_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/study_provider.dart';
 import 'presentation/providers/vocabulary_provider.dart';
 import 'presentation/screens/home_screen.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'presentation/screens/debug_screen.dart';
+import 'presentation/screens/study_screen.dart';
+import 'presentation/screens/review_screen.dart';
+import 'presentation/screens/vocabulary_screen.dart';
+import 'presentation/screens/settings_screen.dart';
+import 'presentation/screens/notification_settings_screen.dart';
 
-
-
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
   await NotificationService.init();
   tz.initializeTimeZones();
-  final status = await Permission.notification.status;
-  print('🔑 [Main] Notification permission is $status');
-  if (status.isDenied) {
-    final result = await Permission.notification.request();
-    print('🔑 [Main] Request result: $result');
+
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
   }
 
   runApp(const MyApp());
@@ -75,50 +80,25 @@ class MyApp extends StatelessWidget {
             ctx.read<SRSService>(),
           ),
         ),
+        ChangeNotifierProvider<CustomWordsProvider>(
+          create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
+        ),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
         title: 'Learn Languages',
-        theme: ThemeData(
-          brightness: Brightness.light,                // force light mode
-          scaffoldBackgroundColor: Colors.white,       // make all Scaffold backgrounds white
-          primarySwatch: Colors.deepPurple,
-          primaryColor: Colors.deepPurple,
-
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.lightBlue,
-            foregroundColor: Colors.white,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.lightBlue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.lightBlue,
-              side: const BorderSide(color: Colors.lightBlue),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          cardTheme: CardTheme(
-            color: Colors.lightBlue.shade50,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          ),
-        ),
+        theme: ThemeData( /* your theme */ ),
+        // Wrap every route and widget with ShareHandler:
+        builder: (ctx, child) => ShareHandler(child: child!),
         home: const HomeScreen(),
+        routes: {
+          '/debug': (_) => const DebugScreen(),
+          '/study': (_) => const StudyScreen(),
+          '/review': (_) => const ReviewScreen(),
+          '/vocabulary': (_) => const VocabularyScreen(),
+          '/settings': (_) => const SettingsScreen(),
+          '/reminders': (_) => const NotificationSettingsScreen(),
+        },
       ),
     );
   }

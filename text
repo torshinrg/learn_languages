@@ -1,4 +1,7 @@
-error: The named parameter 'onReplayAudio' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/review_screen.dart:140)
-error: The named parameter 'onTapToSpeak' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/review_screen.dart:140)
-error: The named parameter 'onReplayAudio' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/study_screen.dart:254)
-error: The named parameter 'onTapToSpeak' is required, but there's no corresponding argument. (missing_required_argument at [learn_languages] lib/presentation/screens/study_screen.dart:254)
+error: Fields can't be initialized in the constructor if they are final and were already initialized at their declaration. (field_initialized_in_initializer_and_declaration at [learn_languages] lib/presentation/providers/custom_words_provider.dart:17)
+
+here:
+CustomWordsProvider(this._repo)
+      : _srs = GetIt.instance<ISRSRepository>() {        // ← get via GetIt
+    _load();
+  }

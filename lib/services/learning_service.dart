@@ -1,5 +1,7 @@
 // File: lib/services/learning_service.dart
 
+import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
+
 import '../domain/entities/audio_link.dart';
 import '../domain/entities/word.dart';
 import '../domain/entities/sentence.dart';
@@ -13,16 +15,25 @@ class LearningService {
   final ISentenceRepository sentenceRepo;
   final IAudioRepository audioRepo;
   final ISRSRepository srsRepo;
+  final ICustomWordRepository customRepo;
 
   LearningService({
     required this.wordRepo,
     required this.sentenceRepo,
     required this.audioRepo,
     required this.srsRepo,
+    required this.customRepo, 
   });
 
   /// Original: mix of due + fresh
   Future<List<Word>> getDailyBatch(int count) async {
+    final custom = await customRepo.fetchAll();
+    final customWords = custom.map((cw) => Word(id: cw.id, text: cw.text)).toList();
+    if (customWords.isNotEmpty) {
+      // simply return them—never call scheduleNext here
+      return customWords.take(count).toList();
+    }
+    
     final allSrs = await srsRepo.fetchAll();
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
     final due = await srsRepo.fetchDue();

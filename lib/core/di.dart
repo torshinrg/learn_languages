@@ -3,6 +3,8 @@
 import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get_it/get_it.dart';
+import 'package:learn_languages/data/local/local_custom_word_repo.dart';
+import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -35,6 +37,10 @@ Future<void> setupLocator() async {
   getIt.registerLazySingleton<ISentenceRepository>(() => LocalSentenceRepository(db));
   getIt.registerLazySingleton<IAudioRepository>(() => LocalAudioRepository(db));
   getIt.registerLazySingleton<ISRSRepository>(() => LocalSRSRepository(db));
+  getIt.registerLazySingleton<ICustomWordRepository>(
+  () => LocalCustomWordRepository(getIt<Database>()),
+);
+
 
   // services
   getIt.registerLazySingleton<SRSService>(() => SRSService(getIt<ISRSRepository>()));
@@ -43,6 +49,7 @@ Future<void> setupLocator() async {
     sentenceRepo: getIt<ISentenceRepository>(),
     srsRepo: getIt<ISRSRepository>(),
     audioRepo: getIt<IAudioRepository>(),
+    customRepo: getIt<ICustomWordRepository>(),
   ));
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
   getIt.registerLazySingleton<AudioCheckService>(() => AudioCheckService());
