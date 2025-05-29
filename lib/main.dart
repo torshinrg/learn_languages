@@ -11,6 +11,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'core/di.dart';
 import 'core/navigation.dart';
 import 'domain/repositories/i_custom_word_repository.dart';
+import 'domain/repositories/i_srs_repository.dart';
+import 'domain/repositories/i_word_repository.dart';
 import 'presentation/widgets/share_handler.dart';
 import 'presentation/providers/custom_words_provider.dart';
 import 'presentation/providers/home_provider.dart';
@@ -81,8 +83,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
-          create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
+          create: (_) => CustomWordsProvider(
+            getIt<IWordRepository>(),
+            getIt<ISRSRepository>(),
+          ),
         ),
+
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

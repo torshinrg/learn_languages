@@ -80,9 +80,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _isPlaying = false;
     });
 
-    final links = await context.read<LearningService>().getAudioForSentence(
-      sentenceId,
-    );
+    final links = await context.read<LearningService>()
+        .getAudioForSentence(sentenceId);
 
     if (!mounted) return;
     setState(() {
@@ -93,9 +92,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (links.isNotEmpty) {
       final url = 'https://tatoeba.org/audio/download/${links.first.audioId}';
       await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
-      await _player.pause();
+      await _player.play();
     }
   }
+
 
   Future<void> _togglePlayPause() async {
     if (_player.playing) {

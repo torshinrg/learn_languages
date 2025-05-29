@@ -161,37 +161,23 @@ class _StudyScreenState extends State<StudyScreen> {
     if (context.read<SettingsProvider>().studiedCount >= target) {
       await showDialog(
         context: context,
-        builder:
-            (_) => AlertDialog(
-              title: const Text('Done!'),
-              content: Text('You’ve completed $target words today 🎉'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
+        builder: (_) => AlertDialog(
+          title: const Text('Done!'),
+          content: Text('You’ve completed $target words today 🎉'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
       );
       if (!mounted) return;
       Navigator.of(context).pop();
       return;
     }
 
-    // load next
-    if (!mounted) return;
-    setState(() {
-      _initialLoaded = false;
-      _sentences = [];
-      _sentenceIndex = 0;
-      _audioLinks = [];
-      _audioLoading = false;
-      _duration = Duration.zero;
-      _position = Duration.zero;
-      _isPlaying = false;
-    });
+    // 🔥 just load the next examples without clearing first
     await _loadExamplesForCurrent();
   }
+
 
   Future<void> _skipCurrent() async {
     await _study.skipWord();

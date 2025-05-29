@@ -25,38 +25,59 @@ class LearningService {
     required this.customRepo, 
   });
 
-  /// Original: mix of due + fresh
   Future<List<Word>> getDailyBatch(int count) async {
-    final custom = await customRepo.fetchAll();
-    final customWords = custom.map((cw) => Word(id: cw.id, text: cw.text)).toList();
-    if (customWords.isNotEmpty) {
-      // simply return them—never call scheduleNext here
-      return customWords.take(count).toList();
+    final allWords = await wordRepo.fetchAll();
+
+    // 1) custom words first
+    final custom = allWords.where((w) => w.type == WordType.custom).toList();
+    if (custom.isNotEmpty) {
+      return custom.take(count).toList();
     }
-    
-    final allSrs = await srsRepo.fetchAll();
-    final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-    final due = await srsRepo.fetchDue();
-    final dueWords = (await wordRepo.fetchAll())
-        .where((w) => due.any((s) => s.wordId == w.id))
-        .toList();
-    if (dueWords.length >= count) return dueWords.take(count).toList();
-    final needed = count - dueWords.length;
-    final fresh = (await wordRepo.fetchAll())
+
+    // 2) then due by SRS
+    final dueData = await srsRepo.fetchDue();
+    final due = allWords.where((w) =>
+        dueData.any((s) => s.wordId == w.id)
+    ).toList();
+    if (due.length >= count) return due.take(count).toList();
+
+    // 3) fill with fresh
+    final scheduledIds = (await srsRepo.fetchAll())
+        .map((e) => e.wordId)
+        .toSet();
+    final needed = count - due.length;
+    final fresh = allWords
         .where((w) => !scheduledIds.contains(w.id))
         .take(needed)
         .toList();
-    return [...dueWords, ...fresh];
+
+    return [...due, ...fresh];
   }
 
-  /// NEW: only words never scheduled in SRS
   Future<List<Word>> getFreshBatch(int count) async {
+    // 1) Load all words and SRS entries
+    final allWords = await wordRepo.fetchAll();
     final allSrs = await srsRepo.fetchAll();
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-    return (await wordRepo.fetchAll())
-        .where((w) => !scheduledIds.contains(w.id))
-        .take(count)
+
+    // 2) Identify unscheduled words (never reviewed)
+    final unscheduled = allWords.where((w) => !scheduledIds.contains(w.id)).toList();
+
+    // 3) Prioritize custom words
+    final custom = unscheduled.where((w) => w.type == WordType.custom).toList();
+    if (custom.length >= count) {
+      return custom.take(count).toList();
+    }
+
+    // 4) Fill the remainder with normal unscheduled words
+    final remaining = count - custom.length;
+    final normal = unscheduled
+        .where((w) => w.type != WordType.custom)
+        .take(remaining)
         .toList();
+
+    // 5) Return combined list: customs first, then normals
+    return [...custom, ...normal];
   }
 
   Future<List<Word>> getAllWords() => wordRepo.fetchAll();

@@ -346,17 +346,20 @@ class _InteractiveWordSentenceCardState
                     widget.audioLoading
                         // still loading audio
                         ? const Center(child: null)
-                        : Row(
-                          children: [
-                            Expanded(
-                              child: SelectableText(
-                                current!.english,
-                                style: theme.bodyMedium,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
+                        // only show translation when we actually have a sentence
+                        : (hasSentence
+                            ? Row(
+                              children: [
+                                Expanded(
+                                  child: SelectableText(
+                                    current!.english,
+                                    style: theme.bodyMedium,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            )
+                            : const SizedBox()),
                   ],
                 ),
               ),
