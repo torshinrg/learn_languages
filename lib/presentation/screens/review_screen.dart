@@ -10,6 +10,8 @@ import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
 import '../widgets/interactive_word_sentence_card.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
   @override
@@ -19,6 +21,7 @@ class ReviewScreen extends StatefulWidget {
 class _ReviewScreenState extends State<ReviewScreen> {
   late final ReviewProvider _review;
   late final AudioPlayer _player;
+
 
   List<AudioLink> _links = [];
   bool _loadingAudio = false;
@@ -30,12 +33,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final StreamSubscription<Duration?> _durSub;
   late final StreamSubscription<PlayerState> _stateSub;
 
-  final Map<String, int> _qualityMap = {
-    'Again': 0,
-    'Hard': 3,
-    'Good': 4,
-    'Easy': 5,
-  };
+
   final List<String> _qualityLabels = ['Again', 'Hard', 'Good', 'Easy'];
 
   @override
@@ -116,6 +114,15 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    // build a map of localized labels → quality values:
+    final qualityMap = {
+      loc.qualityAgain: 0,
+      loc.qualityHard:  3,
+      loc.qualityGood:  4,
+      loc.qualityEasy:  5,
+    };
     return Scaffold(
       appBar: AppBar(title: const Text('Review')),
       body: Consumer<ReviewProvider>(
@@ -178,7 +185,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         _qualityLabels.map((label) {
                           return ElevatedButton(
                             onPressed: () async {
-                              final q = _qualityMap[label]!;
+                              final q = qualityMap[label]!;
                               await review.markWord(q);
                               final nxt = review.currentSentence;
                               if (nxt != null) _loadAudioForSentence(nxt.id);

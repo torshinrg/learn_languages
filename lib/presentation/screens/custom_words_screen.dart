@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/custom_words_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CustomWordsScreen extends StatefulWidget {
   final String? initialText;
@@ -37,9 +38,10 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CustomWordsProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Custom Word')),
+      appBar: AppBar(title:  Text(loc.add_custom_word)),
       body: Column(
         children: [
           Padding(
@@ -50,8 +52,8 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
                   child: TextField(
                     focusNode: _focusNode,            // ← auto-focus here
                     controller: _ctrl,
-                    decoration: const InputDecoration(
-                      labelText: 'New word',
+                    decoration:  InputDecoration(
+                      labelText: loc.new_word,
                     ),
                   ),
                 ),
@@ -62,7 +64,7 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
                     if (text.isEmpty) return;
                     context.read<CustomWordsProvider>().add(text);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Added “$text”')),
+                      SnackBar(content: Text('${loc.added} “$text”')),
                     );
                     _ctrl.clear();
                   },

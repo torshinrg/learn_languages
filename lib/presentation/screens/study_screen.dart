@@ -11,6 +11,7 @@ import '../providers/study_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/buttons.dart';
 import '../widgets/interactive_word_sentence_card.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key});
@@ -207,19 +208,20 @@ class _StudyScreenState extends State<StudyScreen> {
   @override
   Widget build(BuildContext context) {
     final batch = _study.batch;
+    final loc = AppLocalizations.of(context)!;
 
     if (!_batchLoaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (batch.isEmpty) {
-      return const Scaffold(body: Center(child: Text('No words to study.')));
+      return  Scaffold(body: Center(child: Text(loc.no_words)));
     }
 
     final learnedSoFar = _settings.studiedCount;
     final totalTarget = _settings.dailyCount;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Study (${learnedSoFar + 1}/$totalTarget)')),
+      appBar: AppBar(title: Text('${loc.study} (${learnedSoFar + 1}/$totalTarget)')),
       body: SafeArea(
         child: Column(
           children: [
@@ -253,11 +255,11 @@ class _StudyScreenState extends State<StudyScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               PrimaryButton(
-                label: 'Got it',
+                label: loc.got_it,
                 onPressed: () => _markResult(true),
               ),
               const SizedBox(height: 8),
-              SecondaryButton(label: 'Skip word', onPressed: _skipCurrent),
+              SecondaryButton(label: loc.skip_word, onPressed: _skipCurrent),
             ],
           ),
         ),

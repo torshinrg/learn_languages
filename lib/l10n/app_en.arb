@@ -1,0 +1,85 @@
+{
+  "@@locale": "en",
+  "appTitle": "Learn Languages",
+  "homeGreeting": "Welcome, let’s start learning!",
+  "studyButton": "Start Study",
+  "reviewButton": "Review",
+  "streak": "🔥 Streak: ",
+  "day": "day",
+  "days": "days",
+  "reviewsDue": "{dueCount, plural, =0{You have no reviews due} one{You have 1 review due} other{You have {dueCount} reviews due}}",
+    "@reviewsDue": {
+      "description": "How many reviews are due",
+      "placeholders": {
+        "dueCount": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+   "review": "Review",
+   "today_session":"Today's Session",
+   "new_words_learned": "new words learned",
+   "start_study":"Start Study",
+   "vocabulary": "Vocabulary",
+   "stats": "Stats",
+   "settings": "Settings",
+   "add_custom_word": "Add Custom Word",
+   "new_word": "New word",
+   "added": "Added ",
+   "reminder_settings":"Reminder Settings",
+   "add_reminder": "Add Reminder",
+   "reminderSet": "Reminder set at {pickedTime}. Now: {now}. Fires next at {next}.",
+     "@reminderSet": {
+       "description": "Confirmation text when scheduling a new reminder",
+       "placeholders": {
+         "pickedTime": { "type": "String", "example": "14:30" },
+         "now":       { "type": "String", "example": "2025-05-29 19:00" },
+         "next":      { "type": "String", "example": "2025-05-30 14:30" }
+       }
+     },
+
+     "reminderUpdated": "Reminder updated to {pickedTime}.",
+     "@reminderUpdated": {
+       "description": "Confirmation text when updating an existing reminder",
+       "placeholders": {
+         "pickedTime": { "type": "String", "example": "08:00" }
+       }
+     },
+     "qualityAgain": "Again",
+       "@qualityAgain": { "description": "Repeat review again" },
+
+       "qualityHard": "Hard",
+       "@qualityHard": { "description": "Mark review as hard" },
+
+       "qualityGood": "Good",
+       "@qualityGood": { "description": "Mark review as good" },
+
+       "qualityEasy": "Easy",
+       "@qualityEasy": { "description": "Mark review as easy" },
+       "words_per_day": "Words per day",
+       "save": "Save",
+       "study_reminders": "Study Reminders",
+       "per_day": "per day",
+       "custom_words": "Custom Words",
+       "today_learned": "Today Learned",
+       "current_streak": "Current Streak",
+       "total_words": "Total Words",
+       "mastered_words": "Mastered Words",
+       "no_words": "No words to study.",
+       "study": "Study ",
+       "got_it": "Got it",
+       "skip_word": "Skip word",
+       "learning_now": "Learning Now",
+       "pending": "Pending",
+       "mastered": "Mastered",
+       "excellent": "🎉 Excellent! You nailed it!",
+       "great_job": "👍 Great job!",
+       "good_work": "🙂 Good work, keep going!",
+       "try_again": "💪 Don’t give up, try again!",
+       "tap_to_speak_again": "Tap to Speak Again",
+       "next_sentence": "Next Sentence",
+       "tap_to_speak": "Tap to Speak",
+       "recorded_by": "Recorded by ",
+       "licence": "License: "
+}

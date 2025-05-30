@@ -1,0 +1,78 @@
+{
+  "@@locale": "es",
+  "appTitle": "Aprender Idiomas",
+  "homeGreeting": "¡Bienvenido, comencemos a aprender!",
+  "studyButton": "Comenzar Estudio",
+  "reviewButton": "Revisión",
+  "streak": "🔥 Racha: ",
+  "day": "día",
+  "days": "días",
+  "reviewsDue": "{dueCount, plural, =0{No tienes revisiones pendientes} one{Tienes 1 revisión pendiente} other{Tienes {dueCount} revisiones pendientes}}",
+  "@reviewsDue": {
+    "description": "Cuántas revisiones están pendientes",
+    "placeholders": {
+      "dueCount": { "type": "int", "example": "5" }
+    }
+  },
+  "review": "Revisión",
+  "today_session": "Sesión de hoy",
+  "new_words_learned": "nuevas palabras aprendidas",
+  "start_study": "Comenzar Estudio",
+  "vocabulary": "Vocabulario",
+  "stats": "Estadísticas",
+  "settings": "Configuración",
+  "add_custom_word": "Agregar Palabra Personalizada",
+  "new_word": "Nueva palabra",
+  "added": "Añadido ",
+  "reminder_settings": "Configuración de Recordatorios",
+  "add_reminder": "Agregar Recordatorio",
+  "reminderSet": "Recordatorio configurado a las {pickedTime}. Ahora: {now}. Próxima vez: {next}.",
+  "@reminderSet": {
+    "description": "Texto de confirmación al programar un nuevo recordatorio",
+    "placeholders": {
+      "pickedTime": { "type": "String", "example": "14:30" },
+      "now": { "type": "String", "example": "2025-05-29 19:00" },
+      "next": { "type": "String", "example": "2025-05-30 14:30" }
+    }
+  },
+  "reminderUpdated": "Recordatorio actualizado a las {pickedTime}.",
+  "@reminderUpdated": {
+    "description": "Texto de confirmación al actualizar un recordatorio",
+    "placeholders": {
+      "pickedTime": { "type": "String", "example": "08:00" }
+    }
+  },
+  "qualityAgain": "Otra vez",
+  "@qualityAgain": { "description": "Repetir revisión otra vez" },
+  "qualityHard": "Difícil",
+  "@qualityHard": { "description": "Marcar como difícil" },
+  "qualityGood": "Bueno",
+  "@qualityGood": { "description": "Marcar como bueno" },
+  "qualityEasy": "Fácil",
+  "@qualityEasy": { "description": "Marcar como fácil" },
+  "words_per_day": "Palabras por día",
+  "save": "Guardar",
+  "study_reminders": "Recordatorios de estudio",
+  "per_day": "por día",
+  "custom_words": "Palabras Personalizadas",
+  "today_learned": "Aprendido Hoy",
+  "current_streak": "Racha Actual",
+  "total_words": "Palabras Totales",
+  "mastered_words": "Palabras Dominadas",
+  "no_words": "No hay palabras para estudiar.",
+  "study": "Estudiar ",
+  "got_it": "Entendido",
+  "skip_word": "Saltar palabra",
+  "learning_now": "Aprendiendo Ahora",
+  "pending": "Pendiente",
+  "mastered": "Dominada",
+  "excellent": "🎉 ¡Excelente! ¡Lo lograste!",
+  "great_job": "👍 ¡Buen trabajo!",
+  "good_work": "🙂 Buen trabajo, sigue así!",
+  "try_again": "💪 No te rindas, ¡inténtalo de nuevo!",
+  "tap_to_speak_again": "Toca para hablar de nuevo",
+  "next_sentence": "Siguiente Frase",
+  "tap_to_speak": "Toca para hablar",
+  "recorded_by": "Grabado por ",
+  "licence": "Licencia: "
+}

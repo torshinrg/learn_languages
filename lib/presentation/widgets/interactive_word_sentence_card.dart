@@ -11,7 +11,7 @@ import 'package:record/record.dart';
 import '../../domain/entities/audio_link.dart';
 import '../../domain/entities/sentence.dart';
 import '../../services/audio_check_service.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/pronunciation_scoring_service.dart';
 
 class InteractiveWordSentenceCard extends StatefulWidget {
@@ -251,6 +251,7 @@ class _InteractiveWordSentenceCardState
         widget.sentences.isNotEmpty &&
         widget.sentenceIndex < widget.sentences.length;
     final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
+    final loc = AppLocalizations.of(context)!;
 
     final navRow = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -387,12 +388,12 @@ class _InteractiveWordSentenceCardState
           else if (_score != null) ...[
             Text(
               _score! >= 0.9
-                  ? '🎉 Excellent! You nailed it!'
+                  ? loc.excellent
                   : _score! >= 0.75
-                  ? '👍 Great job!'
+                  ? loc.great_job
                   : _score! >= 0.6
-                  ? '🙂 Good work, keep going!'
-                  : '💪 Don’t give up, try again!',
+                  ? loc.good_work
+                  : loc.try_again,
               style: theme.headlineMedium!.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -402,30 +403,30 @@ class _InteractiveWordSentenceCardState
             if (_score! < 0.6)
               OutlinedButton.icon(
                 icon: const Icon(Icons.mic),
-                label: const Text('Tap to Speak Again'),
+                label:  Text(loc.tap_to_speak_again),
                 onPressed: _startRecording,
               )
             else
               ElevatedButton(
                 onPressed: widget.onNextSentence,
-                child: const Text('Next Sentence'),
+                child:  Text(loc.next_sentence),
               ),
           ] else
             OutlinedButton.icon(
               icon: const Icon(Icons.mic),
-              label: const Text('Tap to Speak'),
+              label: Text(loc.tap_to_speak),
               onPressed: _startRecording,
             ),
 
           if (widget.audioLinks.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Recorded by ${widget.audioLinks.first.username}.',
+              '${loc.recorded_by} ${widget.audioLinks.first.username}.',
               style: theme.bodySmall,
             ),
             if (widget.audioLinks.first.license.isNotEmpty)
               Text(
-                'License: ${widget.audioLinks.first.license}.',
+                '${loc.licence} ${widget.audioLinks.first.license}.',
                 style: theme.bodySmall,
               ),
           ],

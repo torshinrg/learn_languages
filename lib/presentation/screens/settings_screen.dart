@@ -7,6 +7,7 @@ import '../../core/constants.dart';
 import '../providers/notification_settings_provider.dart';
 import '../providers/settings_provider.dart';
 import 'notification_settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -49,16 +50,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final loc = AppLocalizations.of(context)!;
+
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(loc.settings)),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Words per day', style: TextStyle(fontSize: 16)),
+             Text(loc.words_per_day, style: TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -91,14 +94,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: _save,
-                child: const Text('Save'),
+                child: Text(loc.save),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.notifications),
-              title: const Text('Study Reminders'),
+              title:  Text(loc.study_reminders),
               subtitle: Text(
-                '${context.read<NotificationSettingsProvider>().times.length} per day',
+                '${context.read<NotificationSettingsProvider>().times.length} ${loc.per_day}',
               ),
               onTap:
                   () => Navigator.push(
@@ -110,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Custom Words'),
+              title:  Text(loc.custom_words),
               onTap:
                   () => Navigator.push(
                     context,

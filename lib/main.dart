@@ -1,6 +1,7 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:learn_languages/services/learning_service.dart';
 import 'package:learn_languages/services/notification_service.dart';
 import 'package:learn_languages/services/srs_service.dart';
@@ -28,6 +29,8 @@ import 'presentation/screens/review_screen.dart';
 import 'presentation/screens/vocabulary_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/notification_settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,6 +95,22 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        // 2. List your supported locales:
+        supportedLocales: AppLocalizations.supportedLocales,
+        // 3. (Optional) custom locale resolution:
+        localeResolutionCallback: (locale, supported) {
+          if (locale == null) return supported.first;
+          for (var l in supported) {
+            if (l.languageCode == locale.languageCode) return l;
+          }
+          return supported.first;
+        },
         title: 'Learn Languages',
         theme: ThemeData( /* your theme */ ),
         // Wrap every route and widget with ShareHandler:

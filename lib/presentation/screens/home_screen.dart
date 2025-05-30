@@ -11,6 +11,7 @@ import 'study_screen.dart';
 import 'review_screen.dart';
 import 'vocabulary_screen.dart';
 import 'settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -56,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final daily = context.watch<SettingsProvider>().dailyCount;
     final progress = daily > 0 ? (studied / daily).clamp(0.0, 1.0) : 0.0;
     final streak = context.watch<SettingsProvider>().streakCount;
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -75,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     color: Theme.of(context).primaryColor,
                   ),
                   title: Text(
-                    '🔥 Streak: $streak ${streak == 1 ? 'day' : 'days'}',
+                    '${loc.streak} $streak ${streak == 1 ? '${loc.day}' : '${loc.days}'}',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -94,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       color: Theme.of(context).primaryColor,
                     ),
                     title: Text(
-                      'You have $dueCount review${dueCount > 1 ? 's' : ''} due',
+                      loc.reviewsDue(dueCount),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     trailing: TextButton(
@@ -105,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               builder: (_) => const ReviewScreen(),
                             ),
                           ).then((_) => _home.refresh()),
-                      child: const Text('Review'),
+                      child: Text(loc.review),
                     ),
                   ),
                 ),
@@ -122,8 +124,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Today's Session",
+                      Text(
+                        loc.today_session,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -131,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '$studied / $daily new words learned',
+                        '$studied / $daily ${loc.new_words_learned}',
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 12),
@@ -148,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         height: 48,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start Study'),
+                          label: Text(loc.start_study),
                           onPressed:
                               canStudy
                                   ? () => Navigator.push(
@@ -171,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 children: [
                   _ActionTile(
                     icon: Icons.refresh,
-                    label: 'Review',
+                    label: loc.review,
                     onTap:
                         () => Navigator.push(
                           context,
@@ -183,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   const SizedBox(width: 12),
                   _ActionTile(
                     icon: Icons.bookmark,
-                    label: 'Vocabulary',
+                    label: loc.vocabulary,
                     onTap:
                         () => Navigator.push(
                           context,
@@ -195,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   const SizedBox(width: 12),
                   _ActionTile(
                     icon: Icons.bar_chart,
-                    label: 'Stats',
+                    label: loc.stats,
                     onTap:
                         () => Navigator.push(
                           context,
@@ -207,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   const SizedBox(width: 12),
                   _ActionTile(
                     icon: Icons.settings,
-                    label: 'Settings',
+                    label: loc.settings,
                     onTap:
                         () => Navigator.push(
                       context,
