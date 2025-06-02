@@ -22,6 +22,7 @@ class StudyScreen extends StatefulWidget {
 class _StudyScreenState extends State<StudyScreen> {
   late final StudyProvider _study;
   late final SettingsProvider _settings;
+  late final LearningService _learningService;
   late final AudioPlayer _audioPlayer;
 
   List<AudioLink> _audioLinks = [];
@@ -41,6 +42,7 @@ class _StudyScreenState extends State<StudyScreen> {
     super.initState();
     _study = context.read<StudyProvider>();
     _settings = context.read<SettingsProvider>();
+    _learningService = context.read<LearningService>();
     _audioPlayer = AudioPlayer();
 
     // LISTENERS WITH MOUNTED CHECKS
@@ -55,12 +57,7 @@ class _StudyScreenState extends State<StudyScreen> {
     _audioPlayer.onPlayerComplete.listen((_) async {
       if (!mounted) return;
       setState(() => _isPlaying = false);
-
-      // build the ref-URL
-      final refId = _audioLinks.isNotEmpty ? _audioLinks.first.audioId : null;
-      if (refId == null) return;
-
-
+      // no-op beyond stopping
     });
 
     _loadBatch();
@@ -93,10 +90,11 @@ class _StudyScreenState extends State<StudyScreen> {
     final batch = _study.batch;
     if (batch.isEmpty) return;
 
-    // Phase 1
-    final initial = await context
-        .read<LearningService>()
-        .getInitialSentencesForWord(batch.first.text, limit: _initialLimit);
+    // Phase 1: fetch initial examples
+    final initial = await _learningService.getInitialSentencesForWord(
+      batch.first.text,
+      limit: _initialLimit,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -107,13 +105,11 @@ class _StudyScreenState extends State<StudyScreen> {
 
     await _loadAudioForSentence(initial[0].id);
 
-    // Phase 2
-    final rest = await context
-        .read<LearningService>()
-        .getRemainingSentencesForWord(
-          batch.first.text,
-          initial.map((s) => s.id).toList(),
-        );
+    // Phase 2: fetch remaining examples
+    final rest = await _learningService.getRemainingSentencesForWord(
+      batch.first.text,
+      initial.map((s) => s.id).toList(),
+    );
     if (!mounted) return;
     setState(() => _sentences.addAll(rest));
   }
@@ -128,9 +124,7 @@ class _StudyScreenState extends State<StudyScreen> {
       _isPlaying = false;
     });
 
-    final links = await context.read<LearningService>().getAudioForSentence(
-      sentenceId,
-    );
+    final links = await _learningService.getAudioForSentence(sentenceId);
 
     if (!mounted) return;
     setState(() {
@@ -153,6 +147,33 @@ class _StudyScreenState extends State<StudyScreen> {
     }
   }
 
+  _markAsKnown() async {
+    final batch = _study.batch;
+    if (batch.isEmpty) return;
+
+    // 1) Schedule this word as fully mastered (so it never appears again)
+    final word = batch.first;
+    await _learningService.markAsKnown(word.id);
+
+    // 2) Remove it from today’s batch
+    await _study.skipWord();
+
+    // 3) If current batch is now empty, try to load the next “fresh” batch:
+    if (_study.batch.isEmpty) {
+      await _study.loadBatch(_settings.dailyCount);
+    }
+
+    // 4) If there really are no more words left at all, pop:
+    if (_study.batch.isEmpty) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
+
+    // 5) Otherwise, load sentences for the new current word:
+    await _loadExamplesForCurrent();
+  }
+
   Future<void> _markResult(bool success) async {
     final target = _settings.dailyCount;
     await _study.markWord(success);
@@ -162,27 +183,24 @@ class _StudyScreenState extends State<StudyScreen> {
     if (context.read<SettingsProvider>().studiedCount >= target) {
       await showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Done!'),
-          content: Text('You’ve completed $target words today 🎉'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
+        builder:
+            (_) => AlertDialog(
+              title: const Text('Done!'),
+              content: Text('You’ve completed $target words today 🎉'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
       );
       if (!mounted) return;
       Navigator.of(context).pop();
       return;
     }
 
-    // 🔥 just load the next examples without clearing first
-    await _loadExamplesForCurrent();
-  }
-
-
-  Future<void> _skipCurrent() async {
-    await _study.skipWord();
-    if (!mounted) return;
+    // Load next examples
     await _loadExamplesForCurrent();
   }
 
@@ -214,14 +232,16 @@ class _StudyScreenState extends State<StudyScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (batch.isEmpty) {
-      return  Scaffold(body: Center(child: Text(loc.no_words)));
+      return Scaffold(body: Center(child: Text(loc.no_words)));
     }
 
     final learnedSoFar = _settings.studiedCount;
     final totalTarget = _settings.dailyCount;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${loc.study} (${learnedSoFar + 1}/$totalTarget)')),
+      appBar: AppBar(
+        title: Text('${loc.study} (${learnedSoFar + 1}/$totalTarget)'),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -236,13 +256,9 @@ class _StudyScreenState extends State<StudyScreen> {
                 position: _position,
                 duration: _duration,
                 onToggleAudio: () => _togglePlay(_audioLinks.first.audioId),
-                onReplayAudio:
-                    () => _togglePlay(_audioLinks.first.audioId), // <— new
-
+                onReplayAudio: () => _togglePlay(_audioLinks.first.audioId),
                 onPrevSentence: _prevSentence,
                 onNextSentence: _nextSentence,
-                
-
               ),
             ),
           ],
@@ -259,7 +275,8 @@ class _StudyScreenState extends State<StudyScreen> {
                 onPressed: () => _markResult(true),
               ),
               const SizedBox(height: 8),
-              SecondaryButton(label: loc.skip_word, onPressed: _skipCurrent),
+              // Changed label and handler from “Skip” to “Mark as Known”
+              SecondaryButton(label: 'Mark as Known', onPressed: _markAsKnown),
             ],
           ),
         ),

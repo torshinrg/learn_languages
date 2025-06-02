@@ -124,7 +124,41 @@ class _ReviewScreenState extends State<ReviewScreen> {
       loc.qualityEasy:  5,
     };
     return Scaffold(
-      appBar: AppBar(title: const Text('Review')),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,         // your blue
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).primaryColor,       // same blue stroke
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+        title: Text(loc.review, style: Theme.of(context).textTheme.titleLarge),
+      ),
       body: Consumer<ReviewProvider>(
         builder: (_, review, __) {
           if (review.dueWords.isEmpty) {

@@ -1,4 +1,4 @@
-// lib/presentation/screens/settings_screen.dart
+// File: lib/presentation/screens/settings_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:learn_languages/presentation/screens/custom_words_screen.dart';
@@ -18,6 +18,11 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _controller;
+  final Map<String, String> _languageNames = {
+    'en': 'English',
+    'es': 'Español',
+    'ru': 'Русский',
+  };
 
   @override
   void initState() {
@@ -52,26 +57,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settings = context.watch<SettingsProvider>();
     final loc = AppLocalizations.of(context)!;
 
-
     return Scaffold(
       appBar: AppBar(title: Text(loc.settings)),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(loc.words_per_day, style: TextStyle(fontSize: 16)),
+            Text(loc.words_per_day, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
             Row(
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove),
-                  onPressed:
-                      settings.dailyCount > 1
-                          ? () =>
-                              settings.setDailyCount(settings.dailyCount - 1)
-                          : null,
+                  onPressed: settings.dailyCount > 1
+                      ? () =>
+                      settings.setDailyCount(settings.dailyCount - 1)
+                      : null,
                 ),
                 Expanded(
                   child: TextField(
@@ -85,8 +87,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed:
-                      () => settings.setDailyCount(settings.dailyCount + 1),
+                  onPressed: () =>
+                      settings.setDailyCount(settings.dailyCount + 1),
                 ),
               ],
             ),
@@ -97,30 +99,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Text(loc.save),
               ),
             ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: const Text('Interface Language'),
+              subtitle: Text(_languageNames[settings.locale.languageCode]!),
+              trailing: DropdownButton<String>(
+                value: settings.locale.languageCode,
+                items: _languageNames.entries
+                    .map(
+                      (entry) => DropdownMenuItem<String>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  ),
+                )
+                    .toList(),
+                onChanged: (newCode) {
+                  if (newCode == null) return;
+                  settings.setLocale(newCode);
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.notifications),
-              title:  Text(loc.study_reminders),
+              title: Text(loc.study_reminders),
               subtitle: Text(
                 '${context.read<NotificationSettingsProvider>().times.length} ${loc.per_day}',
               ),
-              onTap:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationSettingsScreen(),
-                    ),
-                  ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationSettingsScreen(),
+                ),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title:  Text(loc.custom_words),
-              onTap:
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CustomWordsScreen(),
-                    ),
-                  ),
+              title: Text(loc.custom_words),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CustomWordsScreen(),
+                ),
+              ),
             ),
           ],
         ),

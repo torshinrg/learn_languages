@@ -81,5 +81,6 @@
        "next_sentence": "Next Sentence",
        "tap_to_speak": "Tap to Speak",
        "recorded_by": "Recorded by ",
-       "licence": "License: "
+       "licence": "License: ",
+       "no_reviews": "'No reviews due right now."
 }

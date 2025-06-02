@@ -1,5 +1,3 @@
-// lib/presentation/providers/home_provider.dart
-
 import 'package:flutter/foundation.dart';
 import '../../services/learning_service.dart';
 import '../../services/srs_service.dart';

@@ -22,7 +22,7 @@ class LearningService {
     required this.sentenceRepo,
     required this.audioRepo,
     required this.srsRepo,
-    required this.customRepo, 
+    required this.customRepo,
   });
 
   Future<List<Word>> getDailyBatch(int count) async {
@@ -36,15 +36,14 @@ class LearningService {
 
     // 2) then due by SRS
     final dueData = await srsRepo.fetchDue();
-    final due = allWords.where((w) =>
-        dueData.any((s) => s.wordId == w.id)
-    ).toList();
+    final due = allWords
+        .where((w) => dueData.any((s) => s.wordId == w.id))
+        .toList();
     if (due.length >= count) return due.take(count).toList();
 
     // 3) fill with fresh
-    final scheduledIds = (await srsRepo.fetchAll())
-        .map((e) => e.wordId)
-        .toSet();
+    final scheduledIds =
+    (await srsRepo.fetchAll()).map((e) => e.wordId).toSet();
     final needed = count - due.length;
     final fresh = allWords
         .where((w) => !scheduledIds.contains(w.id))
@@ -61,7 +60,8 @@ class LearningService {
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
 
     // 2) Identify unscheduled words (never reviewed)
-    final unscheduled = allWords.where((w) => !scheduledIds.contains(w.id)).toList();
+    final unscheduled =
+    allWords.where((w) => !scheduledIds.contains(w.id)).toList();
 
     // 3) Prioritize custom words
     final custom = unscheduled.where((w) => w.type == WordType.custom).toList();
@@ -84,6 +84,16 @@ class LearningService {
 
   Future<void> markLearned(String wordId, bool success) {
     return srsRepo.scheduleNext(wordId, success);
+  }
+
+  /// NEW: Mark a word as completely known/mastered so it never appears again.
+  Future<void> markAsKnown(String wordId) async {
+    // Repetition threshold for “mastered” is 3.
+    // Each scheduleNextWithQuality(wordId, 5) will bump repetition by 1 (since 5 >= 3).
+    // First call creates entry with repetition=1; second → 2; third → 3.
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
   }
 
   Future<List<Sentence>> getInitialSentencesForWord(

@@ -2,17 +2,21 @@
 
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:learn_languages/presentation/widgets/task_widget.dart';
 import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 import '../../domain/entities/audio_link.dart';
 import '../../domain/entities/sentence.dart';
+import '../../domain/entities/task.dart';
 import '../../services/audio_check_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../services/pronunciation_scoring_service.dart';
+import '../providers/task_provider.dart';
 
 class InteractiveWordSentenceCard extends StatefulWidget {
   final String wordText;
@@ -55,69 +59,122 @@ class _InteractiveWordSentenceCardState
     extends State<InteractiveWordSentenceCard> {
   final _recorder = AudioRecorder();
   late final AudioCheckService _checker;
+  late final SpeechToText _stt;
 
   StreamSubscription<Amplitude>? _ampSub;
   bool _recording = false;
   bool _processing = false;
   double? _score;
   double _currentAmp = 0.0;
-  DateTime _lastVoice = DateTime.now();
+
+  String _sttTranscription = '';
+  String _whisperTranscription = '';
+
+  DateTime? _sttStart;
+  DateTime? _sttEnd;
+  DateTime? _whisperStart;
+  DateTime? _whisperEnd;
 
   bool _hasAutoPlayed = false;
-  String? _transcript; // Holds the latest STT result
-
-  static const _startThresholdDb = -20.0;
-  static const _silenceTimeout = Duration(seconds: 2);
+  Task? _selectedSentenceTask;
+  List<Task> _lastSeenSentenceTasks = [];
+  int _lastSentenceIndex = -1;
 
   @override
   void initState() {
     super.initState();
     _checker = GetIt.instance<AudioCheckService>();
     _checker.init();
+    _stt = SpeechToText();
+    _initStt();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Whenever dependencies change (e.g. the TaskProvider becomes available),
+    // try to pick a random task if it wasn’t picked yet:
+    _maybePickRandomSentenceTask();
   }
 
   @override
   void didUpdateWidget(covariant InteractiveWordSentenceCard old) {
     super.didUpdateWidget(old);
 
-    // Reset when the sentence changes:
+    // If the sentence index changes, we want to pick a new random Task for the new sentence:
     if (widget.sentenceIndex != old.sentenceIndex) {
-      _hasAutoPlayed = false;
-      _ampSub?.cancel();
-      setState(() {
-        _recording = false;
-        _processing = false;
-        _score = null;
-        _transcript = null;
-      });
+      _lastSentenceIndex = widget.sentenceIndex;
+      _selectedSentenceTask = null; // force a new pick
+      _maybePickRandomSentenceTask();
     }
 
-    // Auto-play exactly once:
-    if (!_hasAutoPlayed &&
-        !_recording &&
-        !_processing &&
-        !widget.audioLoading &&
-        widget.audioLinks.isNotEmpty) {
-      _hasAutoPlayed = true;
-      widget.onToggleAudio();
+    // If your UI locale or provider changed and the underlying sentenceTasks list got reloaded,
+    // we also want to re-pick from the new list. We'll detect that in `_maybePickRandomSentenceTask()`.
+  }
+
+  void _maybePickRandomSentenceTask() {
+    final provider = context.watch<TaskProvider>();
+    final sentenceTasks = provider.sentenceTasks.where((t) => t.taskType == 'sentence').toList();
+
+    // If the list itself has changed length—or if we haven't yet chosen a task for this sentenceIndex—re-pick:
+    if ((_lastSeenSentenceTasks.length != sentenceTasks.length) ||
+        (_selectedSentenceTask == null && sentenceTasks.isNotEmpty) ||
+        (_lastSentenceIndex != widget.sentenceIndex)) {
+      _lastSeenSentenceTasks = sentenceTasks;
+      _lastSentenceIndex = widget.sentenceIndex;
+
+      if (sentenceTasks.isEmpty) {
+        print('[InteractiveCard] no sentence‐task found for locale or list was empty');
+        _selectedSentenceTask = null;
+      } else {
+        final randIndex = Random().nextInt(sentenceTasks.length);
+        _selectedSentenceTask = sentenceTasks[randIndex];
+        print(
+            '[InteractiveCard] chosen Task for sentenceIndex=${widget.sentenceIndex} → '
+                'id="${_selectedSentenceTask!.id}", '
+                '“${_selectedSentenceTask!.description}”'
+        );
+      }
+      // We want to rebuild now that _selectedSentenceTask has a new value (or null):
+      setState(() {});
     }
   }
 
+  Future<void> _initStt() async {
+    await _stt.initialize();
+  }
+
+
+
   Future<void> _startRecording() async {
     if (!await _recorder.hasPermission()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Microphone denied')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Microphone permission denied')),
+      );
       return;
     }
 
+    // Prepare file path for recorded WAV
     final dir = await getTemporaryDirectory();
     final sid = widget.sentences[widget.sentenceIndex].id;
     final path = '${dir.path}/user_$sid.wav';
+
     await _recorder.start(
       const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
       path: path,
     );
+
+    // Start SpeechToText and record start time
+    _sttStart = DateTime.now();
+    _stt.listen(
+      onResult: (result) {
+        setState(() {
+          _sttTranscription = result.recognizedWords;
+        });
+      },
+    );
+
+    // Start amplitude listener (to auto-stop on silence)
     _ampSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 100))
         .listen(_handleAmp);
@@ -126,8 +183,7 @@ class _InteractiveWordSentenceCardState
       _recording = true;
       _processing = false;
       _score = null;
-      _transcript = null;
-      _lastVoice = DateTime.now();
+      _currentAmp = 0.0;
     });
   }
 
@@ -135,44 +191,51 @@ class _InteractiveWordSentenceCardState
     final now = DateTime.now();
     final db = amp.current;
     final lin = pow(10, db / 20).clamp(0.0, 1.0).toDouble();
-    final since = now.difference(_lastVoice);
 
-    if (db > _startThresholdDb) {
-      _lastVoice = now;
-    } else if (_recording && since > _silenceTimeout) {
-      _stopAndScore();
+    // If db > threshold, reset silence timer
+    if (db > -20.0) {
+      _sttStart = now;
+    } else {
+      final since = now.difference(_sttStart!);
+      if (_recording && since > const Duration(seconds: 2)) {
+        // silence for >2 seconds → stop
+        _stopAndScore();
+      }
     }
 
     setState(() => _currentAmp = lin);
   }
 
   Future<void> _stopAndScore() async {
-    await _ampSub?.cancel();
+    _ampSub?.cancel();
+
+    _stt.stop();
+    _sttEnd = DateTime.now();
+
     final userPath = await _recorder.stop();
     setState(() {
       _processing = true;
       _recording = false;
     });
 
-    if (userPath == null || widget.audioLinks.isEmpty) {
+    if (userPath == null) {
       setState(() => _processing = false);
       return;
     }
 
-    // build a full URL from the audioId
-    final audioLink = widget.audioLinks.first;
-    final refUrl = 'https://tatoeba.org/audio/download/${audioLink.audioId}';
-    final current = widget.sentences[widget.sentenceIndex];
+    // Run Whisper over the recorded file
+    _whisperStart = DateTime.now();
     final result = await _checker.compare(
       userAudioPath: userPath,
-      expectedText: current.spanish, // or your expected sentence text
+      expectedText: widget.sentences[widget.sentenceIndex].spanish,
       lang: 'es',
     );
+    _whisperEnd = DateTime.now();
 
     setState(() {
       _processing = false;
       _score = result.score;
-      _transcript = result.userText;
+      _whisperTranscription = result.userText;
     });
   }
 
@@ -197,31 +260,24 @@ class _InteractiveWordSentenceCardState
             .map((w) => _removeDiacritics(w).toLowerCase())
             .toList();
 
-    // 2) Normalize actual transcript words
+    // 2) Normalize actual transcript words (Whisper)
     final actual =
-        (_transcript ?? '')
+        (_whisperTranscription)
             .replaceAll(RegExp(r'[.,!?;:]'), '')
             .split(RegExp(r'\s+'))
             .map((w) => _removeDiacritics(w).toLowerCase())
             .toList();
 
-    // 3) Build colored spans
+    // 3) Build colored spans per word
     final spans = <TextSpan>[];
     for (var i = 0; i < expected.length; i++) {
       final e = expected[i];
       double similarity = 0.0;
-
       if (i < actual.length) {
         similarity = scorer.score(e, actual[i]);
       }
-
       final match = similarity >= 0.8;
-
-      // display the original expected word (with accents)
-      final displayWord =
-          expectedSentence
-              .replaceAll(RegExp(r'[.,!?;:]'), '')
-              .split(RegExp(r'\s+'))[i];
+      final displayWord = expectedSentence.split(RegExp(r'\s+'))[i];
 
       spans.add(
         TextSpan(
@@ -249,9 +305,38 @@ class _InteractiveWordSentenceCardState
     final theme = Theme.of(context).textTheme;
     final hasSentence =
         widget.sentences.isNotEmpty &&
-        widget.sentenceIndex < widget.sentences.length;
+            widget.sentenceIndex < widget.sentences.length;
     final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
     final loc = AppLocalizations.of(context)!;
+
+    // 1) Print the UI locale
+    final localeCode = Localizations.localeOf(context).languageCode;
+    print('[InteractiveCard] UI locale = $localeCode');
+
+    // 2) Fetch all tasks of type "sentence" from the provider
+    final sentenceTasks = context
+        .watch<TaskProvider>()
+        .sentenceTasks
+        .where((t) => t.taskType == 'sentence')
+        .toList();
+
+    // 3) Print how many tasks we got for “sentence”
+    print('[InteractiveCard] number of sentence‐tasks in provider = ${sentenceTasks.length}');
+
+    // 4) Pick a random one (if non‐empty)
+    Task? sentenceTask;
+    if (sentenceTasks.isNotEmpty) {
+      final randIndex = Random().nextInt(sentenceTasks.length);
+      sentenceTask = sentenceTasks[randIndex];
+
+      // 5) Print out the chosen task’s fields
+      print('[InteractiveCard] chosen Task at index $randIndex: '
+          'id="${sentenceTask.id}", description="${sentenceTask.description}", '
+          'locale="${sentenceTask.locale}", type="${sentenceTask.taskType}"');
+    } else {
+      print('[InteractiveCard] no sentence‐task found for this locale');
+      sentenceTask = null;
+    }
 
     final navRow = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -280,10 +365,10 @@ class _InteractiveWordSentenceCardState
     );
 
     final body = SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 80), // give room for navRow
+      padding: const EdgeInsets.only(bottom: 80),
       child: Column(
         children: [
-          // Word + Sentence + icon
+          // Word + Sentence + icon row
           SizedBox(
             width: 350,
             child: Card(
@@ -296,7 +381,7 @@ class _InteractiveWordSentenceCardState
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Word
+                    // Word text
                     SelectableText(
                       widget.wordText,
                       style: theme.headlineSmall,
@@ -304,25 +389,21 @@ class _InteractiveWordSentenceCardState
                     ),
                     const SizedBox(height: 16),
 
-                    // Tappable sentence + icon, or colorized result
+                    // Either a loading spinner, a tappable “play” row, or colorized result
                     InkWell(
                       onTap: hasSentence ? widget.onReplayAudio : null,
                       child:
                           widget.audioLoading
-                              // still loading audio
                               ? const Center(child: CircularProgressIndicator())
                               : (!hasSentence
-                                  // no sentence yet
                                   ? const Center(
                                     child: CircularProgressIndicator(),
                                   )
-                                  : (_transcript != null
-                                      // show colorized
+                                  : (_whisperTranscription.isNotEmpty
                                       ? _buildColorizedSentence(
                                         theme,
                                         current!.spanish,
                                       )
-                                      // normal tappable row
                                       : Row(
                                         children: [
                                           Icon(
@@ -344,10 +425,10 @@ class _InteractiveWordSentenceCardState
                                         ],
                                       ))),
                     ),
+
+                    // Show English translation if sentence exists and not loading
                     widget.audioLoading
-                        // still loading audio
-                        ? const Center(child: null)
-                        // only show translation when we actually have a sentence
+                        ? const SizedBox()
                         : (hasSentence
                             ? Row(
                               children: [
@@ -366,10 +447,9 @@ class _InteractiveWordSentenceCardState
               ),
             ),
           ),
-
           const SizedBox(height: 12),
 
-          // Recording & feedback (unchanged)...
+          // Recording / processing / feedback area
           if (_processing)
             const CircularProgressIndicator()
           else if (_recording)
@@ -400,16 +480,30 @@ class _InteractiveWordSentenceCardState
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
+            Text(
+              'STT: "${_sttTranscription}" '
+              '(${_sttEnd!.difference(_sttStart!).inMilliseconds} ms)',
+              style: theme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Whisper: "${_whisperTranscription}" '
+              '(${_whisperEnd!.difference(_whisperStart!).inMilliseconds} ms)',
+              style: theme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
             if (_score! < 0.6)
               OutlinedButton.icon(
                 icon: const Icon(Icons.mic),
-                label:  Text(loc.tap_to_speak_again),
+                label: Text(loc.tap_to_speak_again),
                 onPressed: _startRecording,
               )
             else
               ElevatedButton(
                 onPressed: widget.onNextSentence,
-                child:  Text(loc.next_sentence),
+                child: Text(loc.next_sentence),
               ),
           ] else
             OutlinedButton.icon(
@@ -417,7 +511,19 @@ class _InteractiveWordSentenceCardState
               label: Text(loc.tap_to_speak),
               onPressed: _startRecording,
             ),
+          if (sentenceTask != null) ...[
+            const SizedBox(height: 16),
+            TaskWidget(task: sentenceTask),
+          ] else ...[
+            // We can show a placeholder or just no widget
+            const SizedBox(height: 0),
+          ],
 
+          const SizedBox(height: 24),
+
+
+
+          // Attribution text (recording license/username)
           if (widget.audioLinks.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
@@ -438,10 +544,7 @@ class _InteractiveWordSentenceCardState
       height: MediaQuery.of(context).size.height,
       child: Stack(
         children: [
-          // main content
           Positioned.fill(child: body),
-
-          // nav pinned to bottom
           Positioned(
             left: 0,
             right: 0,
