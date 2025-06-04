@@ -149,7 +149,7 @@ class _InteractiveWordSentenceCardState
     final dir = await getTemporaryDirectory();
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    final sid = widget.sentences[widget.sentenceIndex].id;
+    final sid = widget.sentences[widget.sentenceIndex].id(langCode);
     final path = '${dir.path}/user_$sid.wav';
 
     await _recorder.start(
@@ -216,7 +216,8 @@ class _InteractiveWordSentenceCardState
     _whisperStart = DateTime.now();
     final result = await _checker.compare(
       userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].text,
+      expectedText:
+          widget.sentences[widget.sentenceIndex].text(langCode),
       lang: langCode,
     );
     _whisperEnd = DateTime.now();
@@ -366,7 +367,7 @@ class _InteractiveWordSentenceCardState
                                   : (_whisperTranscription.isNotEmpty
                                       ? _buildColorizedSentence(
                                         theme,
-                                        current!.textFor(learnCode),
+                                        current!.text(learnCode),
                                       )
                                       : Row(
                                         children: [
@@ -378,7 +379,7 @@ class _InteractiveWordSentenceCardState
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: SelectableText(
-                                              current!.textFor(learnCode),
+                                              current!.text(learnCode),
                                               style: theme.titleMedium!
                                                   .copyWith(
                                                     fontWeight: FontWeight.bold,
@@ -398,7 +399,7 @@ class _InteractiveWordSentenceCardState
                               children: [
                                 Expanded(
                                   child: SelectableText(
-                                    current!.textFor(translateCode),
+                                    current!.text(translateCode),
                                     style: theme.bodyMedium,
                                     textAlign: TextAlign.center,
                                   ),
