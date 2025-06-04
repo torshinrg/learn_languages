@@ -295,10 +295,19 @@ class _InteractiveWordSentenceCardState
     final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
     final loc = AppLocalizations.of(context)!;
 
-    // Determine language codes (first = learning, second = translation, if provided)
+    // Determine language codes: first item is the target language.
     final codes = context.read<SettingsProvider>().learningLanguageCodes;
     final learnCode = codes.first;
-    final translateCode = codes.length > 1 ? codes[1] : '';
+
+    // Show translation in the user's native language when set; otherwise fall
+    // back to the second learning language (if any).
+    final nativeCode = context.read<SettingsProvider>().nativeLanguageCode;
+    String translateCode = '';
+    if (nativeCode != null && nativeCode != learnCode) {
+      translateCode = nativeCode;
+    } else if (codes.length > 1) {
+      translateCode = codes[1];
+    }
 
     // We no longer randomly re-pick in build; instead we rely on _selectedSentenceTask:
     final sentenceTask = _selectedSentenceTask;
