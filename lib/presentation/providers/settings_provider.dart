@@ -4,14 +4,20 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import 'package:flutter/material.dart';
+import '../../core/app_language.dart';
 
 class SettingsProvider extends ChangeNotifier {
-  static const _kDailyCountKey = 'dailyCount';
+  static const kDailyCountKey = 'dailyCount';
   static const _kStudiedCountKey = 'studiedCount';
   static const _kStudiedDateKey = 'studiedDate';
   static const _kStreakCountKey = 'streakCount';
   static const _kLastStreakDateKey = 'lastStreakDate';
   static const _kLocaleKey = 'localeCode';
+
+  /// **Новые ключи** для хранения языковой настройки:
+  static const _kNativeLanguageKey = 'nativeLanguage'; // String, например 'en'
+  static const _kLearningLanguagesKey =
+      'learningLanguages'; // List<String>, например ['es','de']
 
   int _dailyCount = kDefaultDailyCount;
   int get dailyCount => _dailyCount;
@@ -25,6 +31,16 @@ class SettingsProvider extends ChangeNotifier {
   String _localeCode = 'en';
   Locale get locale => Locale(_localeCode);
 
+  /// **Новые поля для языков**:
+  String? _nativeLanguageCode; // код родного языка: 'en','ru', ...
+  List<String> _learningLanguageCodes =
+      []; // список изучаемых языков: ['es','de', ...]
+
+  /// Геттеры:
+  String? get nativeLanguageCode => _nativeLanguageCode;
+  List<String> get learningLanguageCodes =>
+      List.unmodifiable(_learningLanguageCodes);
+
   SettingsProvider() {
     _loadAll();
   }
@@ -33,15 +49,23 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> _loadAll() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // --- Locale handling ---
+    // --- Locale (интерфейс приложения) ---
     _localeCode = prefs.getString(_kLocaleKey) ?? 'en';
 
+    // --- Родной язык ---
+    _nativeLanguageCode = prefs.getString(_kNativeLanguageKey);
+
+    // --- Изучаемые языки ---
+    _learningLanguageCodes = prefs.getStringList(_kLearningLanguagesKey) ?? [];
+
+    // --- Счётчики, серия и т. д. (как было) ---
     final today = DateTime.now().toIso8601String().split('T').first;
-    final yesterday = DateTime.now()
-        .subtract(const Duration(days: 1))
-        .toIso8601String()
-        .split('T')
-        .first;
+    final yesterday =
+        DateTime.now()
+            .subtract(const Duration(days: 1))
+            .toIso8601String()
+            .split('T')
+            .first;
 
     // --- Streak handling ---
     final lastStreakDate = prefs.getString(_kLastStreakDateKey);
@@ -53,7 +77,7 @@ class SettingsProvider extends ChangeNotifier {
     _streakCount = streak;
 
     // --- Daily count ---
-    _dailyCount = prefs.getInt(_kDailyCountKey) ?? kDefaultDailyCount;
+    _dailyCount = prefs.getInt(kDailyCountKey) ?? kDefaultDailyCount;
 
     // --- Studied count reset if new day ---
     final savedStudiedDate = prefs.getString(_kStudiedDateKey);
@@ -71,7 +95,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setDailyCount(int count) async {
     _dailyCount = count;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kDailyCountKey, count);
+    await prefs.setInt(kDailyCountKey, count);
     notifyListeners();
   }
 
@@ -85,14 +109,14 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setString(_kStudiedDateKey, today);
 
     if (lastStreakDate != today) {
-      final yesterday = DateTime.now()
-          .subtract(const Duration(days: 1))
-          .toIso8601String()
-          .split('T')
-          .first;
+      final yesterday =
+          DateTime.now()
+              .subtract(const Duration(days: 1))
+              .toIso8601String()
+              .split('T')
+              .first;
       final oldStreak = prefs.getInt(_kStreakCountKey) ?? 0;
-      final newStreak =
-      (lastStreakDate == yesterday) ? oldStreak + 1 : 1;
+      final newStreak = (lastStreakDate == yesterday) ? oldStreak + 1 : 1;
       _streakCount = newStreak;
       await prefs.setInt(_kStreakCountKey, newStreak);
       await prefs.setString(_kLastStreakDateKey, today);
@@ -101,12 +125,30 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Сохранить родной язык
+  Future<void> setNativeLanguage(String code) async {
+    _nativeLanguageCode = code;
+    // Здесь сразу меняем язык UI
+    await setLocale(code);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kNativeLanguageKey, code);
+    notifyListeners();
+  }
+
+  /// Сохранить список изучаемых языков (list of codes)
+  Future<void> setLearningLanguages(List<String> codes) async {
+    _learningLanguageCodes = List.from(codes);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kLearningLanguagesKey, codes);
+    notifyListeners();
+  }
+
   /// Public API to force a full reload (e.g. on resume).
   Future<void> reload() async {
     await _loadAll();
   }
 
-  /// NEW: Change the interface language and persist
   Future<void> setLocale(String code) async {
     _localeCode = code;
     final prefs = await SharedPreferences.getInstance();

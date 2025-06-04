@@ -46,6 +46,7 @@ app.*.map.json
 
 
 # Ignore large database and CSV files
-assets/databases/spanish_app.db
+assets/databases/lang_data.db
 assets/databases/sentences_with_audio.csv
+script/
 

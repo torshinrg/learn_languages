@@ -1,4 +1,4 @@
-// lib/presentation/widgets/interactive_word_sentence_card.dart
+/// lib/presentation/widgets/interactive_word_sentence_card.dart
 
 import 'dart:async';
 import 'dart:math';
@@ -17,6 +17,7 @@ import '../../domain/entities/task.dart';
 import '../../services/audio_check_service.dart';
 import '../../services/pronunciation_scoring_service.dart';
 import '../providers/task_provider.dart';
+import '../providers/settings_provider.dart';
 
 class InteractiveWordSentenceCard extends StatefulWidget {
   final String wordText;
@@ -75,7 +76,6 @@ class _InteractiveWordSentenceCardState
   DateTime? _whisperStart;
   DateTime? _whisperEnd;
 
-  bool _hasAutoPlayed = false;
   Task? _selectedSentenceTask;
   List<Task> _lastSeenSentenceTasks = [];
   int _lastSentenceIndex = -1;
@@ -92,31 +92,32 @@ class _InteractiveWordSentenceCardState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Whenever dependencies change (e.g. the TaskProvider becomes available),
-    // try to pick a random task if it wasn’t picked yet:
+    // Whenever dependencies (e.g. TaskProvider) change, maybe pick a new random task:
     _maybePickRandomSentenceTask();
   }
 
   @override
   void didUpdateWidget(covariant InteractiveWordSentenceCard old) {
     super.didUpdateWidget(old);
-
-    // If the sentence index changes, we want to pick a new random Task for the new sentence:
+    // If the sentence index changed, clear selection so we pick again:
     if (widget.sentenceIndex != old.sentenceIndex) {
       _lastSentenceIndex = widget.sentenceIndex;
-      _selectedSentenceTask = null; // force a new pick
+      _selectedSentenceTask = null;
       _maybePickRandomSentenceTask();
     }
-
-    // If your UI locale or provider changed and the underlying sentenceTasks list got reloaded,
-    // we also want to re-pick from the new list. We'll detect that in `_maybePickRandomSentenceTask()`.
+    // If TaskProvider reloaded (list length changed), pick again:
+    _maybePickRandomSentenceTask();
   }
 
   void _maybePickRandomSentenceTask() {
     final provider = context.watch<TaskProvider>();
-    final sentenceTasks = provider.sentenceTasks.where((t) => t.taskType == 'sentence').toList();
+    final sentenceTasks =
+        provider.sentenceTasks.where((t) => t.taskType == 'sentence').toList();
 
-    // If the list itself has changed length—or if we haven't yet chosen a task for this sentenceIndex—re-pick:
+    // Re-pick if:
+    // 1) number of tasks changed, or
+    // 2) we have no selected task yet for this sentence, or
+    // 3) sentence index changed
     if ((_lastSeenSentenceTasks.length != sentenceTasks.length) ||
         (_selectedSentenceTask == null && sentenceTasks.isNotEmpty) ||
         (_lastSentenceIndex != widget.sentenceIndex)) {
@@ -124,18 +125,11 @@ class _InteractiveWordSentenceCardState
       _lastSentenceIndex = widget.sentenceIndex;
 
       if (sentenceTasks.isEmpty) {
-        print('[InteractiveCard] no sentence‐task found for locale or list was empty');
         _selectedSentenceTask = null;
       } else {
         final randIndex = Random().nextInt(sentenceTasks.length);
         _selectedSentenceTask = sentenceTasks[randIndex];
-        print(
-            '[InteractiveCard] chosen Task for sentenceIndex=${widget.sentenceIndex} → '
-                'id="${_selectedSentenceTask!.id}", '
-                '“${_selectedSentenceTask!.description}”'
-        );
       }
-      // We want to rebuild now that _selectedSentenceTask has a new value (or null):
       setState(() {});
     }
   }
@@ -143,8 +137,6 @@ class _InteractiveWordSentenceCardState
   Future<void> _initStt() async {
     await _stt.initialize();
   }
-
-
 
   Future<void> _startRecording() async {
     if (!await _recorder.hasPermission()) {
@@ -154,8 +146,9 @@ class _InteractiveWordSentenceCardState
       return;
     }
 
-    // Prepare file path for recorded WAV
     final dir = await getTemporaryDirectory();
+    final langCode =
+        context.read<SettingsProvider>().learningLanguageCodes.first;
     final sid = widget.sentences[widget.sentenceIndex].id;
     final path = '${dir.path}/user_$sid.wav';
 
@@ -164,17 +157,16 @@ class _InteractiveWordSentenceCardState
       path: path,
     );
 
-    // Start SpeechToText and record start time
     _sttStart = DateTime.now();
     _stt.listen(
       onResult: (result) {
+        if (!mounted) return;
         setState(() {
           _sttTranscription = result.recognizedWords;
         });
       },
     );
 
-    // Start amplitude listener (to auto-stop on silence)
     _ampSub = _recorder
         .onAmplitudeChanged(const Duration(milliseconds: 100))
         .listen(_handleAmp);
@@ -192,23 +184,20 @@ class _InteractiveWordSentenceCardState
     final db = amp.current;
     final lin = pow(10, db / 20).clamp(0.0, 1.0).toDouble();
 
-    // If db > threshold, reset silence timer
     if (db > -20.0) {
       _sttStart = now;
     } else {
       final since = now.difference(_sttStart!);
       if (_recording && since > const Duration(seconds: 2)) {
-        // silence for >2 seconds → stop
         _stopAndScore();
       }
     }
-
+    if (!mounted) return;
     setState(() => _currentAmp = lin);
   }
 
   Future<void> _stopAndScore() async {
     _ampSub?.cancel();
-
     _stt.stop();
     _sttEnd = DateTime.now();
 
@@ -217,18 +206,18 @@ class _InteractiveWordSentenceCardState
       _processing = true;
       _recording = false;
     });
-
     if (userPath == null) {
       setState(() => _processing = false);
       return;
     }
 
-    // Run Whisper over the recorded file
+    final langCode =
+        context.read<SettingsProvider>().learningLanguageCodes.first;
     _whisperStart = DateTime.now();
     final result = await _checker.compare(
       userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].spanish,
-      lang: 'es',
+      expectedText: widget.sentences[widget.sentenceIndex].text,
+      lang: langCode,
     );
     _whisperEnd = DateTime.now();
 
@@ -239,7 +228,6 @@ class _InteractiveWordSentenceCardState
     });
   }
 
-  /// Remove Spanish accents so “sé” → “se”, “ñ” → “n”, etc.
   String _removeDiacritics(String s) {
     const withDia = 'áÁéÉíÍóÓúÚüÜñÑ';
     const withoutDia = 'aAeEiIoOuUuUnN';
@@ -252,7 +240,6 @@ class _InteractiveWordSentenceCardState
   Widget _buildColorizedSentence(TextTheme theme, String expectedSentence) {
     final scorer = PronunciationScoringService();
 
-    // 1) Normalize expected words
     final expected =
         expectedSentence
             .replaceAll(RegExp(r'[.,!?;:]'), '')
@@ -260,7 +247,6 @@ class _InteractiveWordSentenceCardState
             .map((w) => _removeDiacritics(w).toLowerCase())
             .toList();
 
-    // 2) Normalize actual transcript words (Whisper)
     final actual =
         (_whisperTranscription)
             .replaceAll(RegExp(r'[.,!?;:]'), '')
@@ -268,7 +254,6 @@ class _InteractiveWordSentenceCardState
             .map((w) => _removeDiacritics(w).toLowerCase())
             .toList();
 
-    // 3) Build colored spans per word
     final spans = <TextSpan>[];
     for (var i = 0; i < expected.length; i++) {
       final e = expected[i];
@@ -305,38 +290,17 @@ class _InteractiveWordSentenceCardState
     final theme = Theme.of(context).textTheme;
     final hasSentence =
         widget.sentences.isNotEmpty &&
-            widget.sentenceIndex < widget.sentences.length;
+        widget.sentenceIndex < widget.sentences.length;
     final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
     final loc = AppLocalizations.of(context)!;
 
-    // 1) Print the UI locale
-    final localeCode = Localizations.localeOf(context).languageCode;
-    print('[InteractiveCard] UI locale = $localeCode');
+    // Determine language codes (first = learning, second = translation, if provided)
+    final codes = context.read<SettingsProvider>().learningLanguageCodes;
+    final learnCode = codes.first;
+    final translateCode = codes.length > 1 ? codes[1] : '';
 
-    // 2) Fetch all tasks of type "sentence" from the provider
-    final sentenceTasks = context
-        .watch<TaskProvider>()
-        .sentenceTasks
-        .where((t) => t.taskType == 'sentence')
-        .toList();
-
-    // 3) Print how many tasks we got for “sentence”
-    print('[InteractiveCard] number of sentence‐tasks in provider = ${sentenceTasks.length}');
-
-    // 4) Pick a random one (if non‐empty)
-    Task? sentenceTask;
-    if (sentenceTasks.isNotEmpty) {
-      final randIndex = Random().nextInt(sentenceTasks.length);
-      sentenceTask = sentenceTasks[randIndex];
-
-      // 5) Print out the chosen task’s fields
-      print('[InteractiveCard] chosen Task at index $randIndex: '
-          'id="${sentenceTask.id}", description="${sentenceTask.description}", '
-          'locale="${sentenceTask.locale}", type="${sentenceTask.taskType}"');
-    } else {
-      print('[InteractiveCard] no sentence‐task found for this locale');
-      sentenceTask = null;
-    }
+    // We no longer randomly re-pick in build; instead we rely on _selectedSentenceTask:
+    final sentenceTask = _selectedSentenceTask;
 
     final navRow = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -368,7 +332,7 @@ class _InteractiveWordSentenceCardState
       padding: const EdgeInsets.only(bottom: 80),
       child: Column(
         children: [
-          // Word + Sentence + icon row
+          // ── Word + Sentence + icon row ───────────────────────────
           SizedBox(
             width: 350,
             child: Card(
@@ -389,7 +353,7 @@ class _InteractiveWordSentenceCardState
                     ),
                     const SizedBox(height: 16),
 
-                    // Either a loading spinner, a tappable “play” row, or colorized result
+                    // Either spinner, play row, or colorized result:
                     InkWell(
                       onTap: hasSentence ? widget.onReplayAudio : null,
                       child:
@@ -402,7 +366,7 @@ class _InteractiveWordSentenceCardState
                                   : (_whisperTranscription.isNotEmpty
                                       ? _buildColorizedSentence(
                                         theme,
-                                        current!.spanish,
+                                        current!.textFor(learnCode),
                                       )
                                       : Row(
                                         children: [
@@ -414,7 +378,7 @@ class _InteractiveWordSentenceCardState
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: SelectableText(
-                                              current!.spanish,
+                                              current!.textFor(learnCode),
                                               style: theme.titleMedium!
                                                   .copyWith(
                                                     fontWeight: FontWeight.bold,
@@ -426,15 +390,15 @@ class _InteractiveWordSentenceCardState
                                       ))),
                     ),
 
-                    // Show English translation if sentence exists and not loading
+                    // “Translation” (second language), if available:
                     widget.audioLoading
                         ? const SizedBox()
-                        : (hasSentence
+                        : (hasSentence && translateCode.isNotEmpty
                             ? Row(
                               children: [
                                 Expanded(
                                   child: SelectableText(
-                                    current!.english,
+                                    current!.textFor(translateCode),
                                     style: theme.bodyMedium,
                                     textAlign: TextAlign.center,
                                   ),
@@ -449,7 +413,7 @@ class _InteractiveWordSentenceCardState
           ),
           const SizedBox(height: 12),
 
-          // Recording / processing / feedback area
+          // ── Recording / processing / feedback area ─────────────────
           if (_processing)
             const CircularProgressIndicator()
           else if (_recording)
@@ -511,19 +475,18 @@ class _InteractiveWordSentenceCardState
               label: Text(loc.tap_to_speak),
               onPressed: _startRecording,
             ),
+
+          // ── Show the one picked Task (no longer re-picking on every build) ──
           if (sentenceTask != null) ...[
             const SizedBox(height: 16),
             TaskWidget(task: sentenceTask),
           ] else ...[
-            // We can show a placeholder or just no widget
             const SizedBox(height: 0),
           ],
 
           const SizedBox(height: 24),
 
-
-
-          // Attribution text (recording license/username)
+          // ── Attribution (audio source) ────────────────────────────
           if (widget.audioLinks.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(

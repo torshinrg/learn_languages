@@ -1,4 +1,4 @@
-// File: lib/presentation/screens/study_screen.dart
+/// lib/presentation/screens/study_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -89,10 +89,13 @@ class _StudyScreenState extends State<StudyScreen> {
   Future<void> _loadExamplesForCurrent() async {
     final batch = _study.batch;
     if (batch.isEmpty) return;
+    final langCode =
+        context.read<SettingsProvider>().learningLanguageCodes.first;
 
-    // Phase 1: fetch initial examples
+    // 1) load initial few examples:
     final initial = await _learningService.getInitialSentencesForWord(
       batch.first.text,
+      langCode,
       limit: _initialLimit,
     );
 
@@ -103,13 +106,18 @@ class _StudyScreenState extends State<StudyScreen> {
       _initialLoaded = true;
     });
 
-    await _loadAudioForSentence(initial[0].id);
+    if (initial.isNotEmpty) {
+      await _loadAudioForSentence(initial[0].id);
+    }
 
-    // Phase 2: fetch remaining examples
+    // 2) fetch “the rest”
+    final excludeIds = initial.map((s) => s.id).toList();
     final rest = await _learningService.getRemainingSentencesForWord(
       batch.first.text,
-      initial.map((s) => s.id).toList(),
+      excludeIds,
+      langCode,
     );
+
     if (!mounted) return;
     setState(() => _sentences.addAll(rest));
   }
@@ -210,6 +218,8 @@ class _StudyScreenState extends State<StudyScreen> {
     setState(() {
       _sentenceIndex = (_sentenceIndex + 1) % _sentences.length;
     });
+    final langCode =
+        context.read<SettingsProvider>().learningLanguageCodes.first;
     _loadAudioForSentence(_sentences[_sentenceIndex].id);
   }
 
@@ -220,6 +230,8 @@ class _StudyScreenState extends State<StudyScreen> {
       _sentenceIndex =
           (_sentenceIndex - 1 + _sentences.length) % _sentences.length;
     });
+    final langCode =
+        context.read<SettingsProvider>().learningLanguageCodes.first;
     _loadAudioForSentence(_sentences[_sentenceIndex].id);
   }
 
@@ -275,7 +287,6 @@ class _StudyScreenState extends State<StudyScreen> {
                 onPressed: () => _markResult(true),
               ),
               const SizedBox(height: 8),
-              // Changed label and handler from “Skip” to “Mark as Known”
               SecondaryButton(label: 'Mark as Known', onPressed: _markAsKnown),
             ],
           ),

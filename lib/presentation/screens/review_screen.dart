@@ -1,4 +1,4 @@
-// File: lib/presentation/screens/review_screen.dart
+/// lib/presentation/screens/review_screen.dart
 
 import 'dart:async';
 
@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/audio_link.dart';
 import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/interactive_word_sentence_card.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -22,7 +23,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final ReviewProvider _review;
   late final AudioPlayer _player;
 
-
   List<AudioLink> _links = [];
   bool _loadingAudio = false;
   Duration _position = Duration.zero;
@@ -32,7 +32,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final StreamSubscription<Duration> _posSub;
   late final StreamSubscription<Duration?> _durSub;
   late final StreamSubscription<PlayerState> _stateSub;
-
 
   final List<String> _qualityLabels = ['Again', 'Hard', 'Good', 'Easy'];
 
@@ -65,7 +64,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Future<void> _loadWordsAndAudio() async {
     await _review.loadDueWords();
     final s = _review.currentSentence;
-    if (s != null) await _loadAudioForSentence(s.id);
+    if (s != null) {
+      final langCode =
+          context.read<SettingsProvider>().learningLanguageCodes.first;
+      await _loadAudioForSentence(s.id);
+    }
   }
 
   Future<void> _loadAudioForSentence(String sentenceId) async {
@@ -78,8 +81,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _isPlaying = false;
     });
 
-    final links = await context.read<LearningService>()
-        .getAudioForSentence(sentenceId);
+    final links = await context.read<LearningService>().getAudioForSentence(
+      sentenceId,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -93,7 +97,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
       await _player.play();
     }
   }
-
 
   Future<void> _togglePlayPause() async {
     if (_player.playing) {
@@ -119,10 +122,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
     // build a map of localized labels → quality values:
     final qualityMap = {
       loc.qualityAgain: 0,
-      loc.qualityHard:  3,
-      loc.qualityGood:  4,
-      loc.qualityEasy:  5,
+      loc.qualityHard: 3,
+      loc.qualityGood: 4,
+      loc.qualityEasy: 5,
     };
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -135,10 +139,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,         // your blue
+                color: Theme.of(context).primaryColor,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Theme.of(context).primaryColor,       // same blue stroke
+                  color: Theme.of(context).primaryColor,
                   width: 2,
                 ),
                 boxShadow: [
@@ -149,11 +153,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   ),
                 ],
               ),
-              child: Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 20),
             ),
           ),
         ),
@@ -188,20 +188,32 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     position: _position,
                     duration: _duration,
                     onToggleAudio: _togglePlayPause,
-                    onReplayAudio: _togglePlayPause, // <— new
+                    onReplayAudio: _togglePlayPause,
 
                     onPrevSentence: () {
                       review.prevSentence();
                       final nxt = review.currentSentence;
-                      if (nxt != null) _loadAudioForSentence(nxt.id);
+                      if (nxt != null) {
+                        final langCode =
+                            context
+                                .read<SettingsProvider>()
+                                .learningLanguageCodes
+                                .first;
+                        _loadAudioForSentence(nxt.id);
+                      }
                     },
                     onNextSentence: () {
                       review.nextSentence();
                       final nxt = review.currentSentence;
-                      if (nxt != null) _loadAudioForSentence(nxt.id);
+                      if (nxt != null) {
+                        final langCode =
+                            context
+                                .read<SettingsProvider>()
+                                .learningLanguageCodes
+                                .first;
+                        _loadAudioForSentence(nxt.id);
+                      }
                     },
-                    
-
                   ),
                 ),
 
@@ -222,7 +234,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                               final q = qualityMap[label]!;
                               await review.markWord(q);
                               final nxt = review.currentSentence;
-                              if (nxt != null) _loadAudioForSentence(nxt.id);
+                              if (nxt != null) {
+                                final langCode =
+                                    context
+                                        .read<SettingsProvider>()
+                                        .learningLanguageCodes
+                                        .first;
+                                _loadAudioForSentence(nxt.id);
+                              }
                             },
                             child: Text(label),
                           );

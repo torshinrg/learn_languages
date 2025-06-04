@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:learn_languages/presentation/screens/stats_screen.dart';
 import 'package:learn_languages/presentation/screens/study_screen.dart';
 import 'package:learn_languages/presentation/screens/review_screen.dart';
-import 'package:learn_languages/presentation/screens/vocabulary_screen.dart';
 import 'package:learn_languages/presentation/screens/settings_screen.dart';
 import '../providers/home_provider.dart';
 import '../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:learn_languages/core/app_language.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -23,9 +23,49 @@ class HomeScreen extends StatelessWidget {
     final progress = daily > 0 ? (studied / daily).clamp(0.0, 1.0) : 0.0;
     final streak = settingsProvider.streakCount;
     final loc = AppLocalizations.of(context)!;
+    final learningCodes = settingsProvider.learningLanguageCodes;
+    final leadCode =
+        learningCodes.isNotEmpty
+            ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ??
+                ''
+            : '';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading:
+            leadCode.isNotEmpty
+                ? PopupMenuButton<String>(
+                  icon: Text(
+                    leadCode,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  onSelected: (value) {
+                    // тут можно потом добавить логику переключения между изучаемыми
+                  },
+                  itemBuilder: (_) {
+                    final langs = settingsProvider.learningLanguageCodes;
+                    return [
+                      ...langs.map((code) {
+                        final lang = AppLanguageExtension.fromCode(code);
+                        return PopupMenuItem(
+                          value: code,
+                          child: Text(lang?.displayName ?? code),
+                        );
+                      }),
+                      const PopupMenuDivider(),
+                      const PopupMenuItem(
+                        value: 'add_more',
+                        child: Text('+ Add language'),
+                      ),
+                    ];
+                  },
+                )
+                : null,
+      ),
+
       body: Stack(
         children: [
           // Gradient background

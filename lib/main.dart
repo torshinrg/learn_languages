@@ -11,7 +11,6 @@ import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/di.dart';
 import 'core/navigation.dart';
-import 'domain/repositories/i_custom_word_repository.dart';
 import 'domain/repositories/i_srs_repository.dart';
 import 'domain/repositories/i_task_repository.dart';
 import 'domain/repositories/i_word_repository.dart';
@@ -23,13 +22,13 @@ import 'presentation/providers/review_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/study_provider.dart';
 import 'presentation/providers/vocabulary_provider.dart';
-import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/debug_screen.dart';
 import 'presentation/screens/study_screen.dart';
 import 'presentation/screens/review_screen.dart';
 import 'presentation/screens/vocabulary_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/notification_settings_screen.dart';
+import 'presentation/screens/onboarding_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Global color definitions
@@ -80,6 +79,7 @@ class MyApp extends StatelessWidget {
               (ctx) => ReviewProvider(
                 ctx.read<LearningService>(),
                 ctx.read<SRSService>(),
+                ctx.read<SettingsProvider>(),
               ),
         ),
         ChangeNotifierProvider<VocabularyProvider>(
@@ -232,7 +232,7 @@ class MyApp extends StatelessWidget {
                   ),
                   child: ShareHandler(child: child!),
                 ),
-            home: const HomeScreen(),
+            home: const InitialEntryRedirect(),
             routes: {
               '/debug': (_) => const DebugScreen(),
               '/study': (_) => const StudyScreen(),

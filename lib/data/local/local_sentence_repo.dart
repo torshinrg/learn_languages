@@ -1,6 +1,7 @@
 // lib/data/local/local_sentence_repo.dart
 
 import 'package:sqflite/sqflite.dart';
+import '../../core/app_language.dart';
 import '../../domain/entities/sentence.dart';
 import '../../domain/repositories/i_sentence_repository.dart';
 
@@ -15,27 +16,49 @@ class LocalSentenceRepository implements ISentenceRepository {
   }
 
   @override
-  Future<List<Sentence>> fetchForWord(String wordText, {int? limit}) async {
-    // 1) Use FTS table directly (no alias) with prefix search
-    final ftsQuery   = '$wordText*';
-    final limitClause = limit != null ? 'LIMIT $limit' : '';
+  Future<List<Sentence>> fetchForWord(
+    String wordText,
+    String languageCode, {
+    int? limit,
+  }) async {
+    final langEnum = AppLanguageExtension.fromCode(languageCode);
+    if (langEnum == null) {
+      print(
+        '⚠️ [LocalSentenceRepo] Unsupported languageCode="$languageCode". '
+        'Allowed: ${AppLanguage.values.map((e) => e.code).join(", ")}',
+      );
+      return [];
+    }
 
+    final column =
+        '${langEnum.name}_text'; // e.g. "english_text", "russian_text", etc.
+    final limitClause = limit != null ? 'LIMIT $limit' : '';
     final sql = '''
-      SELECT s.*
-      FROM sentences AS s
-      JOIN sentences_fts
-        ON s.rowid = sentences_fts.rowid
-      WHERE sentences_fts MATCH ?
-      ORDER BY s.audio DESC, RANDOM()
+      SELECT *
+      FROM sentences
+      WHERE $column LIKE ?
+      ORDER BY RANDOM()
       $limitClause
     ''';
+    final pattern = '%$wordText%';
 
-    // 2) Run rawQuery with the FTS pattern
-    final rows = await db.rawQuery(sql, [ftsQuery]);
+    print('🔍 [LocalSentenceRepo] Querying sentences:');
+    print('    languageCode="$languageCode" → column="$column"');
+    print('    SQL →\n$sql');
+    print('    pattern="$pattern"');
 
-    // 3) Map results into Sentence objects (including new audio field)
-    final results = rows.map((r) => Sentence.fromMap(r)).toList();
+    List<Map<String, Object?>> rows;
+    try {
+      rows = await db.rawQuery(sql, [pattern]);
+    } catch (e) {
+      print('❌ [LocalSentenceRepo] ERROR rawQuery: $e');
+      return [];
+    }
 
-    return results;
+    print(
+      '🔍 [LocalSentenceRepo] Found ${rows.length} row(s) for '
+      '"$wordText" in column="$column"',
+    );
+    return rows.map((r) => Sentence.fromMap(r)).toList();
   }
 }
