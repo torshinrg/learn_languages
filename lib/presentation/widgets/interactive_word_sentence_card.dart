@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../domain/entities/audio_link.dart';
 import '../../domain/entities/sentence.dart';
@@ -61,6 +62,7 @@ class _InteractiveWordSentenceCardState
   final _recorder = AudioRecorder();
   late final AudioCheckService _checker;
   late final SpeechToText _stt;
+  bool _sttReady = false;
 
   StreamSubscription<Amplitude>? _ampSub;
   bool _recording = false;
@@ -86,7 +88,7 @@ class _InteractiveWordSentenceCardState
     _checker = GetIt.instance<AudioCheckService>();
     _checker.init();
     _stt = SpeechToText();
-    _initStt();
+    _initSttIfPermitted();
   }
 
   @override
@@ -134,8 +136,10 @@ class _InteractiveWordSentenceCardState
     }
   }
 
-  Future<void> _initStt() async {
-    await _stt.initialize();
+  Future<void> _initSttIfPermitted() async {
+    if (!_sttReady && await Permission.microphone.isGranted) {
+      _sttReady = await _stt.initialize();
+    }
   }
 
   Future<void> _startRecording() async {
@@ -145,6 +149,8 @@ class _InteractiveWordSentenceCardState
       );
       return;
     }
+
+    await _initSttIfPermitted();
 
     final dir = await getTemporaryDirectory();
     final langCode =
