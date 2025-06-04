@@ -58,5 +58,5 @@ flutter:
 
   assets:
     - assets/databases/lang_data.db
-    - assets/models/ggml-small-q8_0.bin
+    - assets/models/ggml-tiny-q8_0.bin
 
