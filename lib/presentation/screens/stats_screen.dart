@@ -51,7 +51,7 @@ class StatsScreen extends StatelessWidget {
                 _StatCard(
                   icon: Icons.local_fire_department,
                   label: loc.current_streak,
-                  value: '${settings.streakCount} ${settings.streakCount == 1 ? 'day' : 'days'}',
+                  value: _streakLabel(settings.streakCount),
                 ),
                 const SizedBox(height: 16),
                 _StatCard(
@@ -112,4 +112,14 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _streakLabel(int streak) {
+  if (streak == 0) return '0 🪔';
+  if (streak <= 4) return '$streak 🔥';
+  if (streak <= 9) return '$streak 🔥🔥';
+  if (streak <= 19) return '$streak 🏮';
+  if (streak <= 29) return '$streak 🔥🔥🔥';
+  if (streak <= 49) return '$streak 🔥⭕';
+  return '$streak 🎆';
 }
