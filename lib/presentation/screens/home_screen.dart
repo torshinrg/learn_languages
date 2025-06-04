@@ -24,46 +24,16 @@ class HomeScreen extends StatelessWidget {
     final streak = settingsProvider.streakCount;
     final loc = AppLocalizations.of(context)!;
     final learningCodes = settingsProvider.learningLanguageCodes;
-    final leadCode =
-        learningCodes.isNotEmpty
-            ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ??
-                ''
-            : '';
+    final leadCode = learningCodes.isNotEmpty
+        ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
+        : '';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading:
-            leadCode.isNotEmpty
-                ? PopupMenuButton<String>(
-                  icon: Text(
-                    leadCode,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  onSelected: (value) {
-                    // тут можно потом добавить логику переключения между изучаемыми
-                  },
-                  itemBuilder: (_) {
-                    final langs = settingsProvider.learningLanguageCodes;
-                    return [
-                      ...langs.map((code) {
-                        final lang = AppLanguageExtension.fromCode(code);
-                        return PopupMenuItem(
-                          value: code,
-                          child: Text(lang?.displayName ?? code),
-                        );
-                      }),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem(
-                        value: 'add_more',
-                        child: Text('+ Add language'),
-                      ),
-                    ];
-                  },
-                )
-                : null,
+        leading: null,
       ),
 
       body: Stack(
@@ -83,6 +53,22 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 50),
+                if (learningCodes.isNotEmpty)
+                  _LanguageMenu(
+                    codes: learningCodes,
+                    onTap: (code) {
+                      if (code == 'add_more') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Feature coming soon')),
+                        );
+                        return;
+                      }
+                      context
+                          .read<SettingsProvider>()
+                          .switchLearningLanguage(code);
+                    },
+                  ),
+                const SizedBox(height: 20),
 
                 // Streak circle
                 Center(
@@ -366,6 +352,75 @@ class _NavCircleButton extends StatelessWidget {
           border: Border.all(color: primary, width: 2),
         ),
         child: Icon(icon, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _LanguageMenu extends StatelessWidget {
+  final List<String> codes;
+  final void Function(String) onTap;
+
+  const _LanguageMenu({
+    Key? key,
+    required this.codes,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedCode = codes.isNotEmpty ? codes.first : '';
+    final selectedLang = AppLanguageExtension.fromCode(selectedCode);
+    final selectedLabel =
+        '${selectedLang?.flag ?? ''} ${selectedLang?.displayName ?? selectedCode}';
+
+    return Container(
+      alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: PopupMenuButton<String>(
+        onSelected: onTap,
+        itemBuilder: (context) {
+          final items = <PopupMenuEntry<String>>[];
+          for (final code in codes) {
+            if (code == selectedCode) continue;
+            final lang = AppLanguageExtension.fromCode(code);
+            final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
+            items.add(PopupMenuItem<String>(
+              value: code,
+              child: Text(label),
+            ));
+          }
+          items.add(const PopupMenuDivider());
+          items.add(const PopupMenuItem<String>(
+            value: 'add_more',
+            child: Text('+ Add'),
+          ));
+          return items;
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                selectedLabel,
+                style: const TextStyle(color: Colors.white),
+              ),
+              const Icon(Icons.arrow_drop_down, color: Colors.white),
+            ],
+          ),
+        ),
       ),
     );
   }
