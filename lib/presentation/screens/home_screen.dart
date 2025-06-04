@@ -24,55 +24,16 @@ class HomeScreen extends StatelessWidget {
     final streak = settingsProvider.streakCount;
     final loc = AppLocalizations.of(context)!;
     final learningCodes = settingsProvider.learningLanguageCodes;
-    final leadCode =
-        learningCodes.isNotEmpty
-            ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ??
-                ''
-            : '';
+    final leadCode = learningCodes.isNotEmpty
+        ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
+        : '';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading:
-            leadCode.isNotEmpty
-                ? PopupMenuButton<String>(
-                  icon: Text(
-                    leadCode,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  onSelected: (value) {
-                    if (value == 'add_more') {
-                      // No "add language" screen yet
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Feature coming soon')),
-                      );
-                      return;
-                    }
-                    context
-                        .read<SettingsProvider>()
-                        .switchLearningLanguage(value);
-                  },
-                  itemBuilder: (_) {
-                    final langs = settingsProvider.learningLanguageCodes;
-                    return [
-                      ...langs.map((code) {
-                        final lang = AppLanguageExtension.fromCode(code);
-                        return PopupMenuItem(
-                          value: code,
-                          child: Text(lang?.displayName ?? code),
-                        );
-                      }),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem(
-                        value: 'add_more',
-                        child: Text('+ Add language'),
-                      ),
-                    ];
-                  },
-                )
-                : null,
+        leading: null,
       ),
 
       body: Stack(
@@ -92,6 +53,22 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 50),
+                if (learningCodes.isNotEmpty)
+                  _LanguageChipRow(
+                    codes: learningCodes,
+                    onTap: (code) {
+                      if (code == 'add_more') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Feature coming soon')),
+                        );
+                        return;
+                      }
+                      context
+                          .read<SettingsProvider>()
+                          .switchLearningLanguage(code);
+                    },
+                  ),
+                const SizedBox(height: 20),
 
                 // Streak circle
                 Center(
@@ -375,6 +352,66 @@ class _NavCircleButton extends StatelessWidget {
           border: Border.all(color: primary, width: 2),
         ),
         child: Icon(icon, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _LanguageChipRow extends StatelessWidget {
+  final List<String> codes;
+  final void Function(String) onTap;
+
+  const _LanguageChipRow({
+    Key? key,
+    required this.codes,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = codes.isNotEmpty ? codes.first : null;
+    final chips = <Widget>[];
+    for (final code in codes) {
+      final lang = AppLanguageExtension.fromCode(code);
+      final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
+      chips.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: ChoiceChip(
+            label: Text(label),
+            selected: selected == code,
+            onSelected: (_) => onTap(code),
+          ),
+        ),
+      );
+    }
+    chips.add(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: ActionChip(
+          label: const Text('+ Add'),
+          onPressed: () => onTap('add_more'),
+        ),
+      ),
+    );
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(children: chips),
       ),
     );
   }
