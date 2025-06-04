@@ -80,7 +80,7 @@ class HomeScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 50),
+                const SizedBox(height: 20),
                 if (learningCodes.isNotEmpty)
                   _LanguageMenu(
                     codes: learningCodes,
