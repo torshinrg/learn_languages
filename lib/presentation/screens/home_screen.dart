@@ -22,6 +22,7 @@ class HomeScreen extends StatelessWidget {
     final daily = settingsProvider.dailyCount;
     final progress = daily > 0 ? (studied / daily).clamp(0.0, 1.0) : 0.0;
     final streak = settingsProvider.streakCount;
+    final lastDate = settingsProvider.lastStreakDate;
     final loc = AppLocalizations.of(context)!;
     final learningCodes = settingsProvider.learningLanguageCodes;
     final leadCode = learningCodes.isNotEmpty
@@ -102,50 +103,9 @@ class HomeScreen extends StatelessWidget {
 
                 // Streak circle
                 Center(
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFFCA61), Color(0xFFFF6B6B)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.local_fire_department,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$streak',
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          loc.streak,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _StreakVisual(
+                    streak: streak,
+                    lastDate: lastDate,
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -354,6 +314,95 @@ class _SmallCard extends StatelessWidget {
                 softWrap: true, // enable wrapping
                 // no overflow specified, so it will wrap
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StreakVisual extends StatelessWidget {
+  final int streak;
+  final String? lastDate;
+  const _StreakVisual({required this.streak, required this.lastDate});
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateTime.now().toIso8601String().split('T').first;
+    final bool broken = streak == 0 && lastDate != null && lastDate != today;
+
+    Color color;
+    String emoji;
+    String message;
+
+    if (broken) {
+      color = Colors.black54;
+      emoji = '💀';
+      message = 'Streak is dead. Bring it back tomorrow!';
+    } else if (streak == 0) {
+      color = Colors.yellow;
+      emoji = '🪔';
+      message = "Let's ignite your streak!";
+    } else if (streak <= 4) {
+      color = Colors.orange;
+      emoji = '🔥';
+      message = 'Keep going!';
+    } else if (streak <= 9) {
+      color = Colors.red;
+      emoji = '🔥🔥';
+      message = 'Momentum!';
+    } else if (streak <= 19) {
+      color = Colors.deepOrange;
+      emoji = '🏮';
+      message = 'Torch blazing!';
+    } else if (streak <= 29) {
+      color = Colors.deepOrangeAccent;
+      emoji = '🔥🔥🔥';
+      message = 'Bonfire!';
+    } else if (streak <= 49) {
+      color = Colors.purple;
+      emoji = '🔥⭕';
+      message = 'Fire ring!';
+    } else {
+      color = Colors.pinkAccent;
+      emoji = '🎆';
+      message = 'Legendary streak!';
+    }
+
+    return Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 40)),
+          const SizedBox(height: 8),
+          Text(
+            '$streak',
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, color: Colors.white),
             ),
           ),
         ],

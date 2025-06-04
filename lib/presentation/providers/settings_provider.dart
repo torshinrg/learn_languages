@@ -27,6 +27,8 @@ class SettingsProvider extends ChangeNotifier {
 
   int _streakCount = 0;
   int get streakCount => _streakCount;
+  String? _lastStreakDate;
+  String? get lastStreakDate => _lastStreakDate;
 
   String _localeCode = 'en';
   Locale get locale => Locale(_localeCode);
@@ -72,6 +74,7 @@ class SettingsProvider extends ChangeNotifier {
 
     // --- Streak handling ---
     final lastStreakDate = prefs.getString(_kLastStreakDateKey);
+    _lastStreakDate = lastStreakDate;
     var streak = prefs.getInt(_kStreakCountKey) ?? 0;
     if (lastStreakDate != today && lastStreakDate != yesterday) {
       streak = 0;
@@ -108,6 +111,7 @@ class SettingsProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T').first;
     final lastStreakDate = prefs.getString(_kLastStreakDateKey);
+    _lastStreakDate = lastStreakDate;
 
     await prefs.setInt(_kStudiedCountKey, _studiedCount);
     await prefs.setString(_kStudiedDateKey, today);
@@ -124,6 +128,7 @@ class SettingsProvider extends ChangeNotifier {
       _streakCount = newStreak;
       await prefs.setInt(_kStreakCountKey, newStreak);
       await prefs.setString(_kLastStreakDateKey, today);
+      _lastStreakDate = today;
     }
 
     notifyListeners();
