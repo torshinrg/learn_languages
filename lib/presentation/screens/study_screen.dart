@@ -267,8 +267,16 @@ class _StudyScreenState extends State<StudyScreen> {
                 isPlaying: _isPlaying,
                 position: _position,
                 duration: _duration,
-                onToggleAudio: () => _togglePlay(_audioLinks.first.audioId),
-                onReplayAudio: () => _togglePlay(_audioLinks.first.audioId),
+                onToggleAudio: () {
+                  if (_audioLinks.isNotEmpty) {
+                    _togglePlay(_audioLinks.first.audioId);
+                  }
+                },
+                onReplayAudio: () {
+                  if (_audioLinks.isNotEmpty) {
+                    _togglePlay(_audioLinks.first.audioId);
+                  }
+                },
                 onPrevSentence: _prevSentence,
                 onNextSentence: _nextSentence,
               ),
