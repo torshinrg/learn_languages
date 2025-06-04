@@ -43,7 +43,16 @@ class HomeScreen extends StatelessWidget {
                     style: const TextStyle(color: Colors.white),
                   ),
                   onSelected: (value) {
-                    // тут можно потом добавить логику переключения между изучаемыми
+                    if (value == 'add_more') {
+                      // No "add language" screen yet
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Feature coming soon')),
+                      );
+                      return;
+                    }
+                    context
+                        .read<SettingsProvider>()
+                        .switchLearningLanguage(value);
                   },
                   itemBuilder: (_) {
                     final langs = settingsProvider.learningLanguageCodes;
