@@ -35,11 +35,13 @@ class SettingsProvider extends ChangeNotifier {
   String? _nativeLanguageCode; // код родного языка: 'en','ru', ...
   List<String> _learningLanguageCodes =
       []; // список изучаемых языков: ['es','de', ...]
+  bool _isLoaded = false;
 
   /// Геттеры:
   String? get nativeLanguageCode => _nativeLanguageCode;
   List<String> get learningLanguageCodes =>
       List.unmodifiable(_learningLanguageCodes);
+  bool get isLoaded => _isLoaded;
 
   SettingsProvider() {
     _loadAll();
@@ -47,6 +49,7 @@ class SettingsProvider extends ChangeNotifier {
 
   /// Internal load/reset logic.
   Future<void> _loadAll() async {
+    _isLoaded = false;
     final prefs = await SharedPreferences.getInstance();
 
     // --- Locale (интерфейс приложения) ---
@@ -89,6 +92,7 @@ class SettingsProvider extends ChangeNotifier {
       _studiedCount = prefs.getInt(_kStudiedCountKey) ?? 0;
     }
 
+    _isLoaded = true;
     notifyListeners();
   }
 
@@ -141,6 +145,16 @@ class SettingsProvider extends ChangeNotifier {
     _learningLanguageCodes = List.from(codes);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_kLearningLanguagesKey, codes);
+    notifyListeners();
+  }
+
+  /// Add a new learning language to the front of the list if not already
+  /// present. The new language becomes the active learning language.
+  Future<void> addLearningLanguage(String code) async {
+    if (_learningLanguageCodes.contains(code)) return;
+    _learningLanguageCodes.insert(0, code);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kLearningLanguagesKey, _learningLanguageCodes);
     notifyListeners();
   }
 
