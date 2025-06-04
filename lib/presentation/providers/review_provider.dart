@@ -61,7 +61,7 @@ class ReviewProvider extends ChangeNotifier {
     notifyListeners();
 
     // 3) Exclude the IDs we’ve already shown (in that same language), then fetch the rest:
-    final excludeIds = _sentences.map((s) => s.id).toList();
+    final excludeIds = _sentences.map((s) => s.id(langCode)).toList();
     final rest = await _learning.getRemainingSentencesForWord(
       currentWord!.text,
       excludeIds,

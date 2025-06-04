@@ -149,7 +149,7 @@ class _InteractiveWordSentenceCardState
     final dir = await getTemporaryDirectory();
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    final sid = widget.sentences[widget.sentenceIndex].id;
+    final sid = widget.sentences[widget.sentenceIndex].id(langCode);
     final path = '${dir.path}/user_$sid.wav';
 
     await _recorder.start(
@@ -216,7 +216,8 @@ class _InteractiveWordSentenceCardState
     _whisperStart = DateTime.now();
     final result = await _checker.compare(
       userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].text,
+      expectedText:
+          widget.sentences[widget.sentenceIndex].text(langCode),
       lang: langCode,
     );
     _whisperEnd = DateTime.now();
@@ -294,10 +295,19 @@ class _InteractiveWordSentenceCardState
     final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
     final loc = AppLocalizations.of(context)!;
 
-    // Determine language codes (first = learning, second = translation, if provided)
+    // Determine language codes: first item is the target language.
     final codes = context.read<SettingsProvider>().learningLanguageCodes;
     final learnCode = codes.first;
-    final translateCode = codes.length > 1 ? codes[1] : '';
+
+    // Show translation in the user's native language when set; otherwise fall
+    // back to the second learning language (if any).
+    final nativeCode = context.read<SettingsProvider>().nativeLanguageCode;
+    String translateCode = '';
+    if (nativeCode != null && nativeCode != learnCode) {
+      translateCode = nativeCode;
+    } else if (codes.length > 1) {
+      translateCode = codes[1];
+    }
 
     // We no longer randomly re-pick in build; instead we rely on _selectedSentenceTask:
     final sentenceTask = _selectedSentenceTask;
@@ -366,7 +376,7 @@ class _InteractiveWordSentenceCardState
                                   : (_whisperTranscription.isNotEmpty
                                       ? _buildColorizedSentence(
                                         theme,
-                                        current!.textFor(learnCode),
+                                        current!.text(learnCode),
                                       )
                                       : Row(
                                         children: [
@@ -378,7 +388,7 @@ class _InteractiveWordSentenceCardState
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: SelectableText(
-                                              current!.textFor(learnCode),
+                                              current!.text(learnCode),
                                               style: theme.titleMedium!
                                                   .copyWith(
                                                     fontWeight: FontWeight.bold,
@@ -398,7 +408,7 @@ class _InteractiveWordSentenceCardState
                               children: [
                                 Expanded(
                                   child: SelectableText(
-                                    current!.textFor(translateCode),
+                                    current!.text(translateCode),
                                     style: theme.bodyMedium,
                                     textAlign: TextAlign.center,
                                   ),
