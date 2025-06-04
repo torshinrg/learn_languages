@@ -55,6 +55,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 50),
                 if (learningCodes.isNotEmpty)
                   _LanguageMenu(
+
                     codes: learningCodes,
                     onTap: (code) {
                       if (code == 'add_more') {
@@ -357,11 +358,13 @@ class _NavCircleButton extends StatelessWidget {
   }
 }
 
+
 class _LanguageMenu extends StatelessWidget {
   final List<String> codes;
   final void Function(String) onTap;
 
   const _LanguageMenu({
+
     Key? key,
     required this.codes,
     required this.onTap,
@@ -369,6 +372,7 @@ class _LanguageMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final selectedCode = codes.isNotEmpty ? codes.first : '';
     final selectedLang = AppLanguageExtension.fromCode(selectedCode);
     final selectedLabel =
@@ -421,6 +425,7 @@ class _LanguageMenu extends StatelessWidget {
             ],
           ),
         ),
+
       ),
     );
   }
