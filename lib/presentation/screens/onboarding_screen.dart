@@ -5,8 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/app_language.dart';
 import '../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:learn_languages/presentation/screens/home_screen.dart';
-import 'package:learn_languages/presentation/providers/settings_provider.dart';
+import 'permission_request_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -53,9 +52,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     settings.setLearningLanguages(_selectedLearning);
     settings.setDailyCount(count);
 
-    // После сохранения переходим в HomeScreen (заменяем маршрут)
+    // After saving, show permission request screen
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const InitialEntryRedirect()),
+      MaterialPageRoute(builder: (_) => const PermissionRequestScreen()),
     );
   }
 
