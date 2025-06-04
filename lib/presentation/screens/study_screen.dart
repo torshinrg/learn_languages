@@ -107,11 +107,11 @@ class _StudyScreenState extends State<StudyScreen> {
     });
 
     if (initial.isNotEmpty) {
-      await _loadAudioForSentence(initial[0].id);
+      await _loadAudioForSentence(initial[0].id(langCode));
     }
 
     // 2) fetch “the rest”
-    final excludeIds = initial.map((s) => s.id).toList();
+    final excludeIds = initial.map((s) => s.id(langCode)).toList();
     final rest = await _learningService.getRemainingSentencesForWord(
       batch.first.text,
       excludeIds,
@@ -220,7 +220,7 @@ class _StudyScreenState extends State<StudyScreen> {
     });
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    _loadAudioForSentence(_sentences[_sentenceIndex].id);
+    _loadAudioForSentence(_sentences[_sentenceIndex].id(langCode));
   }
 
   void _prevSentence() {
@@ -232,7 +232,7 @@ class _StudyScreenState extends State<StudyScreen> {
     });
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    _loadAudioForSentence(_sentences[_sentenceIndex].id);
+    _loadAudioForSentence(_sentences[_sentenceIndex].id(langCode));
   }
 
   @override

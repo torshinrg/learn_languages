@@ -94,7 +94,7 @@ class LearningService {
   ) async {
     final all = await sentenceRepo.fetchForWord(wordText, languageCode);
     return all
-        .where((s) => !excludeIds.contains(s.idFor(languageCode)))
+        .where((s) => !excludeIds.contains(s.id(languageCode)))
         .toList();
   }
 

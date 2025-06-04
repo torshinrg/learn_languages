@@ -144,6 +144,36 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Add a new learning language if it isn't already selected and isn't the
+  /// native language.
+  Future<void> addLearningLanguage(String code) async {
+    if (_learningLanguageCodes.contains(code) || _nativeLanguageCode == code) {
+      return;
+    }
+    _learningLanguageCodes.add(code);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kLearningLanguagesKey, _learningLanguageCodes);
+    notifyListeners();
+  }
+
+  /// Change the active learning language. The provided [code] must already
+  /// exist in the list; it will be moved to the front so that callers using
+  /// `learningLanguageCodes.first` see the new language.
+  Future<void> switchLearningLanguage(String code) async {
+    if (!_learningLanguageCodes.contains(code) ||
+        _learningLanguageCodes.first == code) {
+      return;
+    }
+
+    _learningLanguageCodes
+      ..remove(code)
+      ..insert(0, code);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kLearningLanguagesKey, _learningLanguageCodes);
+    notifyListeners();
+  }
+
   /// Public API to force a full reload (e.g. on resume).
   Future<void> reload() async {
     await _loadAll();
