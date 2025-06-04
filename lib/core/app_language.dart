@@ -50,6 +50,40 @@ extension AppLanguageExtension on AppLanguage {
     }
   }
 
+  String get flag {
+    String countryCode;
+    switch (this) {
+      case AppLanguage.english:
+        countryCode = 'GB';
+        break;
+      case AppLanguage.spanish:
+        countryCode = 'ES';
+        break;
+      case AppLanguage.russian:
+        countryCode = 'RU';
+        break;
+      case AppLanguage.french:
+        countryCode = 'FR';
+        break;
+      case AppLanguage.german:
+        countryCode = 'DE';
+        break;
+      case AppLanguage.italian:
+        countryCode = 'IT';
+        break;
+      case AppLanguage.portuguese:
+        countryCode = 'PT';
+        break;
+    }
+    // Convert ASCII country code to regional indicator symbols.
+    final base = 0x1F1E6 - 'A'.codeUnitAt(0);
+    final chars = countryCode.codeUnits
+        .map((c) => base + c)
+        .map((code) => String.fromCharCode(code))
+        .join();
+    return chars;
+  }
+
   static AppLanguage? fromCode(String code) {
     switch (code) {
       case 'en':
