@@ -28,6 +28,33 @@ class HomeScreen extends StatelessWidget {
         ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
         : '';
 
+    Future<String?> _showAddLanguageDialog() {
+      final available = AppLanguage.values
+          .where((lang) =>
+              !settingsProvider.learningLanguageCodes.contains(lang.code) &&
+              lang.code != settingsProvider.nativeLanguageCode)
+          .toList();
+      if (available.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No more languages')),
+        );
+        return Future.value(null);
+      }
+      return showDialog<String>(
+        context: context,
+        builder: (ctx) => SimpleDialog(
+          title: const Text('Add language'),
+          children: [
+            for (final lang in available)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, lang.code),
+                child: Text('${lang.flag} ${lang.displayName}'),
+              )
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -55,13 +82,15 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 50),
                 if (learningCodes.isNotEmpty)
                   _LanguageMenu(
-
                     codes: learningCodes,
-                    onTap: (code) {
+                    onTap: (code) async {
                       if (code == 'add_more') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Feature coming soon')),
-                        );
+                        final newCode = await _showAddLanguageDialog();
+                        if (newCode != null) {
+                          await context
+                              .read<SettingsProvider>()
+                              .addLearningLanguage(newCode);
+                        }
                         return;
                       }
                       context
