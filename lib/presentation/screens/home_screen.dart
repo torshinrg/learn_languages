@@ -54,7 +54,8 @@ class HomeScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 50),
                 if (learningCodes.isNotEmpty)
-                  _LanguageChipRow(
+                  _LanguageMenu(
+
                     codes: learningCodes,
                     onTap: (code) {
                       if (code == 'add_more') {
@@ -357,11 +358,13 @@ class _NavCircleButton extends StatelessWidget {
   }
 }
 
-class _LanguageChipRow extends StatelessWidget {
+
+class _LanguageMenu extends StatelessWidget {
   final List<String> codes;
   final void Function(String) onTap;
 
-  const _LanguageChipRow({
+  const _LanguageMenu({
+
     Key? key,
     required this.codes,
     required this.onTap,
@@ -369,49 +372,60 @@ class _LanguageChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selected = codes.isNotEmpty ? codes.first : null;
-    final chips = <Widget>[];
-    for (final code in codes) {
-      final lang = AppLanguageExtension.fromCode(code);
-      final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
-      chips.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: ChoiceChip(
-            label: Text(label),
-            selected: selected == code,
-            onSelected: (_) => onTap(code),
-          ),
-        ),
-      );
-    }
-    chips.add(
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: ActionChip(
-          label: const Text('+ Add'),
-          onPressed: () => onTap('add_more'),
-        ),
-      ),
-    );
+
+    final selectedCode = codes.isNotEmpty ? codes.first : '';
+    final selectedLang = AppLanguageExtension.fromCode(selectedCode);
+    final selectedLabel =
+        '${selectedLang?.flag ?? ''} ${selectedLang?.displayName ?? selectedCode}';
 
     return Container(
+      alignment: Alignment.centerLeft,
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+      child: PopupMenuButton<String>(
+        onSelected: onTap,
+        itemBuilder: (context) {
+          final items = <PopupMenuEntry<String>>[];
+          for (final code in codes) {
+            if (code == selectedCode) continue;
+            final lang = AppLanguageExtension.fromCode(code);
+            final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
+            items.add(PopupMenuItem<String>(
+              value: code,
+              child: Text(label),
+            ));
+          }
+          items.add(const PopupMenuDivider());
+          items.add(const PopupMenuItem<String>(
+            value: 'add_more',
+            child: Text('+ Add'),
+          ));
+          return items;
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: chips),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                selectedLabel,
+                style: const TextStyle(color: Colors.white),
+              ),
+              const Icon(Icons.arrow_drop_down, color: Colors.white),
+            ],
+          ),
+        ),
+
       ),
     );
   }
