@@ -67,7 +67,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (s != null) {
       final langCode =
           context.read<SettingsProvider>().learningLanguageCodes.first;
-      await _loadAudioForSentence(s.id);
+      await _loadAudioForSentence(s.id(langCode));
     }
   }
 
@@ -199,7 +199,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                 .read<SettingsProvider>()
                                 .learningLanguageCodes
                                 .first;
-                        _loadAudioForSentence(nxt.id);
+                        _loadAudioForSentence(nxt.id(langCode));
                       }
                     },
                     onNextSentence: () {
@@ -211,7 +211,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                 .read<SettingsProvider>()
                                 .learningLanguageCodes
                                 .first;
-                        _loadAudioForSentence(nxt.id);
+                        _loadAudioForSentence(nxt.id(langCode));
                       }
                     },
                   ),
@@ -240,7 +240,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                         .read<SettingsProvider>()
                                         .learningLanguageCodes
                                         .first;
-                                _loadAudioForSentence(nxt.id);
+                                _loadAudioForSentence(nxt.id(langCode));
                               }
                             },
                             child: Text(label),
