@@ -196,7 +196,10 @@ class InitialEntryRedirect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.read<SettingsProvider>();
+    final settings = context.watch<SettingsProvider>();
+    if (!settings.isLoaded) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     // Если языки не выбраны, открываем Onboarding:
     if (settings.learningLanguageCodes.isEmpty ||
         settings.nativeLanguageCode == null) {
