@@ -49,4 +49,6 @@ app.*.map.json
 assets/databases/lang_data.db
 assets/databases/sentences_with_audio.csv
 script/
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/databases/spanish_app.db
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/models/ggml-small-q8_0.bin 
 
