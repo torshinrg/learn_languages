@@ -9,6 +9,39 @@ import '../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:learn_languages/core/app_language.dart';
 
+void _showAddLanguageDialog(BuildContext context) {
+  final settings = context.read<SettingsProvider>();
+  final nativeCode = settings.nativeLanguageCode;
+  final current = settings.learningLanguageCodes;
+  final available = AppLanguage.values
+      .where((lang) =>
+          lang.code != nativeCode && !current.contains(lang.code))
+      .toList();
+
+  if (available.isEmpty) return;
+
+  showModalBottomSheet(
+    context: context,
+    builder: (ctx) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final lang in available)
+              ListTile(
+                title: Text('${lang.flag} ${lang.displayName}'),
+                onTap: () {
+                  settings.addLearningLanguage(lang.code);
+                  Navigator.of(ctx).pop();
+                },
+              ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -55,12 +88,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 50),
                 if (learningCodes.isNotEmpty)
                   _LanguageMenu(
-
-                    codes: learningCodes,
-                    onTap: (code) {
-                      if (code == 'add_more') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Feature coming soon')),
+                    onAdd: () => _showAddLanguageDialog(context),
                         );
                         return;
                       }
@@ -335,7 +363,15 @@ class _SmallCard extends StatelessWidget {
 
 class _NavCircleButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onAdd;
+    this.onAdd,
+        onSelected: (code) {
+          if (code == 'add_more') {
+            if (onAdd != null) onAdd!();
+            return;
+          }
+          onTap(code);
+        },
   const _NavCircleButton({Key? key, required this.icon, required this.onTap})
     : super(key: key);
 
