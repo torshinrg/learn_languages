@@ -107,7 +107,7 @@ class _StudyScreenState extends State<StudyScreen> {
     });
 
     if (initial.isNotEmpty) {
-      await _loadAudioForSentence(initial[0].id(langCode));
+      await _loadAudioForSentence(initial[0].id(langCode), langCode);
     }
 
     // 2) fetch “the rest”
@@ -122,7 +122,10 @@ class _StudyScreenState extends State<StudyScreen> {
     setState(() => _sentences.addAll(rest));
   }
 
-  Future<void> _loadAudioForSentence(String sentenceId) async {
+  Future<void> _loadAudioForSentence(
+    String sentenceId,
+    String languageCode,
+  ) async {
     if (!mounted) return;
     setState(() {
       _audioLoading = true;
@@ -132,7 +135,10 @@ class _StudyScreenState extends State<StudyScreen> {
       _isPlaying = false;
     });
 
-    final links = await _learningService.getAudioForSentence(sentenceId);
+    final links = await _learningService.getAudioForSentence(
+      sentenceId,
+      languageCode,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -220,7 +226,10 @@ class _StudyScreenState extends State<StudyScreen> {
     });
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    _loadAudioForSentence(_sentences[_sentenceIndex].id(langCode));
+    _loadAudioForSentence(
+      _sentences[_sentenceIndex].id(langCode),
+      langCode,
+    );
   }
 
   void _prevSentence() {
@@ -232,7 +241,10 @@ class _StudyScreenState extends State<StudyScreen> {
     });
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    _loadAudioForSentence(_sentences[_sentenceIndex].id(langCode));
+    _loadAudioForSentence(
+      _sentences[_sentenceIndex].id(langCode),
+      langCode,
+    );
   }
 
   @override

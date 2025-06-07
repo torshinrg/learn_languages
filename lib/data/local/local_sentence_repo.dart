@@ -30,13 +30,13 @@ class LocalSentenceRepository implements ISentenceRepository {
       return [];
     }
 
-    final column =
-        '${langEnum.name}_text'; // e.g. "english_text", "russian_text", etc.
+    final column = '${langEnum.name}_text'; // e.g. "english_text"
+    final audioColumn = '${langEnum.name}_audio';
     final limitClause = limit != null ? 'LIMIT $limit' : '';
     final sql = '''
       SELECT *
       FROM sentences
-      WHERE $column LIKE ?
+      WHERE $column LIKE ? AND $audioColumn = 1
       ORDER BY RANDOM()
       $limitClause
     ''';
