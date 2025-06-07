@@ -98,8 +98,11 @@ class LearningService {
         .toList();
   }
 
-  Future<List<AudioLink>> getAudioForSentence(String sentenceId) {
-    return audioRepo.fetchForSentence(sentenceId);
+  Future<List<AudioLink>> getAudioForSentence(
+    String sentenceId,
+    String languageCode,
+  ) {
+    return audioRepo.fetchForSentence(sentenceId, languageCode);
   }
 
   Future<List<Word>> getDueWords() async {
