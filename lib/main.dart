@@ -86,11 +86,9 @@ class MyApp extends StatelessWidget {
               ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
-          create:
-              (_) => CustomWordsProvider(
-                getIt<IWordRepository>(),
-                getIt<ISRSRepository>(),
-              ),
+          create: (_) => CustomWordsProvider(
+            getIt<ICustomWordRepository>(),
+          ),
         ),
         ChangeNotifierProvider<TaskProvider>(
           create:
