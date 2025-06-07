@@ -41,12 +41,8 @@ const double kPadding = 16.0;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
-  await NotificationService.init();
-  tz.initializeTimeZones();
 
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
-  }
+  tz.initializeTimeZones();
 
   runApp(const MyApp());
 }

@@ -23,11 +23,12 @@ class LocalAudioRepository implements IAudioRepository {
 
     // Логируем входящие параметры
     print(
-        '🔍 [LocalAudioRepo] fetchForSentence sentenceId=$sentenceId table=$table');
+      '🔍 [LocalAudioRepo] fetchForSentence sentenceId=$sentenceId table=$table',
+    );
 
     // Выполняем запрос
     final rows = await db.query(
-      table,
+      'sentences_with_audio',
       where: 'sentence_id = ?',
       whereArgs: [sentenceId],
     );
