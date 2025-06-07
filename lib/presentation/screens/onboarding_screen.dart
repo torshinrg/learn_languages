@@ -201,7 +201,22 @@ class _InitialEntryRedirectState extends State<InitialEntryRedirect> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(_decide);
+    // Wait until this route becomes the top-most route (e.g. after a share
+    // intent might push another screen) before deciding where to navigate.
+    Future.microtask(_checkAndDecide);
+  }
+
+  Future<void> _checkAndDecide() async {
+    // If another route is currently on top (for example, the CustomWordsScreen
+    // launched from a share intent), postpone the decision until this route
+    // becomes active again.
+    if (!mounted) return;
+    final modal = ModalRoute.of(context);
+    if (modal != null && !modal.isCurrent) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return _checkAndDecide();
+    }
+    await _decide();
   }
 
   Future<void> _decide() async {
