@@ -1,6 +1,7 @@
 // File: lib/presentation/screens/onboarding_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_language.dart';
 import '../providers/settings_provider.dart';
@@ -189,24 +190,59 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// Этот виджет просто перенаправляет на HomeScreen или, если он ещё не выбран,
-/// вновь открывает Onboarding. Нам нужно, чтобы можно было сделать pushReplacement.
-class InitialEntryRedirect extends StatelessWidget {
+class InitialEntryRedirect extends StatefulWidget {
   const InitialEntryRedirect({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final settings = context.watch<SettingsProvider>();
+  State<InitialEntryRedirect> createState() => _InitialEntryRedirectState();
+}
+
+class _InitialEntryRedirectState extends State<InitialEntryRedirect> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_decide);
+  }
+
+  Future<void> _decide() async {
+    final settings = context.read<SettingsProvider>();
+
+    // 1) Still loading SharedPrefs? wait
     if (!settings.isLoaded) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      await Future.delayed(const Duration(milliseconds: 100));
+      return _decide();
     }
-    // Если языки не выбраны, открываем Onboarding:
+
+    // 2) Haven’t chosen languages yet?
     if (settings.learningLanguageCodes.isEmpty ||
         settings.nativeLanguageCode == null) {
-      return const OnboardingScreen();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+      return;
     }
-    // Иначе – HomeScreen
-    return const HomeScreenPlaceholder();
+
+    // 3) Missing mic or notification permission?
+    if (await Permission.microphone.isDenied ||
+        await Permission.notification.isDenied) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PermissionRequestScreen()),
+      );
+      return;
+    }
+
+    // 4) Everything’s good → Home
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 

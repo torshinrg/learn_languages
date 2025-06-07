@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'onboarding_screen.dart';
+import '../providers/notification_settings_provider.dart';
+import 'package:learn_languages/services/notification_service.dart';
 
 class PermissionRequestScreen extends StatelessWidget {
   const PermissionRequestScreen({Key? key}) : super(key: key);
 
   Future<void> _requestPermissions(BuildContext context) async {
+    // 1) Initialize notifications (creates channel + may ask on Android13+)
+    await NotificationService.init();
+
+    // 2) Ask for notification permission if still denied
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+
+    // 3) Ask for microphone permission (for your speech features)
     if (await Permission.microphone.isDenied) {
       await Permission.microphone.request();
     }
-    // Internet permission is granted at install time.
+
+    // 4) Re-schedule any saved reminders
+    final times = context.read<NotificationSettingsProvider>().times;
+    final notifService = GetIt.I<NotificationService>();
+    await notifService.scheduleDailyNotifications(times);
+
+    // 5) Finally enter the app
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const InitialEntryRedirect()),
     );
