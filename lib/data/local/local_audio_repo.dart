@@ -2,18 +2,32 @@
 import 'package:sqflite/sqflite.dart';
 import '../../domain/entities/audio_link.dart';
 import '../../domain/repositories/i_audio_repository.dart';
+import '../../core/app_language.dart';
 
 class LocalAudioRepository implements IAudioRepository {
   final Database db;
   LocalAudioRepository(this.db);
 
   @override
-  Future<List<AudioLink>> fetchForSentence(String sentenceId) async {
-    // Логируем входящий sentenceId
-    print('🔍 [LocalAudioRepo] fetchForSentence sentenceId=$sentenceId');
+  Future<List<AudioLink>> fetchForSentence(
+    String sentenceId,
+    String languageCode,
+  ) async {
+    // Determine table based on language code
+    final lang = AppLanguageExtension.fromCode(languageCode);
+    if (lang == null) {
+      print('⚠️ [LocalAudioRepo] Unsupported languageCode="$languageCode"');
+      return [];
+    }
+    final table = '${lang.name}_audio';
+
+    // Логируем входящие параметры
+    print(
+        '🔍 [LocalAudioRepo] fetchForSentence sentenceId=$sentenceId table=$table');
+
     // Выполняем запрос
     final rows = await db.query(
-      'sentences_with_audio',
+      table,
       where: 'sentence_id = ?',
       whereArgs: [sentenceId],
     );
