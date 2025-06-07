@@ -40,7 +40,8 @@ class _ShareHandlerState extends State<ShareHandler> {
       final raw = file.path.trim();
       if (raw.isEmpty) continue;
 
-      final cleaned = _stripUrls(raw);
+      var cleaned = _stripUrls(raw);
+      cleaned = _stripQuotes(cleaned);
       if (cleaned.isEmpty) continue;
 
       // ← push using the global key
@@ -63,6 +64,13 @@ class _ShareHandlerState extends State<ShareHandler> {
         !t.startsWith('www.'))
         .join(' ');
   }
+
+  String _stripQuotes(String s) {
+    return s
+        .replaceAll(RegExp(r'^[\"\'\u201c\u201d\u2018\u2019]+'), '')
+        .replaceAll(RegExp(r'[\"\'\u201c\u201d\u2018\u2019]+$'), '');
+  }
+
 
   @override
   void dispose() {
