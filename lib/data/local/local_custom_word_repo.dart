@@ -10,18 +10,32 @@ class LocalCustomWordRepository implements ICustomWordRepository {
     db.execute('''
       CREATE TABLE IF NOT EXISTS $_table(
         id TEXT PRIMARY KEY,
-        text TEXT NOT NULL
+        text TEXT NOT NULL,
+        language_code TEXT NOT NULL
       );
     ''');
   }
 
   @override
-  Future<void> add(CustomWord word) =>
-      db.insert(_table, word.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> add(CustomWord word) => db.insert(
+        _table,
+        word.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
   @override
   Future<List<CustomWord>> fetchAll() async {
     final rows = await db.query(_table);
+    return rows.map((m) => CustomWord.fromMap(m)).toList();
+  }
+
+  @override
+  Future<List<CustomWord>> fetchByLanguage(String languageCode) async {
+    final rows = await db.query(
+      _table,
+      where: 'language_code = ?',
+      whereArgs: [languageCode],
+    );
     return rows.map((m) => CustomWord.fromMap(m)).toList();
   }
 
