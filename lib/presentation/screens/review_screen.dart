@@ -67,11 +67,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (s != null) {
       final langCode =
           context.read<SettingsProvider>().learningLanguageCodes.first;
-      await _loadAudioForSentence(s.id(langCode));
+      await _loadAudioForSentence(s.id(langCode), langCode);
     }
   }
 
-  Future<void> _loadAudioForSentence(String sentenceId) async {
+  Future<void> _loadAudioForSentence(
+    String sentenceId,
+    String languageCode,
+  ) async {
     if (!mounted) return;
     setState(() {
       _loadingAudio = true;
@@ -83,6 +86,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
     final links = await context.read<LearningService>().getAudioForSentence(
       sentenceId,
+      languageCode,
     );
 
     if (!mounted) return;
@@ -199,7 +203,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                 .read<SettingsProvider>()
                                 .learningLanguageCodes
                                 .first;
-                        _loadAudioForSentence(nxt.id(langCode));
+                        _loadAudioForSentence(
+                          nxt.id(langCode),
+                          langCode,
+                        );
                       }
                     },
                     onNextSentence: () {
@@ -211,7 +218,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                 .read<SettingsProvider>()
                                 .learningLanguageCodes
                                 .first;
-                        _loadAudioForSentence(nxt.id(langCode));
+                        _loadAudioForSentence(
+                          nxt.id(langCode),
+                          langCode,
+                        );
                       }
                     },
                   ),
@@ -240,7 +250,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                         .read<SettingsProvider>()
                                         .learningLanguageCodes
                                         .first;
-                                _loadAudioForSentence(nxt.id(langCode));
+                                _loadAudioForSentence(
+                                  nxt.id(langCode),
+                                  langCode,
+                                );
                               }
                             },
                             child: Text(label),
