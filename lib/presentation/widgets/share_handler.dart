@@ -66,9 +66,10 @@ class _ShareHandlerState extends State<ShareHandler> {
   }
 
   String _stripQuotes(String s) {
+    // Remove leading and trailing straight or curly quotes
     return s
-        .replaceAll(RegExp(r'^[\"\'\u201c\u201d\u2018\u2019]+'), '')
-        .replaceAll(RegExp(r'[\"\'\u201c\u201d\u2018\u2019]+$'), '');
+        .replaceAll(RegExp("^[\"'\u201c\u201d\u2018\u2019]+"), '')
+        .replaceAll(RegExp("[\"'\u201c\u201d\u2018\u2019]+$"), '');
   }
 
 
