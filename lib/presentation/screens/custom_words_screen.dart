@@ -104,20 +104,27 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: vm.words.length,
-              itemBuilder: (_, i) {
-                final w = vm.words[i];
-                return ListTile(
-                  title: Text(w.text),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () =>
-                        context.read<CustomWordsProvider>().remove(w.id),
-                  ),
+            child: Builder(
+              builder: (_) {
+                final wordsForLang = vm.words
+                    .where((w) => w.languageCode == _selectedLang)
+                    .toList();
+                return ListView.builder(
+                  itemCount: wordsForLang.length,
+                  itemBuilder: (_, i) {
+                    final w = wordsForLang[i];
+                    return ListTile(
+                      title: Text(w.text),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () =>
+                            context.read<CustomWordsProvider>().remove(w.id),
+                      ),
+                    );
+                  },
                 );
               },
-            ),
+              ),
           ),
         ],
       ),
