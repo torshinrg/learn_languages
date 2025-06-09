@@ -13,11 +13,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 /// - calls back into TaskProvider to save history
 class TaskWidget extends StatefulWidget {
   final Task task;
-  const TaskWidget({
-    Key? key,
-    required this.task,
-
-  }) : super(key: key);
+  const TaskWidget({Key? key, required this.task}) : super(key: key);
 
   @override
   State<TaskWidget> createState() => _TaskWidgetState();
@@ -35,11 +31,10 @@ class _TaskWidgetState extends State<TaskWidget> {
 
     // Save into history
 
-      await context.read<TaskProvider>().completeScreenTask(
-        taskId: widget.task.id,
-        result: fakeResult,
-      );
-
+    await context.read<TaskProvider>().completeScreenTask(
+      taskId: widget.task.id,
+      result: fakeResult,
+    );
 
     setState(() {
       _isProcessing = false;
@@ -57,6 +52,11 @@ class _TaskWidgetState extends State<TaskWidget> {
         child: Column(
           children: [
             Text(
+              loc.exercises_title,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.left,
+            ),
+            Text(
               widget.task.description,
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
@@ -71,7 +71,10 @@ class _TaskWidgetState extends State<TaskWidget> {
             ] else if (_isProcessing) ...[
               const CircularProgressIndicator(),
               const SizedBox(height: 8),
-              Text(loc.learning_now, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                loc.learning_now,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ] else ...[
               Text(
                 _resultText!,
@@ -79,10 +82,12 @@ class _TaskWidgetState extends State<TaskWidget> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
+              /*
               ElevatedButton(
                 onPressed: _onTapToSpeak,
                 child: Text(loc.tap_to_speak_again),
               ),
+              */
             ],
           ],
         ),
