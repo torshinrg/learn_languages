@@ -2,13 +2,15 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../../core/constants.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_language.dart';
 
 class SettingsProvider extends ChangeNotifier {
   static const kDailyCountKey = 'dailyCount';
-  static const _kStudiedCountKey = 'studiedCount';
+  static const _kStudiedCountKey = 'studiedCount'; // legacy single-language key
+  static const _kStudiedCountsKey = 'studiedCounts'; // JSON map lang→count
   static const _kStudiedDateKey = 'studiedDate';
   static const _kStreakCountKey = 'streakCount';
   static const _kLastStreakDateKey = 'lastStreakDate';
@@ -22,8 +24,13 @@ class SettingsProvider extends ChangeNotifier {
   int _dailyCount = kDefaultDailyCount;
   int get dailyCount => _dailyCount;
 
-  int _studiedCount = 0;
-  int get studiedCount => _studiedCount;
+  Map<String, int> _studiedCounts = {};
+  int get studiedCount {
+    if (_learningLanguageCodes.isEmpty) return 0;
+    return _studiedCounts[_learningLanguageCodes.first] ?? 0;
+  }
+
+  int studiedCountFor(String code) => _studiedCounts[code] ?? 0;
 
   int _streakCount = 0;
   int get streakCount => _streakCount;
@@ -85,14 +92,29 @@ class SettingsProvider extends ChangeNotifier {
     // --- Daily count ---
     _dailyCount = prefs.getInt(kDailyCountKey) ?? kDefaultDailyCount;
 
-    // --- Studied count reset if new day ---
+    // --- Studied counts per language ---
     final savedStudiedDate = prefs.getString(_kStudiedDateKey);
+    final storedJson = prefs.getString(_kStudiedCountsKey);
+    Map<String, int> storedCounts = {};
+    if (storedJson != null) {
+      final decoded = jsonDecode(storedJson) as Map<String, dynamic>;
+      storedCounts = decoded.map((k, v) => MapEntry(k, v as int));
+    } else if (prefs.containsKey(_kStudiedCountKey)) {
+      // migrate legacy single count to current active language
+      final legacy = prefs.getInt(_kStudiedCountKey) ?? 0;
+      final lang = _learningLanguageCodes.isNotEmpty
+          ? _learningLanguageCodes.first
+          : 'und';
+      storedCounts[lang] = legacy;
+    }
+
     if (savedStudiedDate != today) {
-      _studiedCount = 0;
+      _studiedCounts = {};
       await prefs.setString(_kStudiedDateKey, today);
-      await prefs.setInt(_kStudiedCountKey, 0);
+      await prefs.setString(_kStudiedCountsKey, jsonEncode({}));
+      await prefs.remove(_kStudiedCountKey);
     } else {
-      _studiedCount = prefs.getInt(_kStudiedCountKey) ?? 0;
+      _studiedCounts = storedCounts;
     }
 
     _isLoaded = true;
@@ -107,14 +129,18 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> incrementStudiedCount() async {
-    _studiedCount++;
+    if (_learningLanguageCodes.isEmpty) return;
+    final lang = _learningLanguageCodes.first;
+    final newVal = (_studiedCounts[lang] ?? 0) + 1;
+    _studiedCounts[lang] = newVal;
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().split('T').first;
     final lastStreakDate = prefs.getString(_kLastStreakDateKey);
     _lastStreakDate = lastStreakDate;
 
-    await prefs.setInt(_kStudiedCountKey, _studiedCount);
+    await prefs.setString(_kStudiedCountsKey, jsonEncode(_studiedCounts));
     await prefs.setString(_kStudiedDateKey, today);
+    await prefs.remove(_kStudiedCountKey);
 
     if (lastStreakDate != today) {
       final yesterday =
