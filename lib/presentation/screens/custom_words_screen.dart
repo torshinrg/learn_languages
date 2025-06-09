@@ -26,9 +26,10 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
     _ctrl = TextEditingController(text: widget.initialText ?? '');
     _focusNode = FocusNode();
     final settings = context.read<SettingsProvider>();
-    _selectedLang = settings.learningLanguageCodes.isNotEmpty
-        ? settings.learningLanguageCodes.first
-        : null;
+    _selectedLang =
+        settings.learningLanguageCodes.isNotEmpty
+            ? settings.learningLanguageCodes.first
+            : null;
     // wait until build finishes, then focus:
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -50,7 +51,7 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
     final learningCodes = settings.learningLanguageCodes;
 
     return Scaffold(
-      appBar: AppBar(title:  Text(loc.add_custom_word)),
+      appBar: AppBar(title: Text(loc.add_custom_word)),
       body: Column(
         children: [
           Padding(
@@ -60,15 +61,21 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
               children: [
                 DropdownButton<String>(
                   value: _selectedLang,
-                  hint: Text(loc.language),
-                  items: learningCodes
-                      .map(
-                        (code) => DropdownMenuItem<String>(
-                          value: code,
-                          child: Text(AppLanguageExtension.fromCode(code)?.displayName ?? code),
-                        ),
-                      )
-                      .toList(),
+                  hint: Text("loc.language"),
+                  items:
+                      learningCodes
+                          .map(
+                            (code) => DropdownMenuItem<String>(
+                              value: code,
+                              child: Text(
+                                AppLanguageExtension.fromCode(
+                                      code,
+                                    )?.displayName ??
+                                    code,
+                              ),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (val) => setState(() => _selectedLang = val),
                 ),
                 Row(
@@ -77,26 +84,28 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
                       child: TextField(
                         focusNode: _focusNode,
                         controller: _ctrl,
-                        decoration:  InputDecoration(
-                          labelText: loc.new_word,
-                        ),
+                        decoration: InputDecoration(labelText: loc.new_word),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.add),
-                      onPressed: _selectedLang == null
-                          ? null
-                          : () {
-                              final text = _ctrl.text.trim();
-                              if (text.isEmpty) return;
-                              context
-                                  .read<CustomWordsProvider>()
-                                  .add(text, _selectedLang!);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('${loc.added} “$text”')),
-                              );
-                              _ctrl.clear();
-                            },
+                      onPressed:
+                          _selectedLang == null
+                              ? null
+                              : () {
+                                final text = _ctrl.text.trim();
+                                if (text.isEmpty) return;
+                                context.read<CustomWordsProvider>().add(
+                                  text,
+                                  _selectedLang!,
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${loc.added} “$text”'),
+                                  ),
+                                );
+                                _ctrl.clear();
+                              },
                     ),
                   ],
                 ),
@@ -106,9 +115,10 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
           Expanded(
             child: Builder(
               builder: (_) {
-                final wordsForLang = vm.words
-                    .where((w) => w.languageCode == _selectedLang)
-                    .toList();
+                final wordsForLang =
+                    vm.words
+                        .where((w) => w.languageCode == _selectedLang)
+                        .toList();
                 return ListView.builder(
                   itemCount: wordsForLang.length,
                   itemBuilder: (_, i) {
@@ -117,14 +127,16 @@ class _CustomWordsScreenState extends State<CustomWordsScreen> {
                       title: Text(w.text),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () =>
-                            context.read<CustomWordsProvider>().remove(w.id),
+                        onPressed:
+                            () => context.read<CustomWordsProvider>().remove(
+                              w.id,
+                            ),
                       ),
                     );
                   },
                 );
               },
-              ),
+            ),
           ),
         ],
       ),

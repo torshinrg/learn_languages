@@ -24,8 +24,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            <!-- Using singleTask so new share intents are delivered via
-                 onNewIntent to the existing activity instance. -->
+
             android:launchMode="singleTask"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

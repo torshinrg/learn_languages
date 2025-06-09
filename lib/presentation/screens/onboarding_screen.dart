@@ -23,6 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     text: '',
   );
 
+
   @override
   void initState() {
     super.initState();
@@ -38,9 +39,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onSubmit() {
+    final loc = AppLocalizations.of(context)!;
     if (_selectedNative == null || _selectedLearning.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please choose native and learning languages.')),
+        SnackBar(content: Text(loc.chooseLanguagesError)),
       );
       return;
     }
@@ -65,6 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final loc = AppLocalizations.of(context)!;
     final allLanguages = AppLanguage.values;
 
+
     return Scaffold(
       appBar: AppBar(title: Text(loc.appTitle)),
       body: Padding(
@@ -75,7 +78,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               const SizedBox(height: 20),
               Text(
-                '1. Choose your native language',
+                loc.chooseNativeLanguage,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -104,7 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                '2. Choose languages to learn',
+                loc.chooseLearningLanguages,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -139,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                '3. How many words per day?',
+                loc.chooseDailyWordCount,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -179,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: _onSubmit,
-                  child: const Text('Get Started'),
+                  child: Text(loc.getStarted),
                 ),
               ),
             ],

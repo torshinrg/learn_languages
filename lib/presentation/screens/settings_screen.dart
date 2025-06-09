@@ -102,7 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
             ListTile(
               leading: const Icon(Icons.language),
-              title: const Text('Interface Language'),
+              title: Text(loc.interface_language),
               subtitle: Text(_languageNames[settings.locale.languageCode]!),
               trailing: DropdownButton<String>(
                 value: settings.locale.languageCode,

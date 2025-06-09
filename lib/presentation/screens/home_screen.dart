@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
       return showDialog<String>(
         context: context,
         builder: (ctx) => SimpleDialog(
-          title: const Text('Add language'),
+          title: Text(loc.add_language),
           children: [
             for (final lang in available)
               SimpleDialogOption(
@@ -337,39 +337,43 @@ class _StreakVisual extends StatelessWidget {
     String emoji;
     String message;
 
+    final loc = AppLocalizations.of(context)!;
+
     if (broken) {
       color = Colors.black54;
+      message = loc.streakDead;
       emoji = '💀';
-      message = 'Streak is dead. Bring it back tomorrow!';
     } else if (streak == 0) {
       color = Colors.yellow;
+      message = loc.streakZero;
       emoji = '🪔';
-      message = "Let's ignite your streak!";
     } else if (streak <= 4) {
       color = Colors.orange;
+      message = loc.streakLow;
       emoji = '🔥';
-      message = 'Keep going!';
     } else if (streak <= 9) {
       color = Colors.red;
+      message = loc.streakMid;
       emoji = '🔥🔥';
-      message = 'Momentum!';
     } else if (streak <= 19) {
       color = Colors.deepOrange;
+      message = loc.streakStrong;
       emoji = '🏮';
-      message = 'Torch blazing!';
     } else if (streak <= 29) {
       color = Colors.deepOrangeAccent;
+      message = loc.streakHot;
       emoji = '🔥🔥🔥';
-      message = 'Bonfire!';
     } else if (streak <= 49) {
       color = Colors.purple;
+      message = loc.streakRing;
       emoji = '🔥⭕';
-      message = 'Fire ring!';
     } else {
       color = Colors.pinkAccent;
+      message = loc.streakLegend;
       emoji = '🎆';
-      message = 'Legendary streak!';
     }
+
+
 
     return Container(
       width: 160,
@@ -389,7 +393,6 @@ class _StreakVisual extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(emoji, style: const TextStyle(fontSize: 40)),
-          const SizedBox(height: 8),
           Text(
             '$streak',
             style: const TextStyle(
@@ -398,14 +401,27 @@ class _StreakVisual extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: Colors.white),
+           LayoutBuilder(
+              builder: (context, constraints) {
+                // constrain to available width
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                    child: Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
+
+
         ],
       ),
     );

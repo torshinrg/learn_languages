@@ -82,5 +82,41 @@
        "tap_to_speak": "Tap to Speak",
        "recorded_by": "Recorded by ",
        "licence": "License: ",
-       "no_reviews": "'No reviews due right now."
+       "no_reviews": "No reviews due right now.",
+       "exercises_title": "Bite-sized Tasks",
+
+  "reviewProgress": "Word {current} of {total}",
+  "@reviewProgress": {
+    "description": "Progress text in review screen",
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+    "streakDead": "💀 Streak’s dead. Try again now!",
+    "streakZero": "🪔 Let's ignite your streak!",
+    "streakLow": "🔥 Keep going!",
+    "streakMid": "🔥🔥 Momentum!",
+    "streakStrong": "🏮 Torch blazing!",
+    "streakHot": "🔥🔥🔥 Bonfire!",
+    "streakRing": "🔥⭕ Fire ring!",
+    "streakLegend": "🎆 Legendary streak!",
+
+    "@streakDead": { "description": "Shown when streak is broken" },
+    "@streakZero": { "description": "Shown when streak is zero" },
+    "@streakLow": { "description": "Shown when streak is 1–4" },
+    "@streakMid": { "description": "Shown when streak is 5–9" },
+    "@streakStrong": { "description": "Shown when streak is 10–19" },
+    "@streakHot": { "description": "Shown when streak is 20–29" },
+    "@streakRing": { "description": "Shown when streak is 30–49" },
+    "@streakLegend": { "description": "Shown when streak is 50+" },
+    "interface_language": "Interface language",
+    "add": "Add",
+    "add_language": "Add language",
+    "chooseLanguagesError": "Please choose native and learning languages.",
+      "chooseNativeLanguage": "1. Choose your native language",
+      "chooseLearningLanguages": "2. Choose languages to learn",
+      "chooseDailyWordCount": "3. How many words per day?",
+      "getStarted": "Get Started"
+
 }
