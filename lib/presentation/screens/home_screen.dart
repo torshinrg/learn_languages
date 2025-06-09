@@ -401,25 +401,26 @@ class _StreakVisual extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-           LayoutBuilder(
-              builder: (context, constraints) {
-                // constrain to available width
-                return FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                    child: Text(
-                      message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: true,
-                    ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth - 16; // padding inside circle
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: width),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.white),
+                    maxLines: 3,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
+          ),
 
 
         ],
