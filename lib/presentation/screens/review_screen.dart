@@ -33,7 +33,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final StreamSubscription<Duration?> _durSub;
   late final StreamSubscription<PlayerState> _stateSub;
 
-  final List<String> _qualityLabels = ['Again', 'Hard', 'Good', 'Easy'];
+
 
   @override
   void initState() {
@@ -175,7 +175,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Word ${review.wordIndex + 1} of ${review.dueWords.length}',
+                    loc.reviewProgress(review.wordIndex + 1, review.dueWords.length),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -237,8 +237,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     spacing: 12,
                     runSpacing: 8,
                     alignment: WrapAlignment.spaceBetween,
-                    children:
-                        _qualityLabels.map((label) {
+                    children: qualityMap.keys.map((label) {
                           return ElevatedButton(
                             onPressed: () async {
                               final q = qualityMap[label]!;

@@ -75,5 +75,39 @@
   "tap_to_speak": "Toca para hablar",
   "recorded_by": "Grabado por ",
   "licence": "Licencia: ",
-  "no_reviews": "Нет слов на повторение"
+  "no_reviews": "Нет слов на повторение",
+"exercises_title": "Mini retos",
+"reviewProgress": "Palabra {current} de {total}",
+  "@reviewProgress": {
+    "description": "Texto de progreso en la pantalla de repaso",
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "streakDead": "💀 Racha terminada. ¡Inténtalo ahora!",
+    "streakZero": "🪔 ¡Encendamos tu racha!",
+    "streakLow": "🔥 ¡Sigue así!",
+    "streakMid": "🔥🔥 ¡Buen ritmo!",
+    "streakStrong": "🏮 ¡Antorcha encendida!",
+    "streakHot": "🔥🔥🔥 ¡Ya es una fogata!",
+    "streakRing": "🔥⭕ ¡Anillo de fuego!",
+    "streakLegend": "🎆 ¡Racha legendaria!",
+
+    "@streakDead": { "description": "Se muestra cuando se rompe la racha" },
+    "@streakZero": { "description": "Se muestra cuando la racha es cero" },
+    "@streakLow": { "description": "Se muestra cuando la racha es 1–4" },
+    "@streakMid": { "description": "Se muestra cuando la racha es 5–9" },
+    "@streakStrong": { "description": "Se muestra cuando la racha es 10–19" },
+    "@streakHot": { "description": "Se muestra cuando la racha es 20–29" },
+    "@streakRing": { "description": "Se muestra cuando la racha es 30–49" },
+    "@streakLegend": { "description": "Se muestra cuando la racha es 50 o más" },
+     "interface_language": "Idioma de la interfaz",
+      "add": "Agregar",
+      "add_language": "Agregar idioma",
+      "chooseLanguagesError": "Por favor, selecciona tu idioma nativo y los idiomas que quieres aprender.",
+        "chooseNativeLanguage": "1. Elige tu idioma nativo",
+        "chooseLearningLanguages": "2. Elige los idiomas que deseas aprender",
+        "chooseDailyWordCount": "3. ¿Cuántas palabras por día?",
+        "getStarted": "Comenzar"
 }

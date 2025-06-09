@@ -222,8 +222,7 @@ class _InteractiveWordSentenceCardState
     _whisperStart = DateTime.now();
     final result = await _checker.compare(
       userAudioPath: userPath,
-      expectedText:
-          widget.sentences[widget.sentenceIndex].text(langCode),
+      expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
       lang: langCode,
     );
     _whisperEnd = DateTime.now();
@@ -360,6 +359,7 @@ class _InteractiveWordSentenceCardState
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Word text
                     SelectableText(
@@ -422,6 +422,22 @@ class _InteractiveWordSentenceCardState
                               ],
                             )
                             : const SizedBox()),
+                    // ── Attribution (audio source) ────────────────────────────
+                    if (widget.audioLinks.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Divider(),
+                      Text(
+                        '${loc.recorded_by} ${widget.audioLinks.first.username}.',
+                        style: theme.bodySmall,
+                        textAlign: TextAlign.right,
+                      ),
+                      if (widget.audioLinks.first.license.isNotEmpty)
+                        Text(
+                          '${loc.licence} ${widget.audioLinks.first.license}.',
+                          style: theme.bodySmall,
+                          textAlign: TextAlign.right,
+                        ),
+                    ],
                   ],
                 ),
               ),
@@ -501,20 +517,6 @@ class _InteractiveWordSentenceCardState
           ],
 
           const SizedBox(height: 24),
-
-          // ── Attribution (audio source) ────────────────────────────
-          if (widget.audioLinks.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${loc.recorded_by} ${widget.audioLinks.first.username}.',
-              style: theme.bodySmall,
-            ),
-            if (widget.audioLinks.first.license.isNotEmpty)
-              Text(
-                '${loc.licence} ${widget.audioLinks.first.license}.',
-                style: theme.bodySmall,
-              ),
-          ],
         ],
       ),
     );

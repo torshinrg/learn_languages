@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
 import 'package:learn_languages/presentation/providers/task_provider.dart';
 import 'package:learn_languages/presentation/screens/tasks_screen.dart';
 import 'package:learn_languages/services/learning_service.dart';
@@ -86,9 +87,7 @@ class MyApp extends StatelessWidget {
               ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
-          create: (_) => CustomWordsProvider(
-            getIt<ICustomWordRepository>(),
-          ),
+          create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
         ),
         ChangeNotifierProvider<TaskProvider>(
           create:
