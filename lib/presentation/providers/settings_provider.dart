@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import '../../core/constants.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_language.dart';
@@ -62,7 +63,14 @@ class SettingsProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     // --- Locale (интерфейс приложения) ---
-    _localeCode = prefs.getString(_kLocaleKey) ?? 'en';
+    if (prefs.containsKey(_kLocaleKey)) {
+      _localeCode = prefs.getString(_kLocaleKey)!;
+    } else {
+      final deviceCode = ui.window.locale.languageCode;
+      final supported =
+          AppLanguage.values.map((lang) => lang.code).contains(deviceCode);
+      _localeCode = supported ? deviceCode : 'en';
+    }
 
     // --- Родной язык ---
     _nativeLanguageCode = prefs.getString(_kNativeLanguageKey);
