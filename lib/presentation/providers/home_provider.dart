@@ -47,10 +47,17 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> _loadCanStudy() async {
-    final batch = await _learningService.getDailyBatch(
-      _settingsProvider.dailyCount,
-    );
-    _canStudy = batch.isNotEmpty;
+    final daily = _settingsProvider.dailyCount;
+    final studied = _settingsProvider.studiedCount;
+
+    if (studied >= daily) {
+      _canStudy = false;
+      notifyListeners();
+      return;
+    }
+
+    final batch = await _learningService.getDailyBatch(daily);
+    _canStudy = batch.isNotEmpty && studied < daily;
     notifyListeners();
   }
 
