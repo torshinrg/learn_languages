@@ -1,0 +1,121 @@
+{
+  "@@locale": "fr",
+  "appTitle": "Apprendre les langues",
+  "homeGreeting": "Bienvenue, commençons à apprendre !",
+  "studyButton": "Commencer l’étude",
+  "reviewButton": "Révision",
+  "streak": "🔥 Série : ",
+  "day": "jour",
+  "days": "jours",
+  "reviewsDue": "{dueCount, plural, =0{Aucune révision à faire} one{1 révision à faire} other{{dueCount} révisions à faire}}",
+  "@reviewsDue": {
+    "description": "Combien de révisions sont prévues",
+    "placeholders": {
+      "dueCount": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "review": "Réviser",
+  "today_session": "Session du jour",
+  "new_words_learned": "nouveaux mots appris",
+  "start_study": "Commencer l’étude",
+  "vocabulary": "Vocabulaire",
+  "stats": "Statistiques",
+  "settings": "Paramètres",
+  "add_custom_word": "Ajouter un mot personnalisé",
+  "new_word": "Nouveau mot",
+  "added": "Ajouté ",
+  "reminder_settings": "Paramètres de rappel",
+  "add_reminder": "Ajouter un rappel",
+  "reminderSet": "Rappel programmé à {pickedTime}. Maintenant : {now}. Prochain déclenchement : {next}.",
+  "@reminderSet": {
+    "description": "Texte de confirmation lors de la programmation d’un nouveau rappel",
+    "placeholders": {
+      "pickedTime": { "type": "String", "example": "14:30" },
+      "now":       { "type": "String", "example": "2025-05-29 19:00" },
+      "next":      { "type": "String", "example": "2025-05-30 14:30" }
+    }
+  },
+  "reminderUpdated": "Rappel mis à jour à {pickedTime}.",
+  "@reminderUpdated": {
+    "description": "Texte de confirmation lors de la mise à jour d’un rappel existant",
+    "placeholders": {
+      "pickedTime": { "type": "String", "example": "08:00" }
+    }
+  },
+  "qualityAgain": "Encore",
+  "@qualityAgain": { "description": "Répéter la révision" },
+
+  "qualityHard": "Difficile",
+  "@qualityHard": { "description": "Marquer la révision comme difficile" },
+
+  "qualityGood": "Bien",
+  "@qualityGood": { "description": "Marquer la révision comme correcte" },
+
+  "qualityEasy": "Facile",
+  "@qualityEasy": { "description": "Marquer la révision comme facile" },
+
+  "words_per_day": "Mots par jour",
+  "save": "Enregistrer",
+  "study_reminders": "Rappels d’étude",
+  "per_day": "par jour",
+  "custom_words": "Mots personnalisés",
+  "today_learned": "Appris aujourd’hui",
+  "current_streak": "Série actuelle",
+  "total_words": "Total de mots",
+  "mastered_words": "Mots maîtrisés",
+  "no_words": "Aucun mot à étudier.",
+  "study": "Étudier ",
+  "got_it": "Compris",
+  "skip_word": "Passer le mot",
+  "learning_now": "En cours d’apprentissage",
+  "pending": "En attente",
+  "mastered": "Maîtrisé",
+  "excellent": "🎉 Excellent ! Tu as réussi !",
+  "great_job": "👍 Super travail !",
+  "good_work": "🙂 Bien joué, continue !",
+  "try_again": "💪 N’abandonne pas, réessaie !",
+  "tap_to_speak_again": "Appuie pour reparler",
+  "next_sentence": "Phrase suivante",
+  "tap_to_speak": "Appuie pour parler",
+  "recorded_by": "Enregistré par ",
+  "licence": "Licence : ",
+  "no_reviews": "Aucune révision pour le moment.",
+  "exercises_title": "🧠 Mini-tâches",
+  "reviewProgress": "Mot {current} sur {total}",
+  "@reviewProgress": {
+    "description": "Texte de progression pendant la révision",
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "streakDead": "💀 Série interrompue. Reprends maintenant !",
+  "streakZero": "🪔 Allumons ta série !",
+  "streakLow": "🔥 Continue comme ça !",
+  "streakMid": "🔥🔥 Tu prends ton élan !",
+  "streakStrong": "🏮 La torche est allumée !",
+  "streakHot": "🔥🔥🔥 Brasier !",
+  "streakRing": "🔥⭕ Cercle de feu !",
+  "streakLegend": "🎆 Série légendaire !",
+
+  "@streakDead": { "description": "Affiché quand la série est rompue" },
+  "@streakZero": { "description": "Affiché quand la série est à zéro" },
+  "@streakLow": { "description": "Affiché pour une série de 1 à 4" },
+  "@streakMid": { "description": "Affiché pour une série de 5 à 9" },
+  "@streakStrong": { "description": "Affiché pour une série de 10 à 19" },
+  "@streakHot": { "description": "Affiché pour une série de 20 à 29" },
+  "@streakRing": { "description": "Affiché pour une série de 30 à 49" },
+  "@streakLegend": { "description": "Affiché pour une série de 50+" },
+
+  "interface_language": "Langue de l’interface",
+  "add": "Ajouter",
+  "add_language": "Ajouter une langue",
+  "chooseLanguagesError": "Veuillez choisir une langue maternelle et une langue à apprendre.",
+  "chooseNativeLanguage": "1. Choisis ta langue maternelle",
+  "chooseLearningLanguages": "2. Choisis les langues à apprendre",
+  "chooseDailyWordCount": "3. Combien de mots par jour ?",
+  "getStarted": "Commencer"
+}

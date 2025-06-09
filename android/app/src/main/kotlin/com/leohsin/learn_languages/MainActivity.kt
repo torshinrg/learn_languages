@@ -1,4 +1,4 @@
-package com.leohsin.learn_languages_dev
+package com.leohsin.learn_languages
 
 import io.flutter.embedding.android.FlutterActivity
 

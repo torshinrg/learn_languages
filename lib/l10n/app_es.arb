@@ -76,7 +76,7 @@
   "recorded_by": "Grabado por ",
   "licence": "Licencia: ",
   "no_reviews": "Нет слов на повторение",
-"exercises_title": "Mini retos",
+"exercises_title": "🧠 Mini retos",
 "reviewProgress": "Palabra {current} de {total}",
   "@reviewProgress": {
     "description": "Texto de progreso en la pantalla de repaso",
