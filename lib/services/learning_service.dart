@@ -1,6 +1,7 @@
 /// lib/services/learning_service.dart
 
 import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/entities/audio_link.dart';
 import '../domain/entities/word.dart';
@@ -25,8 +26,33 @@ class LearningService {
     required this.customRepo,
   });
 
+  Future<String> _activeLanguageCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final codes = prefs.getStringList('learningLanguages') ?? ['es'];
+    if (codes.isEmpty) return 'es';
+    return codes.first;
+  }
+
+  Future<List<Word>> _allWords() async {
+    final base = await wordRepo.fetchAll();
+    final lang = await _activeLanguageCode();
+    final custom = await customRepo.fetchByLanguage(lang);
+    final customWords = custom
+        .map(
+          (c) => Word(
+            id: c.id,
+            text: c.text,
+            translation: null,
+            sentence: null,
+            type: WordType.custom,
+          ),
+        )
+        .toList();
+    return [...base, ...customWords];
+  }
+
   Future<List<Word>> getDailyBatch(int count) async {
-    final allWords = await wordRepo.fetchAll();
+    final allWords = await _allWords();
     final custom = allWords.where((w) => w.type == WordType.custom).toList();
     if (custom.isNotEmpty) return custom.take(count).toList();
 
@@ -47,7 +73,7 @@ class LearningService {
   }
 
   Future<List<Word>> getFreshBatch(int count) async {
-    final allWords = await wordRepo.fetchAll();
+    final allWords = await _allWords();
     final allSrs = await srsRepo.fetchAll();
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
 
@@ -65,7 +91,7 @@ class LearningService {
     return [...custom, ...normal];
   }
 
-  Future<List<Word>> getAllWords() => wordRepo.fetchAll();
+  Future<List<Word>> getAllWords() => _allWords();
 
   Future<void> markLearned(String wordId, bool success) {
     return srsRepo.scheduleNext(wordId, success);
@@ -107,7 +133,7 @@ class LearningService {
 
   Future<List<Word>> getDueWords() async {
     final srsList = await srsRepo.fetchDue();
-    final allWords = await wordRepo.fetchAll();
+    final allWords = await _allWords();
     return allWords.where((w) => srsList.any((s) => s.wordId == w.id)).toList();
   }
 
