@@ -1,4 +1,5 @@
 /// lib/presentation/widgets/interactive_word_sentence_card.dart
+library;
 
 import 'dart:async';
 import 'dart:math';
@@ -37,7 +38,7 @@ class InteractiveWordSentenceCard extends StatefulWidget {
   final VoidCallback onNextSentence;
 
   const InteractiveWordSentenceCard({
-    Key? key,
+    super.key,
     required this.wordText,
     required this.sentences,
     required this.sentenceIndex,
@@ -50,7 +51,7 @@ class InteractiveWordSentenceCard extends StatefulWidget {
     required this.onReplayAudio,
     required this.onPrevSentence,
     required this.onNextSentence,
-  }) : super(key: key);
+  });
 
   @override
   State<InteractiveWordSentenceCard> createState() =>
@@ -479,14 +480,14 @@ class _InteractiveWordSentenceCardState
             ),
             const SizedBox(height: 12),
             Text(
-              'STT: "${_sttTranscription}" '
+              'STT: "$_sttTranscription" '
               '(${_sttEnd!.difference(_sttStart!).inMilliseconds} ms)',
               style: theme.bodySmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Whisper: "${_whisperTranscription}" '
+              'Whisper: "$_whisperTranscription" '
               '(${_whisperEnd!.difference(_whisperStart!).inMilliseconds} ms)',
               style: theme.bodySmall,
               textAlign: TextAlign.center,

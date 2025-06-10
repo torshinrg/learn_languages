@@ -9,7 +9,7 @@ import '../providers/notification_settings_provider.dart';
 import 'package:learn_languages/services/notification_service.dart';
 
 class PermissionRequestScreen extends StatelessWidget {
-  const PermissionRequestScreen({Key? key}) : super(key: key);
+  const PermissionRequestScreen({super.key});
 
   Future<void> _requestPermissions(BuildContext context) async {
     // 1) Initialize notifications (creates channel + may ask on Android13+)

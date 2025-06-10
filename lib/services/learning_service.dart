@@ -1,4 +1,5 @@
 /// lib/services/learning_service.dart
+library;
 
 import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,12 +1,8 @@
 // lib/services/speech_recognition_service.dart
 
 import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/services.dart'; // for rootBundle
-import 'package:path_provider/path_provider.dart';
 import 'package:whisper_ggml/whisper_ggml.dart'; // WhisperController, WhisperModel
-import 'package:http/http.dart' as http;
-import 'pronunciation_scoring_service.dart';
 
 class SpeechRecognitionService {
   final WhisperController _controller = WhisperController();
@@ -57,7 +53,7 @@ class SpeechRecognitionService {
       );
       final text = result?.transcription.text.trim() ?? '';
       return text;
-    } catch (e, st) {
+    } catch (e) {
       rethrow;
     }
   }

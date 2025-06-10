@@ -1,6 +1,5 @@
 // File: lib/presentation/providers/settings_provider.dart
 
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:ui' as ui;
