@@ -5,9 +5,10 @@ import '../../domain/repositories/i_custom_word_repository.dart';
 class LocalCustomWordRepository implements ICustomWordRepository {
   final Database db;
   static const _table = 'custom_words';
+  late final Future<void> _ready;
 
   LocalCustomWordRepository(this.db) {
-    _init();
+    _ready = _init();
   }
 
   Future<void> _init() async {
@@ -25,21 +26,28 @@ class LocalCustomWordRepository implements ICustomWordRepository {
     }
   }
 
+  Future<void> _ensureReady() => _ready;
+
   @override
-  Future<void> add(CustomWord word) => db.insert(
-        _table,
-        word.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+  Future<void> add(CustomWord word) async {
+    await _ensureReady();
+    await db.insert(
+      _table,
+      word.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 
   @override
   Future<List<CustomWord>> fetchAll() async {
+    await _ensureReady();
     final rows = await db.query(_table);
     return rows.map((m) => CustomWord.fromMap(m)).toList();
   }
 
   @override
   Future<List<CustomWord>> fetchByLanguage(String languageCode) async {
+    await _ensureReady();
     final rows = await db.query(
       _table,
       where: 'language_code = ?',
@@ -49,6 +57,8 @@ class LocalCustomWordRepository implements ICustomWordRepository {
   }
 
   @override
-  Future<void> remove(String id) =>
-      db.delete(_table, where: 'id = ?', whereArgs: [id]);
+  Future<void> remove(String id) async {
+    await _ensureReady();
+    await db.delete(_table, where: 'id = ?', whereArgs: [id]);
+  }
 }
