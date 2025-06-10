@@ -14,7 +14,6 @@ Learn Languages is a cross‑platform Flutter application for practicing new lan
 
 - `lib/` – main application code
 - `assets/` – bundled databases, models and icons
-- `test/` – unit tests
 
 ## License
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. See [LICENSE](LICENSE) for details.
