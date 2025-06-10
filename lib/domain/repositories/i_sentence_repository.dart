@@ -9,5 +9,9 @@ abstract class ISentenceRepository {
 
   /// Fetch up to [limit] sentences containing [wordText] (case-insensitive),
   /// in random order. If [limit] is null, returns *all* matches.
-  Future<List<Sentence>> fetchForWord(String wordText, {int? limit});
+  Future<List<Sentence>> fetchForWord(
+    String wordText,
+    String languageCode, {
+    int? limit,
+  });
 }

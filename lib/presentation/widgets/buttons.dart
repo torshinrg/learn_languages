@@ -28,7 +28,7 @@ class PrimaryButton extends StatelessWidget {
 /// A full-width, fixed-height secondary (outlined) button.
 class SecondaryButton extends StatelessWidget {
   final String label;
-  final VoidCallback? onPressed;  // allow null to disable
+  final VoidCallback? onPressed;
   const SecondaryButton({
     super.key,
     required this.label,
@@ -41,7 +41,7 @@ class SecondaryButton extends StatelessWidget {
       width: double.infinity,
       height: 48,
       child: OutlinedButton(
-        onPressed: onPressed,      // can be null
+        onPressed: onPressed,
         child: Text(label),
       ),
     );

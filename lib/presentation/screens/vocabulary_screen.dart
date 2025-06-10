@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/word.dart';
 import '../providers/vocabulary_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VocabularyScreen extends StatefulWidget {
   const VocabularyScreen({super.key});
@@ -14,6 +15,7 @@ class VocabularyScreen extends StatefulWidget {
 
 class _VocabularyScreenState extends State<VocabularyScreen> {
   late VocabularyProvider _vocab;
+
 
   @override
   void initState() {
@@ -33,18 +35,19 @@ class _VocabularyScreenState extends State<VocabularyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Vocabulary')),
+      appBar: AppBar(title:  Text(loc.vocabulary)),
       body: Consumer<VocabularyProvider>(
         builder: (_, vm, __) {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildSection('Learning Now', vm.learningNow),
+              _buildSection(loc.learning_now, vm.learningNow),
               const SizedBox(height: 16),
-              _buildSection('Pending', vm.pending),
+              _buildSection(loc.pending, vm.pending),
               const SizedBox(height: 16),
-              _buildSection('Mastered', vm.learned),
+              _buildSection(loc.mastered, vm.learned),
             ],
           );
         },

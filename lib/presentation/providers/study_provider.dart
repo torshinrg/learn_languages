@@ -10,7 +10,7 @@ class StudyProvider extends ChangeNotifier {
   final LearningService _learning;
   final SRSService _srs;
   List<Word> _batch = [];
-  List<Word> _lastBatch = [];
+  final List<Word> _lastBatch = [];
 
   StudyProvider(this._learning, this._srs);
 

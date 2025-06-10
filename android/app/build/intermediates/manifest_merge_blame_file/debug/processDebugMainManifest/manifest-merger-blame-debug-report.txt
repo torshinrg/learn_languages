@@ -1,0 +1,233 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.leohsin.learn_languages"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="35" />
+10    <!--
+11         The INTERNET permission is required for development. Specifically,
+12         the Flutter tool needs it to communicate with the running application
+13         to allow setting breakpoints, to provide hot reload, etc.
+14    -->
+15    <uses-permission android:name="android.permission.INTERNET" />
+15-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:7:5-67
+15-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:7:22-64
+16    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+16-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:2:5-80
+16-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:2:22-78
+17    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+17-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:3:5-79
+17-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:3:22-76
+18    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+18-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:4:5-81
+18-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:4:22-78
+19    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+19-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:5:5-74
+19-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:5:22-71
+20    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+20-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:6:5-76
+20-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:6:22-74
+21    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+21-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:8:5-70
+21-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:8:22-68
+22    <uses-permission android:name="android.permission.BLUETOOTH" />
+22-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:9:5-67
+22-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:9:22-65
+23    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+23-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:10:5-73
+23-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:10:22-71
+24    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+24-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:11:5-75
+24-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:11:22-73
+25    <!--
+26 Required to query activities that can process text, see:
+27         https://developer.android.com/training/package-visibility?hl=en and
+28         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+29
+30         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin.
+31    -->
+32    <queries>
+32-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:62:5-67:15
+33        <intent>
+33-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:63:9-66:18
+34            <action android:name="android.intent.action.PROCESS_TEXT" />
+34-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:64:13-72
+34-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:64:21-70
+35
+36            <data android:mimeType="text/plain" />
+36-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:65:13-50
+36-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:65:19-48
+37        </intent>
+38    </queries>
+39
+40    <uses-permission android:name="android.permission.VIBRATE" />
+40-->[:flutter_local_notifications] /home/rus/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.2.1/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-66
+40-->[:flutter_local_notifications] /home/rus/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.2.1/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:22-63
+41    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+41-->[androidx.media3:media3-common:1.4.1] /home/rus/.gradle/caches/8.10.2/transforms/f287878c588d535c6238ddf78c37b2ed/transformed/jetified-media3-common-1.4.1/AndroidManifest.xml:22:5-79
+41-->[androidx.media3:media3-common:1.4.1] /home/rus/.gradle/caches/8.10.2/transforms/f287878c588d535c6238ddf78c37b2ed/transformed/jetified-media3-common-1.4.1/AndroidManifest.xml:22:22-76
+42
+43    <permission
+43-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+44        android:name="com.leohsin.learn_languages.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+44-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+45        android:protectionLevel="signature" />
+45-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+46
+47    <uses-permission android:name="com.leohsin.learn_languages.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+47-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+47-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+48
+49    <application
+50        android:name="android.app.Application"
+51        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+51-->[androidx.core:core:1.13.1] /home/rus/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+52        android:debuggable="true"
+53        android:extractNativeLibs="false"
+54        android:icon="@mipmap/ic_launcher"
+55        android:label="learn languages" >
+56        <receiver
+57            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+58            android:exported="true" />
+59        <receiver
+60            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+61            android:exported="true" >
+62            <intent-filter>
+63                <action android:name="android.intent.action.BOOT_COMPLETED" />
+64                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+65                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+66                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+67            </intent-filter>
+68        </receiver>
+69        <receiver
+70            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
+71            android:exported="true" />
+72
+73        <activity
+74            android:name="com.leohsin.learn_languages.MainActivity"
+75            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+76            android:exported="true"
+77            android:hardwareAccelerated="true"
+78            android:launchMode="singleTop"
+79            android:theme="@style/LaunchTheme"
+80            android:windowSoftInputMode="adjustResize" >
+81
+82            <!--
+83                 Specifies an Android theme to apply to this Activity as soon as
+84                 the Android process has started. This theme is visible to the user
+85                 while the Flutter UI initializes. After that, this theme continues
+86                 to determine the Window background behind the Flutter UI.
+87            -->
+88            <meta-data
+89                android:name="io.flutter.embedding.android.NormalTheme"
+90                android:resource="@style/NormalTheme" />
+91
+92            <intent-filter>
+93                <action android:name="android.intent.action.MAIN" />
+94
+95                <category android:name="android.intent.category.LAUNCHER" />
+96
+97                <action android:name="android.intent.action.SEND" />
+98
+99                <category android:name="android.intent.category.DEFAULT" />
+100
+101                <data android:mimeType="text/plain" />
+101-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:65:13-50
+101-->/home/rus/personal/projects/learn_languages/android/app/src/main/AndroidManifest.xml:65:19-48
+102            </intent-filter>
+103        </activity>
+104        <!--
+105             Don't delete the meta-data below.
+106             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+107        -->
+108        <meta-data
+109            android:name="flutterEmbedding"
+110            android:value="2" />
+111
+112        <activity
+112-->[:url_launcher_android] /home/rus/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:9-11:74
+113            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+113-->[:url_launcher_android] /home/rus/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:13-74
+114            android:exported="false"
+114-->[:url_launcher_android] /home/rus/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:13-37
+115            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+115-->[:url_launcher_android] /home/rus/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:13-71
+116
+117        <uses-library
+117-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:23:9-25:40
+118            android:name="androidx.window.extensions"
+118-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:24:13-54
+119            android:required="false" />
+119-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:25:13-37
+120        <uses-library
+120-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:26:9-28:40
+121            android:name="androidx.window.sidecar"
+121-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:27:13-51
+122            android:required="false" />
+122-->[androidx.window:window:1.2.0] /home/rus/.gradle/caches/8.10.2/transforms/5093ab42d2307deb2d7ac0b7f5718c38/transformed/jetified-window-1.2.0/AndroidManifest.xml:28:13-37
+123
+124        <provider
+124-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:24:9-32:20
+125            android:name="androidx.startup.InitializationProvider"
+125-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:25:13-67
+126            android:authorities="com.leohsin.learn_languages.androidx-startup"
+126-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:26:13-68
+127            android:exported="false" >
+127-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:27:13-37
+128            <meta-data
+128-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+129                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+129-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+130                android:value="androidx.startup" />
+130-->[androidx.lifecycle:lifecycle-process:2.7.0] /home/rus/.gradle/caches/8.10.2/transforms/e80aa748ff6540407d8dba61c0d945fe/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+131            <meta-data
+131-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+132                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+132-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+133                android:value="androidx.startup" />
+133-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+134        </provider>
+135
+136        <receiver
+136-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+137            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+137-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+138            android:directBootAware="false"
+138-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+139            android:enabled="true"
+139-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+140            android:exported="true"
+140-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+141            android:permission="android.permission.DUMP" >
+141-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+142            <intent-filter>
+142-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+143                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+143-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+143-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+144            </intent-filter>
+145            <intent-filter>
+145-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+146                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+146-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+146-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+147            </intent-filter>
+148            <intent-filter>
+148-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+149                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+149-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+149-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+150            </intent-filter>
+151            <intent-filter>
+151-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+152                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+152-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+152-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/rus/.gradle/caches/8.10.2/transforms/5f7dcf6815bacc3ae7f099ba801348de/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+153            </intent-filter>
+154        </receiver>
+155    </application>
+156
+157</manifest>

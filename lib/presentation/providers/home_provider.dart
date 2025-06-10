@@ -1,5 +1,3 @@
-// lib/presentation/providers/home_provider.dart
-
 import 'package:flutter/foundation.dart';
 import '../../services/learning_service.dart';
 import '../../services/srs_service.dart';
@@ -18,14 +16,16 @@ class HomeProvider extends ChangeNotifier {
 
   /// How many *new* words you can still learn today:
   int get availableCount =>
-      (_settingsProvider.dailyCount - _settingsProvider.studiedCount)
-          .clamp(0, _settingsProvider.dailyCount);
+      (_settingsProvider.dailyCount - _settingsProvider.studiedCount).clamp(
+        0,
+        _settingsProvider.dailyCount,
+      );
 
   HomeProvider(
-      this._srsService,
-      this._learningService,
-      this._settingsProvider,
-      ) {
+    this._srsService,
+    this._learningService,
+    this._settingsProvider,
+  ) {
     // Re-compute whenever settings (dailyCount or studiedCount) change:
     _settingsProvider.addListener(_onSettingsChanged);
 
@@ -41,14 +41,23 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> _loadDueCount() async {
-    final dueList = await _srsService.fetchDueData();
-    _dueCount = dueList.length;
+    final dueWords = await _learningService.getDueWords();
+    _dueCount = dueWords.length;
     notifyListeners();
   }
 
   Future<void> _loadCanStudy() async {
-    final batch = await _learningService.getDailyBatch(_settingsProvider.dailyCount);
-    _canStudy = batch.isNotEmpty;
+    final daily = _settingsProvider.dailyCount;
+    final studied = _settingsProvider.studiedCount;
+
+    if (studied >= daily) {
+      _canStudy = false;
+      notifyListeners();
+      return;
+    }
+
+    final batch = await _learningService.getDailyBatch(daily);
+    _canStudy = batch.isNotEmpty && studied < daily;
     notifyListeners();
   }
 
@@ -69,11 +78,16 @@ class HomeProvider extends ChangeNotifier {
   Future<void> _preloadStudySentences() async {
     final count = _settingsProvider.dailyCount;
     final batch = await _learningService.getDailyBatch(count);
+    final languageCode = _settingsProvider.learningLanguageCodes.first;
 
     // Fire‐and‐forget both initial and remaining example fetches:
     for (final w in batch) {
-      _learningService.getInitialSentencesForWord(w.text, limit: 3);
-      _learningService.getRemainingSentencesForWord(w.text, []);
+      _learningService.getInitialSentencesForWord(
+        w.text,
+        languageCode,
+        limit: 3,
+      );
+      _learningService.getRemainingSentencesForWord(w.text, [], languageCode);
     }
   }
 }

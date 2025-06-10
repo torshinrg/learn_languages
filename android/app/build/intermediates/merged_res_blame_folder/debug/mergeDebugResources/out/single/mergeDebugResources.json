@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/drawable-v21_launch_background.xml.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/drawable-v21/launch_background.xml"
+    },
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.leohsin.learn_languages.app-debug-57:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.leohsin.learn_languages.app-main-59:/mipmap-xhdpi/ic_launcher.png"
+    }
+]

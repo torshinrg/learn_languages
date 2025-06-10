@@ -38,7 +38,7 @@ class LocalSRSRepository implements ISRSRepository {
     final todayMidnight = DateTime(now.year, now.month, now.day);
 
     if (existing.isEmpty) {
-      // First time: interval = 1 day, EF = 2.5, reps = 1
+      // First time: insert with REPLACE on conflict
       final intervalDays = 1;
       final nextReviewDate = todayMidnight.add(Duration(days: intervalDays));
       final data = SRSData(
@@ -48,21 +48,23 @@ class LocalSRSRepository implements ISRSRepository {
         repetition: 1,
         nextReview: nextReviewDate,
       );
-      await db.insert('srs_data', data.toMap());
+      await db.insert(
+        'srs_data',
+        data.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     } else {
-      // SM-2 algorithm
+      // SM-2 algorithm → update existing row
       final old = SRSData.fromMap(existing.first);
       final newReps = success ? old.repetition + 1 : 0;
       final newEf = success
           ? (old.easiness + (0.1 - (5 - 5) * (0.08 + (5 - 5) * 0.02)))
           : old.easiness;
-
       final newInterval = newReps == 1
           ? 1
           : newReps == 2
           ? 6
           : (old.interval * newEf).ceil();
-
       final nextReviewDate = todayMidnight.add(Duration(days: newInterval));
 
       await db.update(
@@ -87,12 +89,11 @@ class LocalSRSRepository implements ISRSRepository {
       whereArgs: [wordId],
     );
 
-    // Compute today at midnight
     final now = DateTime.now();
     final todayMidnight = DateTime(now.year, now.month, now.day);
 
     if (existing.isEmpty) {
-      // First review (treat quality as perfect)
+      // First review: also use REPLACE
       final intervalDays = 1;
       final nextReviewDate = todayMidnight.add(Duration(days: intervalDays));
       final data = SRSData(
@@ -102,21 +103,21 @@ class LocalSRSRepository implements ISRSRepository {
         repetition: 1,
         nextReview: nextReviewDate,
       );
-      await db.insert('srs_data', data.toMap());
+      await db.insert(
+        'srs_data',
+        data.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
       return;
     }
 
     final old = SRSData.fromMap(existing.first);
 
-    // 1) Update easiness
+    // update EF, reps, interval...
     final newEf = (old.easiness +
         (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
         .clamp(1.3, double.infinity);
-
-    // 2) Update repetition count
     final newRep = quality < 3 ? 0 : old.repetition + 1;
-
-    // 3) Compute next interval days
     final newInterval = newRep == 0
         ? 1
         : newRep == 1
@@ -124,8 +125,6 @@ class LocalSRSRepository implements ISRSRepository {
         : newRep == 2
         ? 6
         : (old.interval * newEf).ceil();
-
-    // 4) Schedule nextReview at midnight
     final nextReviewDate = todayMidnight.add(Duration(days: newInterval));
 
     await db.update(
