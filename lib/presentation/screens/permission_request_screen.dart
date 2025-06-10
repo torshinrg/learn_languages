@@ -47,18 +47,15 @@ class PermissionRequestScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'This app requires Internet access to download learning content.',
-            ),
+            Text(loc.notification_access),
+
             const SizedBox(height: 12),
-            Text(
-              'Audio permission is needed to record your voice and check pronunciation.',
-            ),
+            Text(loc.record_access),
             const SizedBox(height: 32),
             Center(
               child: ElevatedButton(
                 onPressed: () => _requestPermissions(context),
-                child: const Text('Allow'),
+                child: Text(loc.allow),
               ),
             ),
           ],

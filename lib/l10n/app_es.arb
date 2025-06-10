@@ -109,5 +109,8 @@
         "chooseNativeLanguage": "1. Elige tu idioma nativo",
         "chooseLearningLanguages": "2. Elige los idiomas que deseas aprender",
         "chooseDailyWordCount": "3. ¿Cuántas palabras por día?",
-        "getStarted": "Comenzar"
+        "getStarted": "Comenzar",
+        "notification_access": "Esta app necesita acceso a las notificaciones para enviar recordatorios y actualizaciones.",
+  "record_access": "Se necesita permiso de audio para grabar tu voz y verificar la pronunciación.",
+  "allow": "Permitir"
 }
