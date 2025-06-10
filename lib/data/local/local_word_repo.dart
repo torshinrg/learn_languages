@@ -20,33 +20,25 @@ class LocalWordRepository implements IWordRepository {
     final prefs = await SharedPreferences.getInstance();
     final codes = prefs.getStringList('learningLanguages') ?? ['es'];
     if (codes.isEmpty) {
-      print(
-        '🔍 [LocalWordRepo] No learningLanguages found, defaulting to "es_words"',
-      );
       return 'es_words';
     }
     final code = codes.first;
     final tableName = '${code}_words';
-    print(
-      '🔍 [LocalWordRepo] learningLanguages=$codes, using table="$tableName"',
-    );
+
     return tableName;
   }
 
   @override
   Future<List<Word>> fetchAll() async {
     final table = await _getTable();
-    // Log the raw query attempt
-    print('🔍 [LocalWordRepo] Running query on table="$table"');
+
     List<Map<String, Object?>> rows;
     try {
       rows = await db.query(table);
     } catch (e) {
-      print('❌ [LocalWordRepo] ERROR querying table "$table": $e');
       return <Word>[];
     }
 
-    print('🔍 [LocalWordRepo] Retrieved ${rows.length} rows from "$table"');
     final words = <Word>[];
     for (var i = 0; i < rows.length; i++) {
       final r = rows[i];
@@ -61,25 +53,14 @@ class LocalWordRepository implements IWordRepository {
             type: WordType.normal,
           ),
         );
-      } else {
-        print(
-          '⚠️ [LocalWordRepo] Skipping row $i in table="$table" because '
-          'r["text"]=${value.runtimeType} (${value?.toString() ?? "null"})',
-        );
-      }
+      } else {}
     }
-    print(
-      '🔍 [LocalWordRepo] Mapped ${words.length} valid Word(s) from "$table"',
-    );
     return words;
   }
 
   @override
   Future<void> addOrUpdate(Word word) async {
     // We do not support inserts/updates on these static language tables.
-    print(
-      '❌ [LocalWordRepo] addOrUpdate() called unexpectedly for "${word.text}"',
-    );
     throw UnimplementedError(
       'addOrUpdate() is not supported for language-specific tables.',
     );
@@ -88,7 +69,6 @@ class LocalWordRepository implements IWordRepository {
   @override
   Future<void> remove(String id) async {
     // We do not support deletions on these static language tables.
-    print('❌ [LocalWordRepo] remove() called unexpectedly for id="$id"');
     throw UnimplementedError(
       'remove() is not supported for language-specific tables.',
     );

@@ -446,7 +446,9 @@ class _InteractiveWordSentenceCardState
           const SizedBox(height: 12),
 
           // ── Recording / processing / feedback area ─────────────────
-          if (_processing)
+          if (widget.audioLoading || !hasSentence)
+            const SizedBox()
+          else if (_processing)
             const CircularProgressIndicator()
           else if (_recording)
             GestureDetector(
