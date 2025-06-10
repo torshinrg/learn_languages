@@ -33,19 +33,15 @@ class AudioCheckService {
     // 2) transcribe
     final text = await _speech.transcribeFile(wavPath: file.path, lang: lang);
     _refTextCache[sentenceId] = text;
-    print('📝 [AudioCheckService] cached refText="$text"');
   }
 
   /// Must be called once before any compare()/transcribeUser() calls.
   Future<void> init({WhisperModel model = WhisperModel.tiny}) async {
     if (_ready) {
-      print('✅ [AudioCheckService] init() skipped, already ready');
       return;
     }
-    print('🔄 [AudioCheckService] init(model=${model.modelName})');
     await _speech.init(model: model);
     _ready = true;
-    print('✅ [AudioCheckService] init complete');
   }
 
   /// Straight transcript of a user WAV, no scoring.
@@ -55,25 +51,20 @@ class AudioCheckService {
 
   /// Download a reference WAV from [url] into the cache dir as `ref_<id>.wav`.
   Future<File> downloadRef(String url, String id) async {
-    print('🔄 [AudioCheckService] downloadRef(url=$url, id=$id)');
     final dir = await getTemporaryDirectory();
     final path = '${dir.path}/ref_$id.wav';
     final file = File(path);
 
     if (await file.exists()) {
-      print('📁 [AudioCheckService] Using cached ref at $path');
     } else {
-      print('📥 [AudioCheckService] Downloading ref from $url');
       final resp = await http.get(Uri.parse(url));
       if (resp.statusCode != 200) {
-        print('❌ [AudioCheckService] download failed (${resp.statusCode})');
         throw HttpException(
           'Failed to download reference',
           uri: Uri.parse(url),
         );
       }
       await file.writeAsBytes(resp.bodyBytes);
-      print('📁 [AudioCheckService] Saved ref to $path');
     }
     return file;
   }
