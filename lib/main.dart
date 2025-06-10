@@ -4,17 +4,13 @@ import 'package:learn_languages/domain/repositories/i_custom_word_repository.dar
 import 'package:learn_languages/presentation/providers/task_provider.dart';
 import 'package:learn_languages/presentation/screens/tasks_screen.dart';
 import 'package:learn_languages/services/learning_service.dart';
-import 'package:learn_languages/services/notification_service.dart';
 import 'package:learn_languages/services/srs_service.dart';
 import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/di.dart';
 import 'core/navigation.dart';
-import 'domain/repositories/i_srs_repository.dart';
 import 'domain/repositories/i_task_repository.dart';
-import 'domain/repositories/i_word_repository.dart';
 import 'presentation/widgets/share_handler.dart';
 import 'presentation/providers/custom_words_provider.dart';
 import 'presentation/providers/home_provider.dart';
@@ -49,7 +45,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -118,12 +114,7 @@ class MyApp extends StatelessWidget {
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             localeResolutionCallback: (locale, supported) {
-              if (settings.locale != null) return settings.locale;
-              if (locale == null) return supported.first;
-              for (var l in supported) {
-                if (l.languageCode == locale.languageCode) return l;
-              }
-              return supported.first;
+              return settings.locale;
             },
             title: 'Learn Languages',
             theme: ThemeData(

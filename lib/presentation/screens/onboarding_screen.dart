@@ -12,7 +12,7 @@ import 'permission_request_screen.dart';
 import 'home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -20,7 +20,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   String? _selectedNative; // код родного языка
-  List<String> _selectedLearning = []; // список кодов изучаемых языков
+  final List<String> _selectedLearning = []; // список кодов изучаемых языков
   final TextEditingController _dailyCountController = TextEditingController(
     text: '',
   );
@@ -198,7 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class InitialEntryRedirect extends StatefulWidget {
-  const InitialEntryRedirect({Key? key}) : super(key: key);
+  const InitialEntryRedirect({super.key});
 
   @override
   State<InitialEntryRedirect> createState() => _InitialEntryRedirectState();
@@ -271,7 +271,7 @@ class _InitialEntryRedirectState extends State<InitialEntryRedirect> {
 /// Пустой заглушечный экран, сразу переходящий на реальный HomeScreen.
 /// Можно поменять на любой, более подходящий вашим маршрутам.
 class HomeScreenPlaceholder extends StatelessWidget {
-  const HomeScreenPlaceholder({Key? key}) : super(key: key);
+  const HomeScreenPlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {

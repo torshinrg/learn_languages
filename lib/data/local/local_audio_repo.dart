@@ -18,7 +18,6 @@ class LocalAudioRepository implements IAudioRepository {
     if (lang == null) {
       return [];
     }
-    final table = '${lang.name}_audio';
 
     final rows = await db.query(
       'sentences_with_audio',

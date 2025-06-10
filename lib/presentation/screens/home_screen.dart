@@ -10,7 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:learn_languages/core/app_language.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
         ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
         : '';
 
-    Future<String?> _showAddLanguageDialog() {
+    Future<String?> showAddLanguageDialog() {
       final available = AppLanguage.values
           .where((lang) =>
               !settingsProvider.learningLanguageCodes.contains(lang.code) &&
@@ -87,7 +87,7 @@ class HomeScreen extends StatelessWidget {
                     codes: learningCodes,
                     onTap: (code) async {
                       if (code == 'add_more') {
-                        final newCode = await _showAddLanguageDialog();
+                        final newCode = await showAddLanguageDialog();
                         if (newCode != null) {
                           await context
                               .read<SettingsProvider>()
@@ -235,14 +235,13 @@ class _SmallCard extends StatelessWidget {
   final double progress;
 
   const _SmallCard({
-    Key? key,
     required this.title,
     required this.icon,
     required this.buttonText,
     required this.onPressed,
     this.showProgress = false,
     this.progress = 0.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -432,8 +431,7 @@ class _StreakVisual extends StatelessWidget {
 class _NavCircleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  const _NavCircleButton({Key? key, required this.icon, required this.onTap})
-    : super(key: key);
+  const _NavCircleButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -461,10 +459,9 @@ class _LanguageMenu extends StatelessWidget {
 
   const _LanguageMenu({
 
-    Key? key,
     required this.codes,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

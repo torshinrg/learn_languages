@@ -1,4 +1,5 @@
 /// lib/presentation/providers/review_provider.dart
+library;
 
 import 'package:flutter/foundation.dart';
 import 'package:learn_languages/presentation/providers/settings_provider.dart';

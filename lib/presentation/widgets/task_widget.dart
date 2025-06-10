@@ -13,7 +13,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 /// - calls back into TaskProvider to save history
 class TaskWidget extends StatefulWidget {
   final Task task;
-  const TaskWidget({Key? key, required this.task}) : super(key: key);
+  const TaskWidget({super.key, required this.task});
 
   @override
   State<TaskWidget> createState() => _TaskWidgetState();

@@ -9,7 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CustomWordsScreen extends StatefulWidget {
   final String? initialText;
-  const CustomWordsScreen({Key? key, this.initialText}) : super(key: key);
+  const CustomWordsScreen({super.key, this.initialText});
 
   @override
   State<CustomWordsScreen> createState() => _CustomWordsScreenState();

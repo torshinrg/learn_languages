@@ -8,7 +8,7 @@ import '../screens/custom_words_screen.dart';
 
 class ShareHandler extends StatefulWidget {
   final Widget child;
-  const ShareHandler({required this.child, Key? key}) : super(key: key);
+  const ShareHandler({required this.child, super.key});
 
   @override
   _ShareHandlerState createState() => _ShareHandlerState();
@@ -35,8 +35,7 @@ class _ShareHandlerState extends State<ShareHandler> {
   void _onShared(List<SharedMediaFile> files) {
     if (files.isEmpty) return;
     debugPrint(
-      'Received share intent: ' +
-          files.map((f) => f.toMap().toString()).join(', '),
+      'Received share intent: ${files.map((f) => f.toMap().toString()).join(', ')}',
     );
 
     for (final file in files) {

@@ -18,8 +18,12 @@ class PronunciationScoringService {
     if (m == 0) return n;
     // DP table
     final dp = List.generate(n + 1, (_) => List<int>.filled(m + 1, 0));
-    for (var i = 0; i <= n; i++) dp[i][0] = i;
-    for (var j = 0; j <= m; j++) dp[0][j] = j;
+    for (var i = 0; i <= n; i++) {
+      dp[i][0] = i;
+    }
+    for (var j = 0; j <= m; j++) {
+      dp[0][j] = j;
+    }
     for (var i = 1; i <= n; i++) {
       for (var j = 1; j <= m; j++) {
         final cost = s[i - 1] == t[j - 1] ? 0 : 1;
