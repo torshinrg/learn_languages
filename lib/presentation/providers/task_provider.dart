@@ -24,30 +24,28 @@ class TaskProvider extends ChangeNotifier {
   Future<void> _initialize() async {
     // Print out which locale we’re about to load:
     final localeCode = _localeSelector().languageCode;
-    print('[TaskProvider] Initializing for locale="$localeCode"');
     await loadAllTasks();
   }
 
   /// Load tasks of both types (“sentence” and “screen”) for current UI locale.
   Future<void> loadAllTasks() async {
     final localeCode = _localeSelector().languageCode;
-    print('[TaskProvider]Calling loadAllTasks() for locale="$localeCode"');
 
     // Fetch all “sentence” tasks for this locale
-    final fetchedSentences = await _taskRepo.fetchTasksByType('sentence', localeCode);
+    final fetchedSentences = await _taskRepo.fetchTasksByType(
+      'sentence',
+      localeCode,
+    );
     _sentenceTasks = fetchedSentences;
-    print('[TaskProvider]  → fetched ${_sentenceTasks.length} sentence‐tasks');
-    for (var t in _sentenceTasks) {
-      print('    • [sentenceTask] id="${t.id}", desc="${t.description}"');
-    }
+    for (var t in _sentenceTasks) {}
 
     // Fetch all “screen” tasks for this locale
-    final fetchedScreens = await _taskRepo.fetchTasksByType('screen', localeCode);
+    final fetchedScreens = await _taskRepo.fetchTasksByType(
+      'screen',
+      localeCode,
+    );
     _screenTasks = fetchedScreens;
-    print('[TaskProvider]  → fetched ${_screenTasks.length} screen‐tasks');
-    for (var t in _screenTasks) {
-      print('    • [screenTask] id="${t.id}", desc="${t.description}"');
-    }
+    for (var t in _screenTasks) {}
 
     notifyListeners();
   }
@@ -58,9 +56,6 @@ class TaskProvider extends ChangeNotifier {
     required String sentenceId,
     required String? result,
   }) async {
-    print(
-      '[TaskProvider] completeSentenceTask → taskId="$taskId", sentenceId="$sentenceId", result="$result"',
-    );
     await _taskRepo.saveTaskHistory(
       taskId: taskId,
       sentenceId: sentenceId,
@@ -76,7 +71,6 @@ class TaskProvider extends ChangeNotifier {
     required String taskId,
     required String? result,
   }) async {
-    print('[TaskProvider] completeScreenTask → taskId="$taskId", result="$result"');
     await _taskRepo.saveTaskHistory(
       taskId: taskId,
       sentenceId: null,

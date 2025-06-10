@@ -23,10 +23,6 @@ class LocalSentenceRepository implements ISentenceRepository {
   }) async {
     final langEnum = AppLanguageExtension.fromCode(languageCode);
     if (langEnum == null) {
-      print(
-        '⚠️ [LocalSentenceRepo] Unsupported languageCode="$languageCode". '
-        'Allowed: ${AppLanguage.values.map((e) => e.code).join(", ")}',
-      );
       return [];
     }
 
@@ -42,23 +38,13 @@ class LocalSentenceRepository implements ISentenceRepository {
     ''';
     final pattern = '%$wordText%';
 
-    print('🔍 [LocalSentenceRepo] Querying sentences:');
-    print('    languageCode="$languageCode" → column="$column"');
-    print('    SQL →\n$sql');
-    print('    pattern="$pattern"');
-
     List<Map<String, Object?>> rows;
     try {
       rows = await db.rawQuery(sql, [pattern]);
     } catch (e) {
-      print('❌ [LocalSentenceRepo] ERROR rawQuery: $e');
       return [];
     }
 
-    print(
-      '🔍 [LocalSentenceRepo] Found ${rows.length} row(s) for '
-      '"$wordText" in column="$column"',
-    );
     return rows.map((r) => Sentence.fromMap(r)).toList();
   }
 }

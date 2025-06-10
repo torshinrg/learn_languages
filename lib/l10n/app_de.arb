@@ -117,5 +117,8 @@
   "chooseNativeLanguage": "1. Wähle deine Muttersprache",
   "chooseLearningLanguages": "2. Wähle die Sprache(n), die du lernen möchtest",
   "chooseDailyWordCount": "3. Wie viele Wörter pro Tag?",
-  "getStarted": "Loslegen"
+  "getStarted": "Loslegen",
+  "notification_access": "Diese App benötigt Zugriff auf Benachrichtigungen, um Erinnerungen und Updates zu senden.",
+  "record_access": "Die Audio-Berechtigung wird benötigt, um deine Stimme aufzuzeichnen und die Aussprache zu überprüfen.",
+  "allow": "Zulassen"
 }

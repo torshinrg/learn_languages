@@ -117,5 +117,8 @@
   "chooseNativeLanguage": "1. Choisis ta langue maternelle",
   "chooseLearningLanguages": "2. Choisis les langues à apprendre",
   "chooseDailyWordCount": "3. Combien de mots par jour ?",
-  "getStarted": "Commencer"
+  "getStarted": "Commencer",
+  "notification_access": "Cette application a besoin d'accéder aux notifications pour envoyer des rappels et des mises à jour.",
+  "record_access": "L'autorisation audio est nécessaire pour enregistrer votre voix et vérifier la prononciation.",
+  "allow": "Autoriser"
 }
