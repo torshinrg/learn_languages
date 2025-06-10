@@ -1,4 +1,8 @@
-// File: lib/services/learning_service.dart
+/// lib/services/learning_service.dart
+library;
+
+import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/entities/audio_link.dart';
 import '../domain/entities/word.dart';
@@ -13,69 +17,124 @@ class LearningService {
   final ISentenceRepository sentenceRepo;
   final IAudioRepository audioRepo;
   final ISRSRepository srsRepo;
+  final ICustomWordRepository customRepo;
 
   LearningService({
     required this.wordRepo,
     required this.sentenceRepo,
     required this.audioRepo,
     required this.srsRepo,
+    required this.customRepo,
   });
 
-  /// Original: mix of due + fresh
+  Future<String> _activeLanguageCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final codes = prefs.getStringList('learningLanguages') ?? ['es'];
+    if (codes.isEmpty) return 'es';
+    return codes.first;
+  }
+
+  Future<List<Word>> _allWords() async {
+    final base = await wordRepo.fetchAll();
+    final lang = await _activeLanguageCode();
+    final custom = await customRepo.fetchByLanguage(lang);
+    final customWords = custom
+        .map(
+          (c) => Word(
+            id: c.id,
+            text: c.text,
+            translation: null,
+            sentence: null,
+            type: WordType.custom,
+          ),
+        )
+        .toList();
+    return [...base, ...customWords];
+  }
+
   Future<List<Word>> getDailyBatch(int count) async {
-    final allSrs = await srsRepo.fetchAll();
-    final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-    final due = await srsRepo.fetchDue();
-    final dueWords = (await wordRepo.fetchAll())
-        .where((w) => due.any((s) => s.wordId == w.id))
-        .toList();
-    if (dueWords.length >= count) return dueWords.take(count).toList();
-    final needed = count - dueWords.length;
-    final fresh = (await wordRepo.fetchAll())
-        .where((w) => !scheduledIds.contains(w.id))
-        .take(needed)
-        .toList();
-    return [...dueWords, ...fresh];
+    final allWords = await _allWords();
+    final custom = allWords.where((w) => w.type == WordType.custom).toList();
+    if (custom.isNotEmpty) return custom.take(count).toList();
+
+    final dueData = await srsRepo.fetchDue();
+    final due =
+        allWords.where((w) => dueData.any((s) => s.wordId == w.id)).toList();
+    if (due.length >= count) return due.take(count).toList();
+
+    final scheduledIds =
+        (await srsRepo.fetchAll()).map((e) => e.wordId).toSet();
+    final needed = count - due.length;
+    final fresh =
+        allWords
+            .where((w) => !scheduledIds.contains(w.id))
+            .take(needed)
+            .toList();
+    return [...due, ...fresh];
   }
 
-  /// NEW: only words never scheduled in SRS
   Future<List<Word>> getFreshBatch(int count) async {
+    final allWords = await _allWords();
     final allSrs = await srsRepo.fetchAll();
     final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-    return (await wordRepo.fetchAll())
-        .where((w) => !scheduledIds.contains(w.id))
-        .take(count)
-        .toList();
+
+    final unscheduled =
+        allWords.where((w) => !scheduledIds.contains(w.id)).toList();
+    final custom = unscheduled.where((w) => w.type == WordType.custom).toList();
+    if (custom.length >= count) return custom.take(count).toList();
+
+    final remaining = count - custom.length;
+    final normal =
+        unscheduled
+            .where((w) => w.type != WordType.custom)
+            .take(remaining)
+            .toList();
+    return [...custom, ...normal];
   }
 
-  Future<List<Word>> getAllWords() => wordRepo.fetchAll();
+  Future<List<Word>> getAllWords() => _allWords();
 
   Future<void> markLearned(String wordId, bool success) {
     return srsRepo.scheduleNext(wordId, success);
   }
 
+  /// NEW: Mark a word as completely known/mastered so it never appears again.
+  Future<void> markAsKnown(String wordId) async {
+    // Repetition threshold = 3.
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
+    await srsRepo.scheduleNextWithQuality(wordId, 5);
+  }
+
   Future<List<Sentence>> getInitialSentencesForWord(
-      String wordText, {
-        int limit = 3,
-      }) {
-    return sentenceRepo.fetchForWord(wordText, limit: limit);
+    String wordText,
+    String languageCode, {
+    int limit = 3,
+  }) {
+    return sentenceRepo.fetchForWord(wordText, languageCode, limit: limit);
   }
 
   Future<List<Sentence>> getRemainingSentencesForWord(
-      String wordText,
-      List<String> excludeIds,
-      ) async {
-    final all = await sentenceRepo.fetchForWord(wordText);
-    return all.where((s) => !excludeIds.contains(s.id)).toList();
+    String wordText,
+    List<String> excludeIds,
+    String languageCode,
+  ) async {
+    final all = await sentenceRepo.fetchForWord(wordText, languageCode);
+    return all
+        .where((s) => !excludeIds.contains(s.id(languageCode)))
+        .toList();
   }
 
-  Future<List<AudioLink>> getAudioForSentence(String sentenceId) {
-    return audioRepo.fetchForSentence(sentenceId);
+  Future<List<AudioLink>> getAudioForSentence(
+    String sentenceId,
+    String languageCode,
+  ) {
+    return audioRepo.fetchForSentence(sentenceId, languageCode);
   }
 
   Future<List<Word>> getDueWords() async {
     final srsList = await srsRepo.fetchDue();
-    final allWords = await wordRepo.fetchAll();
+    final allWords = await _allWords();
     return allWords.where((w) => srsList.any((s) => s.wordId == w.id)).toList();
   }
 

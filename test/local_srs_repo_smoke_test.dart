@@ -1,4 +1,4 @@
-// test/local_srs_repo_smoke_test.dart
+// text/local_srs_repo_smoke_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_languages/data/local/local_srs_repo.dart';

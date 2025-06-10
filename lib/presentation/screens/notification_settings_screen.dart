@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/notification_settings_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({super.key});
@@ -11,9 +12,10 @@ class NotificationSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<NotificationSettingsProvider>();
+    final loc = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reminder Settings')),
+      appBar: AppBar(title:  Text(loc.reminder_settings)),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: vm.times.length + 1,
@@ -23,14 +25,14 @@ class NotificationSettingsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.add),
-                label: const Text('Add Reminder'),
+                label:  Text(loc.add_reminder),
                 onPressed: () => _pickTime(context, null, vm),
               ),
             );
           }
           final t = vm.times[i];
           return ListTile(
-            title: Text('${t.format(context)}'),
+            title: Text(t.format(context)),
             trailing: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () => vm.removeTime(i),
@@ -48,6 +50,7 @@ class NotificationSettingsScreen extends StatelessWidget {
       NotificationSettingsProvider vm, {
         int? index,
       }) async {
+    final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final initial = existing ?? TimeOfDay.fromDateTime(now);
     final picked = await showTimePicker(
@@ -73,7 +76,7 @@ class NotificationSettingsScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Reminder set at ${picked.format(context)}. Now: $formattedNow. Fires next at $formattedNext.',
+            loc.reminderSet(picked.format(context), formattedNow, formattedNext),
           ),
         ),
       );
@@ -81,7 +84,7 @@ class NotificationSettingsScreen extends StatelessWidget {
       await vm.updateTime(index, picked);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Reminder updated to ${picked.format(context)}.'),
+          content: Text( loc.reminderUpdated(picked.format(context)),),
         ),
       );
     }

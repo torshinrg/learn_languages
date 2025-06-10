@@ -1,4 +1,5 @@
-// File: lib/presentation/screens/review_screen.dart
+/// lib/presentation/screens/review_screen.dart
+library;
 
 import 'dart:async';
 
@@ -8,7 +9,10 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/audio_link.dart';
 import '../../services/learning_service.dart';
 import '../providers/review_provider.dart';
-import '../widgets/word_sentence_card.dart';
+import '../providers/settings_provider.dart';
+import '../widgets/interactive_word_sentence_card.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ReviewScreen extends StatefulWidget {
   const ReviewScreen({super.key});
@@ -30,13 +34,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   late final StreamSubscription<Duration?> _durSub;
   late final StreamSubscription<PlayerState> _stateSub;
 
-  final Map<String, int> _qualityMap = {
-    'Again': 0,
-    'Hard': 3,
-    'Good': 4,
-    'Easy': 5,
-  };
-  final List<String> _qualityLabels = ['Again', 'Hard', 'Good', 'Easy'];
+
 
   @override
   void initState() {
@@ -67,10 +65,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Future<void> _loadWordsAndAudio() async {
     await _review.loadDueWords();
     final s = _review.currentSentence;
-    if (s != null) await _loadAudioForSentence(s.id);
+    if (s != null) {
+      final langCode =
+          context.read<SettingsProvider>().learningLanguageCodes.first;
+      await _loadAudioForSentence(s.id(langCode), langCode);
+    }
   }
 
-  Future<void> _loadAudioForSentence(String sentenceId) async {
+  Future<void> _loadAudioForSentence(
+    String sentenceId,
+    String languageCode,
+  ) async {
     if (!mounted) return;
     setState(() {
       _loadingAudio = true;
@@ -80,9 +85,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
       _isPlaying = false;
     });
 
-    final links = await context
-        .read<LearningService>()
-        .getAudioForSentence(sentenceId);
+    final links = await context.read<LearningService>().getAudioForSentence(
+      sentenceId,
+      languageCode,
+    );
 
     if (!mounted) return;
     setState(() {
@@ -93,7 +99,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (links.isNotEmpty) {
       final url = 'https://tatoeba.org/audio/download/${links.first.audioId}';
       await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
-      await _player.pause();
+      await _player.play();
     }
   }
 
@@ -116,8 +122,48 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    // build a map of localized labels → quality values:
+    final qualityMap = {
+      loc.qualityAgain: 0,
+      loc.qualityHard: 3,
+      loc.qualityGood: 4,
+      loc.qualityEasy: 5,
+    };
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Review')),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).primaryColor,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 20),
+            ),
+          ),
+        ),
+        title: Text(loc.review, style: Theme.of(context).textTheme.titleLarge),
+      ),
       body: Consumer<ReviewProvider>(
         builder: (_, review, __) {
           if (review.dueWords.isEmpty) {
@@ -130,14 +176,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Word ${review.wordIndex + 1} of ${review.dueWords.length}',
+                    loc.reviewProgress(review.wordIndex + 1, review.dueWords.length),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
 
                 // Shared card + audio + nav
                 Expanded(
-                  child: WordSentenceCard(
+                  child: InteractiveWordSentenceCard(
                     wordText: review.currentWord!.text,
                     sentences: review.sentences,
                     sentenceIndex: review.sentenceIndex,
@@ -147,38 +193,72 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     position: _position,
                     duration: _duration,
                     onToggleAudio: _togglePlayPause,
+                    onReplayAudio: _togglePlayPause,
+
                     onPrevSentence: () {
                       review.prevSentence();
                       final nxt = review.currentSentence;
-                      if (nxt != null) _loadAudioForSentence(nxt.id);
+                      if (nxt != null) {
+                        final langCode =
+                            context
+                                .read<SettingsProvider>()
+                                .learningLanguageCodes
+                                .first;
+                        _loadAudioForSentence(
+                          nxt.id(langCode),
+                          langCode,
+                        );
+                      }
                     },
                     onNextSentence: () {
                       review.nextSentence();
                       final nxt = review.currentSentence;
-                      if (nxt != null) _loadAudioForSentence(nxt.id);
+                      if (nxt != null) {
+                        final langCode =
+                            context
+                                .read<SettingsProvider>()
+                                .learningLanguageCodes
+                                .first;
+                        _loadAudioForSentence(
+                          nxt.id(langCode),
+                          langCode,
+                        );
+                      }
                     },
                   ),
                 ),
 
                 // Quality buttons
                 Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Wrap(
                     spacing: 12,
                     runSpacing: 8,
                     alignment: WrapAlignment.spaceBetween,
-                    children: _qualityLabels.map((label) {
-                      return ElevatedButton(
-                        onPressed: () async {
-                          final q = _qualityMap[label]!;
-                          await review.markWord(q);
-                          final nxt = review.currentSentence;
-                          if (nxt != null) _loadAudioForSentence(nxt.id);
-                        },
-                        child: Text(label),
-                      );
-                    }).toList(),
+                    children: qualityMap.keys.map((label) {
+                          return ElevatedButton(
+                            onPressed: () async {
+                              final q = qualityMap[label]!;
+                              await review.markWord(q);
+                              final nxt = review.currentSentence;
+                              if (nxt != null) {
+                                final langCode =
+                                    context
+                                        .read<SettingsProvider>()
+                                        .learningLanguageCodes
+                                        .first;
+                                _loadAudioForSentence(
+                                  nxt.id(langCode),
+                                  langCode,
+                                );
+                              }
+                            },
+                            child: Text(label),
+                          );
+                        }).toList(),
                   ),
                 ),
               ],

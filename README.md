@@ -148,6 +148,9 @@ lib/
 
 ---
 
+here you can find top common words in different languages
+https://en.wiktionary.org/wiki/Wiktionary:Frequency_lists
+
 ## 📝 License
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.

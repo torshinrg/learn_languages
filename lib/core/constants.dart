@@ -1,4 +1,4 @@
-const String kDbFileName = 'spanish_app.db';
+const String kDbFileName = 'lang_data.db';
 const String kTableWords = 'words';
 const String kTableSentences = 'sentences';
 const String kTableSrs = 'srs_data';

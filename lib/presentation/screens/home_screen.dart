@@ -1,201 +1,203 @@
-// lib/presentation/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:learn_languages/presentation/screens/stats_screen.dart';
 import 'package:provider/provider.dart';
-
+import 'package:learn_languages/presentation/screens/stats_screen.dart';
+import 'package:learn_languages/presentation/screens/study_screen.dart';
+import 'package:learn_languages/presentation/screens/review_screen.dart';
+import 'package:learn_languages/presentation/screens/settings_screen.dart';
 import '../providers/home_provider.dart';
 import '../providers/settings_provider.dart';
-import 'debug_screen.dart';
-import 'study_screen.dart';
-import 'review_screen.dart';
-import 'vocabulary_screen.dart';
-import 'settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:learn_languages/core/app_language.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  late HomeProvider _home;
-  late SettingsProvider _settings;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _home = context.read<HomeProvider>();
-    _settings = context.read<SettingsProvider>();
-    _home.refresh();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // on resume, reload settings (reset studiedCount/streak if day changed)
-      _settings.reload();
-      // and refresh due/study state
-      _home.refresh();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final dueCount = context.watch<HomeProvider>().dueCount;
-    final canStudy = context.watch<HomeProvider>().canStudy;
-    final studied = context.watch<SettingsProvider>().studiedCount;
-    final daily = context.watch<SettingsProvider>().dailyCount;
+    final homeProvider = context.watch<HomeProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final dueCount = homeProvider.dueCount;
+    final canStudy = homeProvider.canStudy;
+    final studied = settingsProvider.studiedCount;
+    final daily = settingsProvider.dailyCount;
     final progress = daily > 0 ? (studied / daily).clamp(0.0, 1.0) : 0.0;
-    final streak = context.watch<SettingsProvider>().streakCount;
+    final streak = settingsProvider.streakCount;
+    final lastDate = settingsProvider.lastStreakDate;
+    final loc = AppLocalizations.of(context)!;
+    final learningCodes = settingsProvider.learningLanguageCodes;
+    final leadCode = learningCodes.isNotEmpty
+        ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
+        : '';
+
+    Future<String?> showAddLanguageDialog() {
+      final available = AppLanguage.values
+          .where((lang) =>
+              !settingsProvider.learningLanguageCodes.contains(lang.code) &&
+              lang.code != settingsProvider.nativeLanguageCode)
+          .toList();
+      if (available.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No more languages')),
+        );
+        return Future.value(null);
+      }
+      return showDialog<String>(
+        context: context,
+        builder: (ctx) => SimpleDialog(
+          title: Text(loc.add_language),
+          children: [
+            for (final lang in available)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, lang.code),
+                child: Text('${lang.flag} ${lang.displayName}'),
+              )
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          child: Column(
-            children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                color: Colors.white,
-                child: ListTile(
-                  leading: Icon(
-                    Icons.local_fire_department,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  title: Text(
-                    '🔥 Streak: $streak ${streak == 1 ? 'day' : 'days'}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: null,
+      ),
+
+      body: Stack(
+        children: [
+          // Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF988E), Color(0xFFAC9AFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 16),
-              if (dueCount > 0)
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                if (learningCodes.isNotEmpty)
+                  _LanguageMenu(
+                    codes: learningCodes,
+                    onTap: (code) async {
+                      if (code == 'add_more') {
+                        final newCode = await showAddLanguageDialog();
+                        if (newCode != null) {
+                          await context
+                              .read<SettingsProvider>()
+                              .addLearningLanguage(newCode);
+                        }
+                        return;
+                      }
+                      context
+                          .read<SettingsProvider>()
+                          .switchLearningLanguage(code);
+                    },
                   ),
-                  elevation: 2,
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.refresh,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    title: Text(
-                      'You have $dueCount review${dueCount > 1 ? 's' : ''} due',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    trailing: TextButton(
-                      onPressed:
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ReviewScreen(),
-                            ),
-                          ).then((_) => _home.refresh()),
-                      child: const Text('Review'),
-                    ),
+                const SizedBox(height: 20),
+
+                // Streak circle
+                Center(
+                  child: _StreakVisual(
+                    streak: streak,
+                    lastDate: lastDate,
                   ),
                 ),
+                const SizedBox(height: 40),
 
-              const SizedBox(height: 24),
-
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Tilted _SmallCard row, scaled up 1.5x
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Today's Session",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      Transform.rotate(
+                        angle: -0.2,
+                        child: Transform.scale(
+                          scale: 1.05,
+                          child: _SmallCard(
+                            title: loc.reviewsDue(dueCount),
+                            icon: Icons.check_circle,
+                            buttonText: loc.review,
+                            onPressed:
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ReviewScreen(),
+                                  ),
+                                ).then(
+                                  (_) => context.read<HomeProvider>().refresh(),
+                                ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$studied / $daily new words learned',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start Study'),
-                          onPressed:
-                              canStudy
-                                  ? () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const StudyScreen(),
-                                    ),
-                                  ).then((_) => _home.refresh())
-                                  : null,
+                      Transform.rotate(
+                        angle: 0.25,
+                        child: Transform.scale(
+                          scale: 1.3,
+                          child: _SmallCard(
+                            title: loc.today_session,
+                            showProgress: true,
+                            progress: progress,
+                            buttonText: loc.start_study,
+                            onPressed:
+                                canStudy
+                                    ? () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const StudyScreen(),
+                                      ),
+                                    ).then(
+                                      (_) =>
+                                          context
+                                              .read<HomeProvider>()
+                                              .refresh(),
+                                    )
+                                    : null,
+                            icon: Icons.rocket,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+
+          // Floating bottom nav pill (Positioned ~1/4 up from bottom)
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.25,
+            left: 24,
+            right: 24,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(30),
               ),
-
-              const SizedBox(height: 32),
-
-              Row(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _ActionTile(
-                    icon: Icons.refresh,
-                    label: 'Review',
+                  _NavCircleButton(
+                    icon: Icons.check,
                     onTap:
                         () => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => const ReviewScreen(),
                           ),
-                        ).then((_) => _home.refresh()),
+                        ).then((_) => context.read<HomeProvider>().refresh()),
                   ),
-                  const SizedBox(width: 12),
-                  _ActionTile(
-                    icon: Icons.bookmark,
-                    label: 'Vocabulary',
-                    onTap:
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const VocabularyScreen(),
-                          ),
-                        ),
-                  ),
-                  const SizedBox(width: 12),
-                  _ActionTile(
+                  //_NavCircleButton(icon: Icons.pause, onTap: () {}),
+                  _NavCircleButton(
                     icon: Icons.bar_chart,
-                    label: 'Stats',
                     onTap:
                         () => Navigator.push(
                           context,
@@ -204,103 +206,319 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                         ),
                   ),
-                  const SizedBox(width: 12),
-                  _ActionTile(
+                  _NavCircleButton(
                     icon: Icons.settings,
-                    label: 'Settings',
                     onTap:
                         () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SettingsScreen(),
-                      ),
-                    ),
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsScreen(),
+                          ),
+                        ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Debug SRS data',
-        child: const Icon(Icons.bug_report),
-        onPressed:
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const DebugScreen()),
             ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-}
-
-/// Small tile used in the “Review / Vocabulary / Stats” row.
-class _ActionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final col = Theme.of(context).primaryColor;
-
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: col.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            children: [
-              Icon(icon, size: 28, color: col),
-              const SizedBox(height: 8),
-              Text(label, style: TextStyle(color: col)),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
 }
 
-/// Icon + label for the bottom nav.
-class _NavIcon extends StatelessWidget {
+class _SmallCard extends StatelessWidget {
+  final String title;
   final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+  final String buttonText;
+  final VoidCallback? onPressed;
+  final bool showProgress;
+  final double progress;
 
-  const _NavIcon({
+  const _SmallCard({
+    required this.title,
     required this.icon,
-    required this.label,
-    required this.onTap,
+    required this.buttonText,
+    required this.onPressed,
+    this.showProgress = false,
+    this.progress = 0.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    final col = Theme.of(context).primaryColor;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+    final primary = Theme.of(context).primaryColor;
+    return Container(
+      width: 155,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: col),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: col)),
+          // ── Title Row ───────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Optional Progress Bar ─────────────
+          if (showProgress) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                color: primary,
+                backgroundColor: primary.withOpacity(0.3),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+
+          // ── Button (now height: 60) ───────────
+          SizedBox(
+            width: double.infinity,
+            height: 60, // increased from 50 → 60 to allow two lines
+            child: ElevatedButton(
+              onPressed: onPressed,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                buttonText,
+                textAlign: TextAlign.center,
+                maxLines: 2, // allow up to two lines
+                softWrap: true, // enable wrapping
+                // no overflow specified, so it will wrap
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _StreakVisual extends StatelessWidget {
+  final int streak;
+  final String? lastDate;
+  const _StreakVisual({required this.streak, required this.lastDate});
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateTime.now().toIso8601String().split('T').first;
+    final bool broken = streak == 0 && lastDate != null && lastDate != today;
+
+    Color color;
+    String emoji;
+    String message;
+
+    final loc = AppLocalizations.of(context)!;
+
+    if (broken) {
+      color = Colors.black54;
+      message = loc.streakDead;
+      emoji = '💀';
+    } else if (streak == 0) {
+      color = Colors.yellow;
+      message = loc.streakZero;
+      emoji = '🪔';
+    } else if (streak <= 4) {
+      color = Colors.orange;
+      message = loc.streakLow;
+      emoji = '🔥';
+    } else if (streak <= 9) {
+      color = Colors.red;
+      message = loc.streakMid;
+      emoji = '🔥🔥';
+    } else if (streak <= 19) {
+      color = Colors.deepOrange;
+      message = loc.streakStrong;
+      emoji = '🏮';
+    } else if (streak <= 29) {
+      color = Colors.deepOrangeAccent;
+      message = loc.streakHot;
+      emoji = '🔥🔥🔥';
+    } else if (streak <= 49) {
+      color = Colors.purple;
+      message = loc.streakRing;
+      emoji = '🔥⭕';
+    } else {
+      color = Colors.pinkAccent;
+      message = loc.streakLegend;
+      emoji = '🎆';
+    }
+
+
+
+    return Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 40)),
+          Text(
+            '$streak',
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth - 16; // padding inside circle
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: width),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style:
+                        const TextStyle(fontSize: 14, color: Colors.white),
+                    maxLines: 3,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              );
+            },
+          ),
+
+
+        ],
+      ),
+    );
+  }
+}
+
+class _NavCircleButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _NavCircleButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).primaryColor;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: primary, width: 2),
+        ),
+        child: Icon(icon, color: Colors.white),
+      ),
+    );
+  }
+}
+
+
+class _LanguageMenu extends StatelessWidget {
+  final List<String> codes;
+  final void Function(String) onTap;
+
+  const _LanguageMenu({
+
+    required this.codes,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    final selectedCode = codes.isNotEmpty ? codes.first : '';
+    final selectedLang = AppLanguageExtension.fromCode(selectedCode);
+    final selectedLabel =
+        '${selectedLang?.flag ?? ''} ${selectedLang?.displayName ?? selectedCode}';
+
+    return Container(
+      alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: PopupMenuButton<String>(
+        onSelected: onTap,
+        itemBuilder: (context) {
+          final items = <PopupMenuEntry<String>>[];
+          for (final code in codes) {
+            if (code == selectedCode) continue;
+            final lang = AppLanguageExtension.fromCode(code);
+            final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
+            items.add(PopupMenuItem<String>(
+              value: code,
+              child: Text(label),
+            ));
+          }
+          items.add(const PopupMenuDivider());
+          items.add(const PopupMenuItem<String>(
+            value: 'add_more',
+            child: Text('+ Add'),
+          ));
+          return items;
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                selectedLabel,
+                style: const TextStyle(color: Colors.white),
+              ),
+              const Icon(Icons.arrow_drop_down, color: Colors.white),
+            ],
+          ),
+        ),
+
       ),
     );
   }

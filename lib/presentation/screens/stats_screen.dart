@@ -6,6 +6,7 @@ import '../../services/learning_service.dart';
 import '../../services/srs_service.dart';
 import '../providers/settings_provider.dart';
 import '../../core/constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Holds computed totals for the stats screen.
 class StatsData {
@@ -17,14 +18,16 @@ class StatsData {
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final settings = context.watch<SettingsProvider>();
     final learningService = context.read<LearningService>();
     final srsService = context.read<SRSService>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Stats')),
+      appBar: AppBar(title: Text(loc.stats)),
       body: FutureBuilder<StatsData>(
         future: _loadStats(learningService, srsService),
         builder: (ctx, snap) {
@@ -41,25 +44,25 @@ class StatsScreen extends StatelessWidget {
               children: [
                 _StatCard(
                   icon: Icons.school,
-                  label: 'Today Learned',
+                  label: loc.today_learned,
                   value: '${settings.studiedCount}/${settings.dailyCount}',
                 ),
                 const SizedBox(height: 16),
                 _StatCard(
                   icon: Icons.local_fire_department,
-                  label: 'Current Streak',
-                  value: '${settings.streakCount} ${settings.streakCount == 1 ? 'day' : 'days'}',
+                  label: loc.current_streak,
+                  value: _streakLabel(settings.streakCount),
                 ),
                 const SizedBox(height: 16),
                 _StatCard(
                   icon: Icons.book,
-                  label: 'Total Words',
+                  label: loc.total_words,
                   value: '${stats.totalWords}',
                 ),
                 const SizedBox(height: 16),
                 _StatCard(
                   icon: Icons.check_circle,
-                  label: 'Mastered Words',
+                  label: loc.mastered_words,
                   value: '${stats.masteredWords}',
                 ),
               ],
@@ -109,4 +112,14 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _streakLabel(int streak) {
+  if (streak == 0) return '0 🪔';
+  if (streak <= 4) return '$streak 🔥';
+  if (streak <= 9) return '$streak 🔥🔥';
+  if (streak <= 19) return '$streak 🏮';
+  if (streak <= 29) return '$streak 🔥🔥🔥';
+  if (streak <= 49) return '$streak 🔥⭕';
+  return '$streak 🎆';
 }
