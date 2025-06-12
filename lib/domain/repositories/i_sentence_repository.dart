@@ -13,5 +13,6 @@ abstract class ISentenceRepository {
     String wordText,
     String languageCode, {
     int? limit,
+    bool onlyWithAudio = true,
   });
 }

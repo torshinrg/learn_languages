@@ -20,6 +20,7 @@ class LocalSentenceRepository implements ISentenceRepository {
     String wordText,
     String languageCode, {
     int? limit,
+    bool onlyWithAudio = true,
   }) async {
     final langEnum = AppLanguageExtension.fromCode(languageCode);
     if (langEnum == null) {
@@ -29,10 +30,11 @@ class LocalSentenceRepository implements ISentenceRepository {
     final column = '${langEnum.name}_text'; // e.g. "english_text"
     final audioColumn = '${langEnum.name}_audio';
     final limitClause = limit != null ? 'LIMIT $limit' : '';
+    final audioCondition = onlyWithAudio ? 'AND $audioColumn = 1' : '';
     final sql = '''
       SELECT *
       FROM sentences
-      WHERE $column LIKE ? AND $audioColumn = 1
+      WHERE $column LIKE ? $audioCondition
       ORDER BY RANDOM()
       $limitClause
     ''';

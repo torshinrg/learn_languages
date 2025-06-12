@@ -93,12 +93,24 @@ class _StudyScreenState extends State<StudyScreen> {
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
 
-    // 1) load initial few examples:
-    final initial = await _learningService.getInitialSentencesForWord(
+    // 1) load initial few examples with audio if possible:
+    var initial = await _learningService.getInitialSentencesForWord(
       batch.first.text,
       langCode,
       limit: _initialLimit,
     );
+
+    // If no sentences have audio, fetch any sentences regardless of audio
+    bool withAudio = true;
+    if (initial.isEmpty) {
+      withAudio = false;
+      initial = await _learningService.getInitialSentencesForWord(
+        batch.first.text,
+        langCode,
+        limit: _initialLimit,
+        requireAudio: false,
+      );
+    }
 
     if (!mounted) return;
     setState(() {
@@ -117,6 +129,7 @@ class _StudyScreenState extends State<StudyScreen> {
       batch.first.text,
       excludeIds,
       langCode,
+      requireAudio: withAudio,
     );
 
     if (!mounted) return;
