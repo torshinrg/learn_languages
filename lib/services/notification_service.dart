@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../core/navigation.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -16,7 +17,7 @@ class NotificationService {
 
   static Future<void> init() async {
     const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings("@mipmap/ic_launcher");
+        AndroidInitializationSettings("@drawable/ic_notification");
     const DarwinInitializationSettings iOSInitializationSettings =
         DarwinInitializationSettings();
 
@@ -70,6 +71,8 @@ class NotificationService {
   /// Schedules one notification per TimeOfDay in [times].
   /// Keeps your provider calls intact (no context argument needed).
   Future<void> scheduleDailyNotifications(List<TimeOfDay> times) async {
+    final ctx = navigatorKey.currentContext!;
+    final loc = AppLocalizations.of(ctx)!;
     await flutterLocalNotificationsPlugin.cancelAll();
     final now = DateTime.now();
     for (var i = 0; i < times.length; i++) {
@@ -90,8 +93,8 @@ class NotificationService {
       final tzSchedule = tz.TZDateTime.from(utcDt, tz.UTC);
       await flutterLocalNotificationsPlugin.zonedSchedule(
         i,
-        '📝 Time to practice',
-        'Don’t forget your daily review!',
+        loc.time_to_practice,
+        loc.daily_review,
         tzSchedule,
         const NotificationDetails(
           android: AndroidNotificationDetails(

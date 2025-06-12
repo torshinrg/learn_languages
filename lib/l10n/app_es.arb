@@ -112,5 +112,7 @@
         "getStarted": "Comenzar",
         "notification_access": "Esta app necesita acceso a las notificaciones para enviar recordatorios y actualizaciones.",
   "record_access": "Se necesita permiso de audio para grabar tu voz y verificar la pronunciación.",
-  "allow": "Permitir"
+  "allow": "Permitir",
+  "time_to_practice": "📝 Hora de practicar",
+  "daily_review": "¡No olvides tu repaso diario!"
 }

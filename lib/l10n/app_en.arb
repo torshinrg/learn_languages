@@ -120,6 +120,8 @@
       "getStarted": "Get Started",
       "notification_access":"This app requires notification access to deliver reminders and updates.",
       "record_access": "Audio permission is needed to record your voice and check pronunciation.",
-      "allow":"Allow"
+      "allow":"Allow",
+      "time_to_practice":"📝 Time to practice",
+       "daily_review": "Don’t forget your daily review!"
 
 }
