@@ -14,5 +14,6 @@ abstract class ISentenceRepository {
     String languageCode, {
     int? limit,
     bool onlyWithAudio = true,
+    String? translationCode,
   });
 }
