@@ -110,16 +110,27 @@ class LearningService {
     String wordText,
     String languageCode, {
     int limit = 3,
+    bool requireAudio = true,
   }) {
-    return sentenceRepo.fetchForWord(wordText, languageCode, limit: limit);
+    return sentenceRepo.fetchForWord(
+      wordText,
+      languageCode,
+      limit: limit,
+      onlyWithAudio: requireAudio,
+    );
   }
 
   Future<List<Sentence>> getRemainingSentencesForWord(
     String wordText,
     List<String> excludeIds,
     String languageCode,
+    {bool requireAudio = true}
   ) async {
-    final all = await sentenceRepo.fetchForWord(wordText, languageCode);
+    final all = await sentenceRepo.fetchForWord(
+      wordText,
+      languageCode,
+      onlyWithAudio: requireAudio,
+    );
     return all
         .where((s) => !excludeIds.contains(s.id(languageCode)))
         .toList();
