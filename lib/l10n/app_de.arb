@@ -120,5 +120,7 @@
   "getStarted": "Loslegen",
   "notification_access": "Diese App benötigt Zugriff auf Benachrichtigungen, um Erinnerungen und Updates zu senden.",
   "record_access": "Die Audio-Berechtigung wird benötigt, um deine Stimme aufzuzeichnen und die Aussprache zu überprüfen.",
-  "allow": "Zulassen"
+  "allow": "Zulassen",
+  "time_to_practice": "📝 Zeit zum Üben",
+  "daily_review": "Vergiss deine tägliche Wiederholung nicht!"
 }

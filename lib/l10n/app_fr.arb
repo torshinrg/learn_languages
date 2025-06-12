@@ -120,5 +120,7 @@
   "getStarted": "Commencer",
   "notification_access": "Cette application a besoin d'accéder aux notifications pour envoyer des rappels et des mises à jour.",
   "record_access": "L'autorisation audio est nécessaire pour enregistrer votre voix et vérifier la prononciation.",
-  "allow": "Autoriser"
+  "allow": "Autoriser",
+  "time_to_practice": "📝 Il est temps de pratiquer",
+  "daily_review": "N’oublie pas ta révision quotidienne !"
 }
