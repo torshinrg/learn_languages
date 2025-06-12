@@ -92,16 +92,46 @@ class _StudyScreenState extends State<StudyScreen> {
     if (batch.isEmpty) return;
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
+    final nativeCode = context.read<SettingsProvider>().nativeLanguageCode;
+
+    bool withTranslation = nativeCode != null;
 
     // 1) load initial few examples with audio if possible:
     var initial = await _learningService.getInitialSentencesForWord(
       batch.first.text,
       langCode,
       limit: _initialLimit,
+      translationCode: nativeCode,
     );
 
     // If no sentences have audio, fetch any sentences regardless of audio
     bool withAudio = true;
+    if (initial.isEmpty) {
+      // Try again without audio but still requiring translation
+      if (withTranslation) {
+        withAudio = false;
+        initial = await _learningService.getInitialSentencesForWord(
+          batch.first.text,
+          langCode,
+          limit: _initialLimit,
+          requireAudio: false,
+          translationCode: nativeCode,
+        );
+      }
+    }
+
+    if (initial.isEmpty && withTranslation) {
+      // No sentences with translation at all; allow any sentences with audio
+      withTranslation = false;
+      withAudio = true;
+      initial = await _learningService.getInitialSentencesForWord(
+        batch.first.text,
+        langCode,
+        limit: _initialLimit,
+        translationCode: null,
+      );
+    }
+
     if (initial.isEmpty) {
       withAudio = false;
       initial = await _learningService.getInitialSentencesForWord(
@@ -130,6 +160,7 @@ class _StudyScreenState extends State<StudyScreen> {
       excludeIds,
       langCode,
       requireAudio: withAudio,
+      translationCode: withTranslation ? nativeCode : null,
     );
 
     if (!mounted) return;

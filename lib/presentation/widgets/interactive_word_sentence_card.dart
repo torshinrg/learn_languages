@@ -387,12 +387,14 @@ class _InteractiveWordSentenceCardState
                                       )
                                       : Row(
                                         children: [
-                                          Icon(
-                                            Icons.volume_up,
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                          ),
-                                          const SizedBox(width: 8),
+                                          if (widget.audioLinks.isNotEmpty)
+                                            Icon(
+                                              Icons.volume_up,
+                                              color:
+                                                  Theme.of(context).primaryColor,
+                                            ),
+                                          if (widget.audioLinks.isNotEmpty)
+                                            const SizedBox(width: 8),
                                           Expanded(
                                             child: SelectableText(
                                               current!.text(learnCode),

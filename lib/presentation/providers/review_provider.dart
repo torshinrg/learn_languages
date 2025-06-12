@@ -56,6 +56,7 @@ class ReviewProvider extends ChangeNotifier {
       currentWord!.text,
       langCode,
       limit: 3,
+      translationCode: _settings.nativeLanguageCode,
     );
     _sentenceIndex = 0;
     _initialLoaded = true;
@@ -67,6 +68,7 @@ class ReviewProvider extends ChangeNotifier {
       currentWord!.text,
       excludeIds,
       langCode,
+      translationCode: _settings.nativeLanguageCode,
     );
     _sentences.addAll(rest);
     notifyListeners();
