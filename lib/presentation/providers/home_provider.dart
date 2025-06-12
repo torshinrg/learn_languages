@@ -86,8 +86,14 @@ class HomeProvider extends ChangeNotifier {
         w.text,
         languageCode,
         limit: 3,
+        translationCode: _settingsProvider.nativeLanguageCode,
       );
-      _learningService.getRemainingSentencesForWord(w.text, [], languageCode);
+      _learningService.getRemainingSentencesForWord(
+        w.text,
+        [],
+        languageCode,
+        translationCode: _settingsProvider.nativeLanguageCode,
+      );
     }
   }
 }
