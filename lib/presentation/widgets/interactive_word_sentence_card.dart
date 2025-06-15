@@ -481,20 +481,6 @@ class _InteractiveWordSentenceCardState
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            Text(
-              'STT: "$_sttTranscription" '
-              '(${_sttEnd!.difference(_sttStart!).inMilliseconds} ms)',
-              style: theme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Whisper: "$_whisperTranscription" '
-              '(${_whisperEnd!.difference(_whisperStart!).inMilliseconds} ms)',
-              style: theme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
             if (_score! < 0.6)
               OutlinedButton.icon(
                 icon: const Icon(Icons.mic),
