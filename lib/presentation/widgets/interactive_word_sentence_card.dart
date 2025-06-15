@@ -154,11 +154,15 @@ class _InteractiveWordSentenceCardState
 
     await _initSttIfPermitted();
 
-    final dir = await getTemporaryDirectory();
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
     final sid = widget.sentences[widget.sentenceIndex].id(langCode);
-    final path = '${dir.path}/user_$sid.wav';
+
+    String? path;
+    if (!kIsWeb) {
+      final dir = await getTemporaryDirectory();
+      path = '${dir.path}/user_$sid.wav';
+    }
 
     await _recorder.start(
       const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
