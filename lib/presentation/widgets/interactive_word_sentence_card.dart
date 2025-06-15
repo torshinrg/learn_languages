@@ -158,7 +158,10 @@ class _InteractiveWordSentenceCardState
         context.read<SettingsProvider>().learningLanguageCodes.first;
     final sid = widget.sentences[widget.sentenceIndex].id(langCode);
 
-    String? path;
+    // `AudioRecorder.start` requires a non-null path even though it is
+    // ignored on the web. Provide a dummy value for web builds and use a
+    // real temporary file on mobile platforms.
+    String path = 'ignored.wav';
     if (!kIsWeb) {
       final dir = await getTemporaryDirectory();
       path = '${dir.path}/user_$sid.wav';
