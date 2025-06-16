@@ -9,6 +9,7 @@ import 'package:learn_languages/domain/repositories/i_custom_word_repository.dar
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../data/local/local_audio_repo.dart';
 import '../data/local/local_sentence_repo.dart';
@@ -68,7 +69,9 @@ Future<void> setupLocator() async {
 
 Future<Database> _initDatabase() async {
   if (kIsWeb) {
-    // No path provider on the web, so use an in-memory database.
+    // Initialize the sqflite implementation for web and open an
+    // in-memory database since path_provider is unavailable.
+    databaseFactory = databaseFactoryFfiWeb;
     return openDatabase(
       inMemoryDatabasePath,
       version: 1,
