@@ -69,14 +69,15 @@ Future<void> setupLocator() async {
 
 Future<Database> _initDatabase() async {
   if (kIsWeb) {
-    // Initialize the sqflite implementation for web and open an
-    // in-memory database since path_provider is unavailable.
-    databaseFactory = databaseFactoryFfiWeb;
-    return openDatabase(
+    // Use the web implementation which runs in a shared worker.
+    final factory = databaseFactoryFfiWeb;
+    return factory.openDatabase(
       inMemoryDatabasePath,
-      version: 1,
-      onCreate: _onCreate,
-      onOpen: _onOpen,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: _onCreate,
+        onOpen: _onOpen,
+      ),
     );
   }
 
