@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'package:learn_languages/presentation/widgets/task_widget.dart';
 import 'package:record/record.dart';
@@ -153,11 +154,18 @@ class _InteractiveWordSentenceCardState
 
     await _initSttIfPermitted();
 
-    final dir = await getTemporaryDirectory();
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
     final sid = widget.sentences[widget.sentenceIndex].id(langCode);
-    final path = '${dir.path}/user_$sid.wav';
+
+    // `AudioRecorder.start` requires a non-null path even though it is
+    // ignored on the web. Provide a dummy value for web builds and use a
+    // real temporary file on mobile platforms.
+    String path = 'ignored.wav';
+    if (!kIsWeb) {
+      final dir = await getTemporaryDirectory();
+      path = '${dir.path}/user_$sid.wav';
+    }
 
     await _recorder.start(
       const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
@@ -221,18 +229,32 @@ class _InteractiveWordSentenceCardState
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
     _whisperStart = DateTime.now();
-    final result = await _checker.compare(
-      userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
-      lang: langCode,
-    );
-    _whisperEnd = DateTime.now();
 
-    setState(() {
-      _processing = false;
-      _score = result.score;
-      _whisperTranscription = result.userText;
-    });
+    if (kIsWeb) {
+      final expectedText = widget.sentences[widget.sentenceIndex].text(langCode);
+      final scorer = PronunciationScoringService();
+      final score = scorer.score(expectedText.trim(), _sttTranscription);
+      _whisperEnd = DateTime.now();
+
+      setState(() {
+        _processing = false;
+        _score = score;
+        _whisperTranscription = _sttTranscription;
+      });
+    } else {
+      final result = await _checker.compare(
+        userAudioPath: userPath,
+        expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
+        lang: langCode,
+      );
+      _whisperEnd = DateTime.now();
+
+      setState(() {
+        _processing = false;
+        _score = result.score;
+        _whisperTranscription = result.userText;
+      });
+    }
   }
 
   String _removeDiacritics(String s) {

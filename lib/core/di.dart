@@ -1,6 +1,7 @@
 // File: lib/core/di.dart
 
-import 'dart:io';
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get_it/get_it.dart';
 import 'package:learn_languages/data/local/local_custom_word_repo.dart';
@@ -8,6 +9,7 @@ import 'package:learn_languages/domain/repositories/i_custom_word_repository.dar
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../data/local/local_audio_repo.dart';
 import '../data/local/local_sentence_repo.dart';
@@ -66,6 +68,18 @@ Future<void> setupLocator() async {
 }
 
 Future<Database> _initDatabase() async {
+  if (kIsWeb) {
+    // Initialize the sqflite implementation for web and open an
+    // in-memory database since path_provider is unavailable.
+    databaseFactory = databaseFactoryFfiWeb;
+    return openDatabase(
+      inMemoryDatabasePath,
+      version: 1,
+      onCreate: _onCreate,
+      onOpen: _onOpen,
+    );
+  }
+
   final docsDir = await getApplicationDocumentsDirectory();
   final path = join(docsDir.path, kDbFileName);
 
@@ -78,9 +92,15 @@ Future<Database> _initDatabase() async {
   final db = await openDatabase(
     path,
     version: 1,
-    onCreate: (db, version) async {
-      // SRS table
-      await db.execute('''
+    onCreate: _onCreate,
+    onOpen: _onOpen,
+  );
+
+  return db;
+}
+
+Future<void> _onCreate(Database db, int version) async {
+  await db.execute('''
         CREATE TABLE IF NOT EXISTS srs_data (
           word_id TEXT PRIMARY KEY,
           interval INTEGER,
@@ -90,13 +110,11 @@ Future<Database> _initDatabase() async {
         );
       ''');
 
-      // Build FTS columns dynamically from AppLanguage enum names,
-      // appending '_text' to each (e.g., 'english_text', 'spanish_text', etc.).
-      final languageColumns =
-          AppLanguage.values.map((lang) => '${lang.name}_text').toList();
-      final ftsColumns = languageColumns.join(', ');
+  final languageColumns =
+      AppLanguage.values.map((lang) => '${lang.name}_text').toList();
+  final ftsColumns = languageColumns.join(', ');
 
-      await db.execute('''
+  await db.execute('''
         CREATE VIRTUAL TABLE IF NOT EXISTS sentences_fts
         USING fts4(
           $ftsColumns,
@@ -104,17 +122,14 @@ Future<Database> _initDatabase() async {
         );
       ''');
 
-      // Populate FTS from existing sentences table:
-      // SELECT rowid, <lang>_text, ..., audio FROM sentences;
-      final selectColumns = languageColumns.join(', ');
-      await db.execute('''
+  final selectColumns = languageColumns.join(', ');
+  await db.execute('''
         INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
         SELECT rowid, $selectColumns, audio
         FROM sentences;
       ''');
 
-      // Triggers to keep FTS in sync on INSERT, DELETE, UPDATE.
-      await db.execute('''
+  await db.execute('''
         CREATE TRIGGER sentences_ai AFTER INSERT ON sentences BEGIN
           INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
           VALUES (
@@ -124,12 +139,12 @@ Future<Database> _initDatabase() async {
           );
         END;
       ''');
-      await db.execute('''
+  await db.execute('''
         CREATE TRIGGER sentences_ad AFTER DELETE ON sentences BEGIN
           DELETE FROM sentences_fts WHERE rowid = old.rowid;
         END;
       ''');
-      await db.execute('''
+  await db.execute('''
         CREATE TRIGGER sentences_au AFTER UPDATE ON sentences BEGIN
           INSERT INTO sentences_fts(sentences_fts, rowid, $ftsColumns, audio)
           VALUES (
@@ -147,8 +162,7 @@ Future<Database> _initDatabase() async {
         END;
       ''');
 
-      // TASKS table
-      await db.execute('''
+  await db.execute('''
         CREATE TABLE IF NOT EXISTS tasks(
           id TEXT PRIMARY KEY,
           description TEXT NOT NULL,
@@ -159,22 +173,18 @@ Future<Database> _initDatabase() async {
           created_at INTEGER NOT NULL
         );
       ''');
-    },
-    onOpen: (db) async {
-      // Ensure tasks table exists on open
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS tasks(
-          id TEXT PRIMARY KEY,
-          description TEXT NOT NULL,
-          task_type TEXT NOT NULL,
-          sentence_id TEXT,
-          user_result TEXT,
-          completed INTEGER NOT NULL,
-          created_at INTEGER NOT NULL
-        );
-      ''');
-    },
-  );
+}
 
-  return db;
+Future<void> _onOpen(Database db) async {
+  await db.execute('''
+        CREATE TABLE IF NOT EXISTS tasks(
+          id TEXT PRIMARY KEY,
+          description TEXT NOT NULL,
+          task_type TEXT NOT NULL,
+          sentence_id TEXT,
+          user_result TEXT,
+          completed INTEGER NOT NULL,
+          created_at INTEGER NOT NULL
+        );
+      ''');
 }
