@@ -9,6 +9,7 @@ import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../data/local/local_audio_repo.dart';
 import '../data/local/local_sentence_repo.dart';
@@ -67,10 +68,13 @@ Future<void> setupLocator() async {
 }
 
 Future<Database> _initDatabase() async {
-  // On the web the path_provider plugin is unavailable, so use
-  // the special in-memory database path provided by sqflite.
+  // Use the web implementation when running in the browser.
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  }
+
   final path = kIsWeb
-      ? inMemoryDatabasePath
+      ? kDbFileName
       : join((await getApplicationDocumentsDirectory()).path, kDbFileName);
 
   if (!kIsWeb && !File(path).existsSync()) {
