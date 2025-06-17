@@ -156,16 +156,24 @@ class _InteractiveWordSentenceCardState
 
     await _initSttIfPermitted();
 
-    final dir = await getTemporaryDirectory();
-    final langCode =
-        context.read<SettingsProvider>().learningLanguageCodes.first;
-    final sid = widget.sentences[widget.sentenceIndex].id(langCode);
-    final path = '${dir.path}/user_$sid.wav';
-
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
-      path: path,
-    );
+    String? path;
+    if (kIsWeb) {
+      // On the web the record package stores audio in-memory and provides
+      // a blob URL from stop(), so we don't specify a file path here.
+      await _recorder.start(
+        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
+      );
+    } else {
+      final dir = await getTemporaryDirectory();
+      final langCode =
+          context.read<SettingsProvider>().learningLanguageCodes.first;
+      final sid = widget.sentences[widget.sentenceIndex].id(langCode);
+      path = '${dir.path}/user_$sid.wav';
+      await _recorder.start(
+        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
+        path: path,
+      );
+    }
 
     _sttStart = DateTime.now();
     _stt.listen(
