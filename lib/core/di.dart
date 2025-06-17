@@ -102,58 +102,63 @@ Future<Database> _initDatabase() async {
       // appending '_text' to each (e.g., 'english_text', 'spanish_text', etc.).
       final languageColumns =
           AppLanguage.values.map((lang) => '${lang.name}_text').toList();
-      final ftsColumns = languageColumns.join(', ');
 
-      await db.execute('''
-        CREATE VIRTUAL TABLE IF NOT EXISTS sentences_fts
-        USING fts4(
-          $ftsColumns,
-          audio UNINDEXED
-        );
-      ''');
+      if (!kIsWeb) {
+        // FTS is not available in the web version of sqlite. Only create the
+        // FTS table and triggers on native platforms where the extension is
+        // supported.
+        final ftsColumns = languageColumns.join(', ');
 
-      // Populate FTS from existing sentences table:
-      // SELECT rowid, <lang>_text, ..., audio FROM sentences;
-      final selectColumns = languageColumns.join(', ');
-      await db.execute('''
-        INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
-        SELECT rowid, $selectColumns, audio
-        FROM sentences;
-      ''');
+        await db.execute('''
+          CREATE VIRTUAL TABLE IF NOT EXISTS sentences_fts
+          USING fts4(
+            $ftsColumns,
+            audio UNINDEXED
+          );
+        ''');
 
-      // Triggers to keep FTS in sync on INSERT, DELETE, UPDATE.
-      await db.execute('''
-        CREATE TRIGGER sentences_ai AFTER INSERT ON sentences BEGIN
+        // Populate FTS from existing sentences table:
+        final selectColumns = languageColumns.join(', ');
+        await db.execute('''
           INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
-          VALUES (
-            new.rowid,
-            ${languageColumns.map((col) => 'new.$col').join(', ')},
-            new.audio
-          );
-        END;
-      ''');
-      await db.execute('''
-        CREATE TRIGGER sentences_ad AFTER DELETE ON sentences BEGIN
-          DELETE FROM sentences_fts WHERE rowid = old.rowid;
-        END;
-      ''');
-      await db.execute('''
-        CREATE TRIGGER sentences_au AFTER UPDATE ON sentences BEGIN
-          INSERT INTO sentences_fts(sentences_fts, rowid, $ftsColumns, audio)
-          VALUES (
-            'delete',
-            old.rowid,
-            ${languageColumns.map((col) => 'old.$col').join(', ')},
-            old.audio
-          );
-          INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
-          VALUES (
-            new.rowid,
-            ${languageColumns.map((col) => 'new.$col').join(', ')},
-            new.audio
-          );
-        END;
-      ''');
+          SELECT rowid, $selectColumns, audio
+          FROM sentences;
+        ''');
+
+        // Triggers to keep FTS in sync on INSERT, DELETE, UPDATE.
+        await db.execute('''
+          CREATE TRIGGER sentences_ai AFTER INSERT ON sentences BEGIN
+            INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
+            VALUES (
+              new.rowid,
+              ${languageColumns.map((col) => 'new.$col').join(', ')},
+              new.audio
+            );
+          END;
+        ''');
+        await db.execute('''
+          CREATE TRIGGER sentences_ad AFTER DELETE ON sentences BEGIN
+            DELETE FROM sentences_fts WHERE rowid = old.rowid;
+          END;
+        ''');
+        await db.execute('''
+          CREATE TRIGGER sentences_au AFTER UPDATE ON sentences BEGIN
+            INSERT INTO sentences_fts(sentences_fts, rowid, $ftsColumns, audio)
+            VALUES (
+              'delete',
+              old.rowid,
+              ${languageColumns.map((col) => 'old.$col').join(', ')},
+              old.audio
+            );
+            INSERT INTO sentences_fts(rowid, $ftsColumns, audio)
+            VALUES (
+              new.rowid,
+              ${languageColumns.map((col) => 'new.$col').join(', ')},
+              new.audio
+            );
+          END;
+        ''');
+      }
 
       // TASKS table
       await db.execute('''
