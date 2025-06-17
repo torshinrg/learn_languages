@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,12 @@ class PermissionRequestScreen extends StatelessWidget {
   const PermissionRequestScreen({super.key});
 
   Future<void> _requestPermissions(BuildContext context) async {
+    if (kIsWeb) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const InitialEntryRedirect()),
+      );
+      return;
+    }
     // 1) Initialize notifications (creates channel + may ask on Android13+)
     await NotificationService.init();
 
