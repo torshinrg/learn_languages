@@ -77,7 +77,16 @@ Future<Database> _initDatabase() async {
       ? kDbFileName
       : join((await getApplicationDocumentsDirectory()).path, kDbFileName);
 
-  if (!kIsWeb && !File(path).existsSync()) {
+  if (kIsWeb) {
+    final exists = await databaseFactory.databaseExists(path);
+    if (!exists) {
+      final data = await rootBundle.load('assets/databases/$kDbFileName');
+      await databaseFactory.writeDatabaseBytes(
+        path,
+        data.buffer.asUint8List(),
+      );
+    }
+  } else if (!File(path).existsSync()) {
     final data = await rootBundle.load('assets/databases/$kDbFileName');
     final bytes = data.buffer.asUint8List();
     await File(path).writeAsBytes(bytes);
