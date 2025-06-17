@@ -159,9 +159,10 @@ class _InteractiveWordSentenceCardState
     String? path;
     if (kIsWeb) {
       // On the web the record package stores audio in-memory and provides
-      // a blob URL from stop(), so we don't specify a file path here.
+      // a blob URL from stop(), so the path is ignored but still required.
       await _recorder.start(
         const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
+        path: '',
       );
     } else {
       final dir = await getTemporaryDirectory();
