@@ -8,6 +8,7 @@ import 'package:learn_languages/domain/repositories/i_custom_word_repository.dar
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../data/local/local_audio_repo.dart';
 import '../data/local/local_sentence_repo.dart';
@@ -66,10 +67,13 @@ Future<void> setupLocator() async {
 }
 
 Future<Database> _initDatabase() async {
-  final docsDir = await getApplicationDocumentsDirectory();
-  final path = join(docsDir.path, kDbFileName);
+  // On the web the path_provider plugin is unavailable, so use
+  // the special in-memory database path provided by sqflite.
+  final path = kIsWeb
+      ? inMemoryDatabasePath
+      : join((await getApplicationDocumentsDirectory()).path, kDbFileName);
 
-  if (!File(path).existsSync()) {
+  if (!kIsWeb && !File(path).existsSync()) {
     final data = await rootBundle.load('assets/databases/$kDbFileName');
     final bytes = data.buffer.asUint8List();
     await File(path).writeAsBytes(bytes);
