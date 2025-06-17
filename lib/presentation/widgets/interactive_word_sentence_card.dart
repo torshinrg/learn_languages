@@ -9,6 +9,7 @@ import 'package:learn_languages/presentation/widgets/task_widget.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -87,7 +88,9 @@ class _InteractiveWordSentenceCardState
   void initState() {
     super.initState();
     _checker = GetIt.instance<AudioCheckService>();
-    _checker.init();
+    if (!kIsWeb) {
+      _checker.init();
+    }
     _stt = SpeechToText();
     _initSttIfPermitted();
   }
@@ -220,19 +223,31 @@ class _InteractiveWordSentenceCardState
 
     final langCode =
         context.read<SettingsProvider>().learningLanguageCodes.first;
-    _whisperStart = DateTime.now();
-    final result = await _checker.compare(
-      userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
-      lang: langCode,
-    );
-    _whisperEnd = DateTime.now();
 
-    setState(() {
-      _processing = false;
-      _score = result.score;
-      _whisperTranscription = result.userText;
-    });
+    if (kIsWeb) {
+      final expectedText = widget.sentences[widget.sentenceIndex].text(langCode);
+      final scorer = PronunciationScoringService();
+      final score = scorer.score(expectedText.trim(), _sttTranscription);
+      setState(() {
+        _processing = false;
+        _score = score;
+        _whisperTranscription = _sttTranscription;
+      });
+    } else {
+      _whisperStart = DateTime.now();
+      final result = await _checker.compare(
+        userAudioPath: userPath,
+        expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
+        lang: langCode,
+      );
+      _whisperEnd = DateTime.now();
+
+      setState(() {
+        _processing = false;
+        _score = result.score;
+        _whisperTranscription = result.userText;
+      });
+    }
   }
 
   String _removeDiacritics(String s) {
