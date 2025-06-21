@@ -29,10 +29,66 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>learn_languages</title>
+  <title>Fluentano</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(#FF988E, #AC9AFF);
+    }
+    #loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 6px solid #ffffff;
+      border-top-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+<div id="loader">
+  <div class="spinner"></div>
+  <span id="loading-text"></span>
+
+</div>
   <script src="flutter_bootstrap.js" async></script>
+<script>
+  const loader = document.getElementById('loader');
+  const loadingText = document.getElementById('loading-text');
+
+  const messages = {
+    en: "Just a moment… We’re setting things up.",
+    es: "Un momento… Estamos preparando todo.",
+    ru: "Минуточку… Мы всё настраиваем.",
+    fr: "Un instant… Nous préparons tout.",
+    de: "Einen Moment… Wir richten alles ein.",
+    pt: "Só um momento… Estamos preparando tudo.",
+    it: "Un attimo… Stiamo sistemando tutto.",
+    zh: "请稍等… 我们正在设置。",
+  };
+
+  const lang = navigator.language?.slice(0, 2) || "en";
+  loadingText.textContent = messages[lang] || messages.en;
+
+  window.addEventListener('flutter-first-frame', () => loader.remove());
+</script>
+
 </body>
 </html>
