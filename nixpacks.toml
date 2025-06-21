@@ -2,15 +2,10 @@
 nixPkgs = ["flutter", "bash", "coreutils", "git"]
 
 [phases.install]
-cmds = [
-    "flutter config --enable-web",
-    "flutter pub get"
-]
+cmds = ["flutter config --enable-web", "flutter pub get"]
 
 [phases.build]
-cmds = [
-    "flutter build web"
-]
+cmds = ["flutter build web"]
 
 [start]
 cmd = "python3 -m http.server 8080 --directory build/web"
