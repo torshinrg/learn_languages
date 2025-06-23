@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   fluentano_web_app:
     image: maodzzy/fluentano-web

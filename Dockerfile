@@ -1,11 +1,14 @@
-# Dockerfile
+# Use lightweight nginx base image
 FROM nginx:alpine
 
-# Clean out the default Nginx site
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy the web build output
+# Copy built Flutter web output
 COPY build/web /usr/share/nginx/html
 
+# Optional: Set caching headers or routing rules (optional)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose default web port
 EXPOSE 80
+
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
