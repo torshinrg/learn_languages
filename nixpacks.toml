@@ -1,13 +1,5 @@
 [phases.setup]
-nixPkgs = [
-    "flutter",
-    "bash",
-    "coreutils",
-    "git",
-    "python3",
-    "nodejs",
-    "nodePackages.serve"
-]
+nixPkgs = ["flutter", "git"]    # drop nodejs, nodePackages.serve, python3, coreutils
 cachePaths = ["/root/.pub-cache", "/root/.cache", "/root/flutter"]
 
 [phases.install]
@@ -25,4 +17,4 @@ cmds = [
 ]
 
 [start]
-cmd = "npx serve -s build/web -l 8080"
+cmd = "flutter build web && python3 -m http.server 8080 --directory build/web"
