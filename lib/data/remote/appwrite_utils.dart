@@ -2,9 +2,9 @@ import 'package:appwrite/appwrite.dart';
 
 /// Utility functions for building Appwrite database queries.
 class AppwriteUtils {
-  /// Build a list of [Query] objects for simple equality filters.
-  static List<Query> buildFilters(Map<String, dynamic>? filters) {
-    final queries = <Query>[];
+  /// Build a list of query strings for simple equality filters.
+  static List<String> buildFilters(Map<String, dynamic>? filters) {
+    final queries = <String>[];
     if (filters == null) return queries;
     for (final entry in filters.entries) {
       queries.add(Query.equal(entry.key, [entry.value]));
@@ -13,8 +13,8 @@ class AppwriteUtils {
   }
 
   /// Append a sort order to an existing list of queries.
-  static List<Query> applySorting(
-    List<Query> base,
+  static List<String> applySorting(
+    List<String> base,
     String field, {
     bool descending = false,
   }) {

@@ -47,7 +47,7 @@ class AppwriteService {
     required String password,
   }) async {
     try {
-      return await account.createEmailSession(
+      return await account.createEmailPasswordSession(
         email: email,
         password: password,
       );
@@ -70,7 +70,7 @@ class AppwriteService {
   Future<List<Document>> getDocuments({
     required String databaseId,
     required String collectionId,
-    List<Query>? queries,
+    List<String>? queries,
   }) async {
     final result = await databases.listDocuments(
       databaseId: databaseId,
