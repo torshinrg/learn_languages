@@ -347,12 +347,15 @@ class _StudyScreenState extends State<StudyScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PrimaryButton(
+              FullWidthButton.primary(
                 label: loc.got_it,
                 onPressed: () => _markResult(true),
               ),
               const SizedBox(height: 8),
-              SecondaryButton(label: 'Mark as Known', onPressed: _markAsKnown),
+              FullWidthButton.secondary(
+                label: 'Mark as Known',
+                onPressed: _markAsKnown,
+              ),
             ],
           ),
         ),
