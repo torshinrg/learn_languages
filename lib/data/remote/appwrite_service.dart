@@ -109,4 +109,17 @@ class AppwriteService {
       data: data,
     );
   }
+
+  /// Delete a document from a collection.
+  Future<void> deleteDocument({
+    required String databaseId,
+    required String collectionId,
+    required String documentId,
+  }) async {
+    await databases.deleteDocument(
+      databaseId: databaseId,
+      collectionId: collectionId,
+      documentId: documentId,
+    );
+  }
 }

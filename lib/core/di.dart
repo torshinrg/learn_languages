@@ -4,16 +4,20 @@ import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get_it/get_it.dart';
 import 'package:learn_languages/data/local/local_custom_word_repo.dart';
+import 'package:learn_languages/data/remote/appwrite_service.dart';
+import 'package:learn_languages/data/remote/remote_audio_repo.dart';
+import 'package:learn_languages/data/remote/remote_custom_word_repo.dart';
+import 'package:learn_languages/data/remote/remote_sentence_repo.dart';
+import 'package:learn_languages/data/remote/remote_srs_repo.dart';
+import 'package:learn_languages/data/remote/remote_task_repo.dart';
+import 'package:learn_languages/data/remote/remote_word_repo.dart';
 import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/local/local_audio_repo.dart';
-import '../data/local/local_sentence_repo.dart';
 import '../data/local/local_srs_repo.dart';
-import '../data/local/local_word_repo.dart';
-import '../data/local/local_task_repo.dart';
 
 import '../domain/repositories/i_audio_repository.dart';
 import '../domain/repositories/i_sentence_repository.dart';
@@ -25,6 +29,7 @@ import '../services/audio_check_service.dart';
 import '../services/notification_service.dart';
 import '../services/srs_service.dart';
 import '../services/learning_service.dart';
+import 'data_migration_service.dart';
 
 import 'constants.dart';
 import 'app_language.dart';
@@ -33,20 +38,43 @@ final GetIt getIt = GetIt.instance;
 
 /// Call this before runApp()
 Future<void> setupLocator() async {
+  final prefs = await SharedPreferences.getInstance();
   final db = await _initDatabase();
-  getIt.registerSingleton<Database>(db);
 
-  // Repositories
-  getIt.registerLazySingleton<IWordRepository>(() => LocalWordRepository(db));
+  final localCustom = LocalCustomWordRepository(db);
+  final localSrs = LocalSRSRepository(db);
+
+  final appwrite = AppwriteService(
+    endpoint: const String.fromEnvironment(
+      'APPWRITE_ENDPOINT',
+      defaultValue: 'https://cloud.appwrite.io/v1',
+    ),
+    projectId: const String.fromEnvironment(
+      'APPWRITE_PROJECT_ID',
+      defaultValue: 'demo',
+    ),
+  );
+  getIt.registerSingleton<AppwriteService>(appwrite);
+
+  // Remote repositories
+  getIt.registerLazySingleton<IWordRepository>(
+    () => RemoteWordRepository(appwrite),
+  );
   getIt.registerLazySingleton<ISentenceRepository>(
-    () => LocalSentenceRepository(db),
+    () => RemoteSentenceRepository(appwrite),
   );
-  getIt.registerLazySingleton<IAudioRepository>(() => LocalAudioRepository(db));
-  getIt.registerLazySingleton<ISRSRepository>(() => LocalSRSRepository(db));
+  getIt.registerLazySingleton<IAudioRepository>(
+    () => RemoteAudioRepository(appwrite),
+  );
+  getIt.registerLazySingleton<ISRSRepository>(
+    () => RemoteSRSRepository(appwrite),
+  );
   getIt.registerLazySingleton<ICustomWordRepository>(
-    () => LocalCustomWordRepository(getIt<Database>()),
+    () => RemoteCustomWordRepository(appwrite),
   );
-  getIt.registerLazySingleton<ITaskRepository>(() => LocalTaskRepository(db));
+  getIt.registerLazySingleton<ITaskRepository>(
+    () => RemoteTaskRepository(appwrite),
+  );
 
   // Services
   getIt.registerLazySingleton<SRSService>(
@@ -63,6 +91,16 @@ Future<void> setupLocator() async {
   );
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
   getIt.registerLazySingleton<AudioCheckService>(() => AudioCheckService());
+
+  final migration = DataMigrationService(
+    prefs: prefs,
+    localCustomRepo: localCustom,
+    localSrsRepo: localSrs,
+    appwrite: appwrite,
+  );
+  await migration.migrateIfNeeded();
+
+  await db.close();
 }
 
 Future<Database> _initDatabase() async {
