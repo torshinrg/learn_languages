@@ -54,6 +54,7 @@ Future<void> setupLocator() async {
       defaultValue: 'demo',
     ),
   );
+  await appwrite.ensureAnonymousSession();
   getIt.registerSingleton<AppwriteService>(appwrite);
 
   // Remote repositories

@@ -25,6 +25,7 @@ import 'presentation/screens/review_screen.dart';
 import 'presentation/screens/vocabulary_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/notification_settings_screen.dart';
+import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -219,6 +220,7 @@ class MyApp extends StatelessWidget {
             home: const InitialEntryRedirect(),
             routes: {
               '/debug': (_) => const DebugScreen(),
+              '/login': (_) => const LoginScreen(),
               '/study': (_) => const StudyScreen(),
               '/review': (_) => const ReviewScreen(),
               '/vocabulary': (_) => const VocabularyScreen(),

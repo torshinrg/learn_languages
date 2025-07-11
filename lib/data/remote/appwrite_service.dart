@@ -56,6 +56,19 @@ class AppwriteService {
     }
   }
 
+  /// Create an anonymous session if none exists.
+  Future<void> ensureAnonymousSession() async {
+    try {
+      await account.get();
+    } on AppwriteException {
+      try {
+        await account.createAnonymousSession();
+      } on AppwriteException {
+        // ignore
+      }
+    }
+  }
+
   /// Delete all sessions for the current account.
   Future<void> logout() async {
     try {
