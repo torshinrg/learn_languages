@@ -1,3 +1,4 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 
 import '../../core/constants.dart';
@@ -22,12 +23,21 @@ class RemoteWordRepository implements IWordRepository {
 
   @override
   Future<void> addOrUpdate(Word word) async {
-    await _service.createDocument(
-      databaseId: kAppwriteDatabaseId,
-      collectionId: kAppwriteWords,
-      documentId: word.id,
-      data: word.toMap(),
-    );
+    try {
+      await _service.updateDocument(
+        databaseId: kAppwriteDatabaseId,
+        collectionId: kAppwriteWords,
+        documentId: word.id,
+        data: word.toMap(),
+      );
+    } on AppwriteException {
+      await _service.createDocument(
+        databaseId: kAppwriteDatabaseId,
+        collectionId: kAppwriteWords,
+        documentId: word.id,
+        data: word.toMap(),
+      );
+    }
   }
 
   @override

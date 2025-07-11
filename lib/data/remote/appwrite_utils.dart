@@ -6,9 +6,27 @@ class AppwriteUtils {
   static List<String> buildFilters(Map<String, dynamic>? filters) {
     final queries = <String>[];
     if (filters == null) return queries;
+
     for (final entry in filters.entries) {
-      queries.add(Query.equal(entry.key, [entry.value]));
+      final key = entry.key;
+      final value = entry.value;
+      if (key.endsWith('>=')) {
+        final field = key.substring(0, key.length - 2);
+        queries.add(Query.greaterThanEqual(field, value));
+      } else if (key.endsWith('<=')) {
+        final field = key.substring(0, key.length - 2);
+        queries.add(Query.lessThanEqual(field, value));
+      } else if (key.endsWith('>')) {
+        final field = key.substring(0, key.length - 1);
+        queries.add(Query.greaterThan(field, value));
+      } else if (key.endsWith('<')) {
+        final field = key.substring(0, key.length - 1);
+        queries.add(Query.lessThan(field, value));
+      } else {
+        queries.add(Query.equal(key, [value]));
+      }
     }
+
     return queries;
   }
 
