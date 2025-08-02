@@ -1,0 +1,20 @@
+[phases.setup]
+nixPkgs = ["flutter", "git"]    # drop nodejs, nodePackages.serve, python3, coreutils
+cachePaths = ["/root/.pub-cache", "/root/.cache", "/root/flutter"]
+
+[phases.install]
+cmds = [
+    "flutter config --enable-web",
+    "flutter config --no-analytics",
+    "flutter upgrade",
+    "yes | flutter doctor",
+    "flutter pub get"
+]
+
+[phases.build]
+cmds = [
+    "flutter build web --release --web-renderer html"
+]
+
+[start]
+cmd = "flutter build web && python3 -m http.server 8080 --directory build/web"

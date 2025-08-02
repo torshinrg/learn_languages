@@ -1,0 +1,15 @@
+# .dockerignore
+
+# Don’t ignore build/web – we need it in the image!
+# (So we simply omit “build/” here entirely.)
+
+.android/
+.ios/
+.idea/
+.vscode/
+.git
+.gitignore
+*.iml
+pubspec.lock
+test/
+docs/

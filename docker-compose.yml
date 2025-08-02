@@ -1,0 +1,6 @@
+services:
+  fluentano_web_app:
+    image: maodzzy/fluentano-web
+    ports:
+      - "8447:80"
+    restart: always

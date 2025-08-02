@@ -173,7 +173,7 @@ class HomeScreen extends StatelessWidget {
 
           // Floating bottom nav pill (Positioned ~1/4 up from bottom)
           Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.25,
+            bottom: MediaQuery.of(context).size.height * 0.15,
             left: 24,
             right: 24,
             child: Container(

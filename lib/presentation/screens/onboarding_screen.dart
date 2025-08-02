@@ -1,6 +1,7 @@
 // File: lib/presentation/screens/onboarding_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_language.dart';
@@ -58,9 +59,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await settings.setDailyCount(count);
     await context.read<HomeProvider>().refresh();
 
-    // After saving, show permission request screen
+    // After saving, request permissions on mobile; go straight to home on web
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const PermissionRequestScreen()),
+      MaterialPageRoute(
+        builder: (_) => kIsWeb
+            ? const HomeScreen()
+            : const PermissionRequestScreen(),
+      ),
     );
   }
 
@@ -245,9 +250,10 @@ class _InitialEntryRedirectState extends State<InitialEntryRedirect> {
       return;
     }
 
-    // 3) Missing mic or notification permission?
-    if (await Permission.microphone.isDenied ||
-        await Permission.notification.isDenied) {
+    // 3) Missing mic or notification permission? Skip checks on web.
+    if (!kIsWeb &&
+        (await Permission.microphone.isDenied ||
+            await Permission.notification.isDenied)) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const PermissionRequestScreen()),

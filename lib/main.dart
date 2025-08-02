@@ -12,6 +12,7 @@ import 'core/di.dart';
 import 'core/navigation.dart';
 import 'domain/repositories/i_task_repository.dart';
 import 'presentation/widgets/share_handler.dart';
+import 'package:flutter/foundation.dart';
 import 'presentation/providers/custom_words_provider.dart';
 import 'presentation/providers/home_provider.dart';
 import 'presentation/providers/notification_settings_provider.dart';
@@ -205,17 +206,19 @@ class MyApp extends StatelessWidget {
                 elevation: 4,
               ),
             ),
-            builder:
-                (ctx, child) => Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [kGradientStart, kGradientEnd],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+            builder: (ctx, child) {
+              final content = kIsWeb ? child! : ShareHandler(child: child!);
+              return Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [kGradientStart, kGradientEnd],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: ShareHandler(child: child!),
                 ),
+                child: content,
+              );
+            },
             home: const InitialEntryRedirect(),
             routes: {
               '/debug': (_) => const DebugScreen(),
