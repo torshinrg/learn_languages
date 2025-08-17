@@ -1,11 +1,9 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart';
 
 import '../../core/constants.dart';
 import '../../domain/entities/word.dart';
 import '../../domain/repositories/i_word_repository.dart';
 import 'appwrite_service.dart';
-import 'appwrite_utils.dart';
 
 class RemoteWordRepository implements IWordRepository {
   RemoteWordRepository(this._service);
@@ -13,39 +11,26 @@ class RemoteWordRepository implements IWordRepository {
   final AppwriteService _service;
 
   @override
-  Future<List<Word>> fetchAll() async {
+  Future<List<Word>> fetchTopN(String languageId, int n) async {
     final docs = await _service.getDocuments(
       databaseId: kAppwriteDatabaseId,
       collectionId: kAppwriteWords,
+      queries: [
+        Query.equal('languageId', [languageId]),
+        Query.orderAsc('frequencyRank'),
+        Query.limit(n),
+      ],
     );
     return docs.map((d) => Word.fromMap(d.data)).toList();
   }
 
   @override
-  Future<void> addOrUpdate(Word word) async {
-    try {
-      await _service.updateDocument(
-        databaseId: kAppwriteDatabaseId,
-        collectionId: kAppwriteWords,
-        documentId: word.id,
-        data: word.toMap(),
-      );
-    } on AppwriteException {
-      await _service.createDocument(
-        databaseId: kAppwriteDatabaseId,
-        collectionId: kAppwriteWords,
-        documentId: word.id,
-        data: word.toMap(),
-      );
-    }
-  }
-
-  @override
-  Future<void> remove(String id) async {
-    await _service.deleteDocument(
+  Future<Word> fetchById(String wordId) async {
+    final doc = await _service.getDocument(
       databaseId: kAppwriteDatabaseId,
       collectionId: kAppwriteWords,
-      documentId: id,
+      documentId: wordId,
     );
+    return Word.fromMap(doc.data);
   }
 }

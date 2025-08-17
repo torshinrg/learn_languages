@@ -2,12 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get_it/get_it.dart';
 import '../../services/notification_service.dart';
 
 class NotificationSettingsProvider extends ChangeNotifier {
   static const _kTimesKey = 'notification_times';
-  final NotificationService _service = GetIt.instance<NotificationService>();
 
   List<TimeOfDay> _times = [];
   List<TimeOfDay> get times => List.unmodifiable(_times);
@@ -28,7 +26,7 @@ class NotificationSettingsProvider extends ChangeNotifier {
           );
         }).toList();
     notifyListeners();
-    await _service.scheduleDailyNotifications(_times);
+    await NotificationService.scheduleDailyNotifications(_times);
   }
 
   Future<void> addTime(TimeOfDay t) async {
@@ -51,7 +49,7 @@ class NotificationSettingsProvider extends ChangeNotifier {
     final serialized = _times.map((t) => '${t.hour}:${t.minute}').toList();
     await prefs.setStringList(_kTimesKey, serialized);
 
-    await _service.scheduleDailyNotifications(_times);
+    await NotificationService.scheduleDailyNotifications(_times);
 
     notifyListeners();
   }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:learn_languages/data/remote/appwrite_service.dart';
 import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
+import 'package:learn_languages/domain/repositories/i_sentence_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_user_sentence_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_user_vocabulary_repository.dart';
 import 'package:learn_languages/presentation/providers/task_provider.dart';
 import 'package:learn_languages/presentation/screens/tasks_screen.dart';
 import 'package:learn_languages/services/learning_service.dart';
-import 'package:learn_languages/services/srs_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -56,50 +59,48 @@ class MyApp extends StatelessWidget {
           create: (_) => NotificationSettingsProvider(),
         ),
         Provider<LearningService>(create: (_) => getIt<LearningService>()),
-        Provider<SRSService>(create: (_) => getIt<SRSService>()),
+        Provider<AppwriteService>(create: (_) => getIt<AppwriteService>()),
         ChangeNotifierProvider<SettingsProvider>(
           create: (_) => SettingsProvider(),
         ),
-
         ChangeNotifierProvider<StudyProvider>(
-          create:
-              (ctx) => StudyProvider(
-                ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
-              ),
+          create: (ctx) => StudyProvider(
+            ctx.read<LearningService>(),
+            ctx.read<SettingsProvider>(),
+            ctx.read<AppwriteService>(),
+          ),
         ),
         ChangeNotifierProvider<ReviewProvider>(
-          create:
-              (ctx) => ReviewProvider(
-                ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
-                ctx.read<SettingsProvider>(),
-              ),
+          create: (ctx) => ReviewProvider(
+            ctx.read<LearningService>(),
+            ctx.read<SettingsProvider>(),
+            ctx.read<AppwriteService>(),
+          ),
         ),
         ChangeNotifierProvider<VocabularyProvider>(
-          create:
-              (ctx) => VocabularyProvider(
-                ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
-              ),
+          create: (ctx) => VocabularyProvider(
+            ctx.read<LearningService>(),
+            ctx.read<AppwriteService>(),
+          ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
           create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
         ),
         ChangeNotifierProvider<TaskProvider>(
-          create:
-              (ctx) => TaskProvider(
-                getIt<ITaskRepository>(),
-                () => ctx.read<SettingsProvider>().locale,
-              ),
+          create: (ctx) => TaskProvider(
+            getIt<ITaskRepository>(),
+            getIt<ISentenceTaskRepository>(),
+            getIt<IUserSentenceTaskRepository>(),
+            getIt<AppwriteService>(),
+            ctx.read<SettingsProvider>(),
+          ),
         ),
         ChangeNotifierProvider<HomeProvider>(
-          create:
-              (ctx) => HomeProvider(
-                ctx.read<SRSService>(),
-                ctx.read<LearningService>(),
-                ctx.read<SettingsProvider>(),
-              ),
+          create: (ctx) => HomeProvider(
+            ctx.read<LearningService>(),
+            ctx.read<SettingsProvider>(),
+            ctx.read<AppwriteService>(),
+          ),
         ),
       ],
       child: Consumer<SettingsProvider>(
@@ -226,7 +227,10 @@ class MyApp extends StatelessWidget {
               '/vocabulary': (_) => const VocabularyScreen(),
               '/settings': (_) => const SettingsScreen(),
               '/reminders': (_) => const NotificationSettingsScreen(),
-              '/tasks': (_) => const TaskScreen(),
+              '/tasks': (context) {
+                final String sentenceId = ModalRoute.of(context)!.settings.arguments as String;
+                return TasksScreen(sentenceId: sentenceId);
+              },
             },
           );
         },

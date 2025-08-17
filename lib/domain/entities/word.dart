@@ -1,41 +1,30 @@
-// lib/domain/entities/word.dart
-
-enum WordType { normal, custom }
-
 class Word {
   final String id;
+  final String languageId;
   final String text;
-  final String? translation;
-  final String? sentence;
-  final WordType type;
+  final int frequencyRank;
 
   Word({
     required this.id,
+    required this.languageId,
     required this.text,
-    this.translation,
-    this.sentence,
-    this.type = WordType.normal,
+    required this.frequencyRank,
   });
 
   factory Word.fromMap(Map<String, dynamic> map) {
     return Word(
-      id: map['id'] as String,
+      id: map['\$id'] as String,
+      languageId: map['languageId'] as String,
       text: map['text'] as String,
-      translation: map['translation'] as String?,
-      sentence: map['sentence'] as String?,
-      type: (map['type'] as String?) == 'custom'
-          ? WordType.custom
-          : WordType.normal,
+      frequencyRank: map['frequencyRank'] as int,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'languageId': languageId,
       'text': text,
-      'translation': translation,
-      'sentence': sentence,
-      'type': type == WordType.custom ? 'custom' : 'normal',
+      'frequencyRank': frequencyRank,
     };
   }
 }

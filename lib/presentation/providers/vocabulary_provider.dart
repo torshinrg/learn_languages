@@ -1,64 +1,42 @@
-// lib/presentation/providers/vocabulary_provider.dart
-
 import 'package:flutter/foundation.dart';
-import '../../core/constants.dart';
-import '../../domain/entities/word.dart';
-import '../../services/learning_service.dart';
-import '../../services/srs_service.dart';
+import 'package:learn_languages/domain/entities/user_word_status.dart';
+import 'package:learn_languages/domain/entities/word.dart';
+import 'package:learn_languages/services/learning_service.dart';
+
+import '../../data/remote/appwrite_service.dart';
 
 class VocabularyProvider extends ChangeNotifier {
-  final LearningService _learning;
-  final SRSService _srs;
+  final LearningService _learningService;
+  final AppwriteService _appwriteService;
 
   List<Word> _learningNow = [];
-  List<Word> _pending     = [];
-  List<Word> _learned     = [];
-
   List<Word> get learningNow => _learningNow;
-  List<Word> get pending     => _pending;
-  List<Word> get learned     => _learned;
 
-  VocabularyProvider(this._learning, this._srs) {
-    _loadAll();
+  List<Word> _pending = [];
+  List<Word> get pending => _pending;
+
+  List<Word> _mastered = [];
+  List<Word> get mastered => _mastered;
+
+  List<Word> get learned => _mastered;
+
+  VocabularyProvider(this._learningService, this._appwriteService) {
+    refresh();
   }
 
-  Future<void> _loadAll() async {
-    final allWords = await _learning.getAllWords();
-    final allSrs   = await _srs.fetchAllData();
-    final nowMs    = DateTime.now().millisecondsSinceEpoch;
-
-    // Map wordId → SRSData
-    final srsMap = { for (var s in allSrs) s.wordId : s };
-
-    _learningNow = [];
-    _learned     = [];
-    _pending     = [];
-
-    for (final w in allWords) {
-      final s = srsMap[w.id];
-      if (s == null) {
-        // never scheduled ⇒ pending
-        _pending.add(w);
-      } else if (s.repetition >= kMasterRepetitionThreshold) {
-        // mastered
-        _learned.add(w);
-      } else if (s.nextReview.millisecondsSinceEpoch <= nowMs) {
-        // due right now ⇒ learning now
-        _learningNow.add(w);
-      } else {
-        // scheduled but not due ⇒ pending
-        _pending.add(w);
-      }
+  Future<void> refresh() async {
+    try {
+      final user = await _appwriteService.account.get();
+      _learningNow =
+          await _learningService.getWordsByStatus(user.$id, WordStatus.inProgress);
+      _pending = await _learningService.getWordsByStatus(user.$id, WordStatus.New);
+      _mastered =
+          await _learningService.getWordsByStatus(user.$id, WordStatus.known);
+    } catch (e) {
+      _learningNow = [];
+      _pending = [];
+      _mastered = [];
     }
-
-    // sort alphabetically
-    _learningNow.sort((a, b) => a.text.compareTo(b.text));
-    _pending    .sort((a, b) => a.text.compareTo(b.text));
-    _learned    .sort((a, b) => a.text.compareTo(b.text));
-
     notifyListeners();
   }
-
-  /// Call to refresh lists (e.g. after a review)
-  Future<void> refresh() => _loadAll();
 }

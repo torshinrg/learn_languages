@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final homeProvider = context.watch<HomeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final dueCount = homeProvider.dueCount;
+    final dueCount = homeProvider.inProgressCount;
     final canStudy = homeProvider.canStudy;
     final studied = settingsProvider.studiedCount;
     final daily = settingsProvider.dailyCount;

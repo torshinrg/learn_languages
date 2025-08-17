@@ -15,6 +15,8 @@ class AppwriteService {
   late final Databases databases;
 
   AppwriteService({required this.endpoint, required this.projectId}) {
+    print('Appwrite endpoint: $endpoint');
+    print('Appwrite project ID: $projectId');
     client = Client()
       ..setEndpoint(endpoint)
       ..setProject(projectId)
@@ -46,12 +48,16 @@ class AppwriteService {
     required String email,
     required String password,
   }) async {
+    print('Attempting to log in with email: $email');
     try {
-      return await account.createEmailPasswordSession(
+      final session = await account.createEmailPasswordSession(
         email: email,
         password: password,
       );
-    } on AppwriteException {
+      print('Login successful. Session ID: ${session.$id}');
+      return session;
+    } on AppwriteException catch (e) {
+      print('Appwrite exception during login: ${e.message}');
       return null;
     }
   }
@@ -91,6 +97,20 @@ class AppwriteService {
       queries: queries,
     );
     return result.documents;
+  }
+
+  /// Retrieve a single document by its ID.
+  Future<Document> getDocument({
+    required String databaseId,
+    required String collectionId,
+    required String documentId,
+  }) async {
+    final result = await databases.getDocument(
+      databaseId: databaseId,
+      collectionId: collectionId,
+      documentId: documentId,
+    );
+    return result;
   }
 
   /// Create a new document in a collection.

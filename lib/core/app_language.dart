@@ -11,7 +11,7 @@ enum AppLanguage {
 }
 
 extension AppLanguageExtension on AppLanguage {
-  /// Короткий код, который будем хранить в SharedPreferences / БД.
+
   String get code {
     switch (this) {
       case AppLanguage.english:

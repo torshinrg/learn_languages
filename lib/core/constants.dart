@@ -8,11 +8,16 @@ const int kInitialIntervalDays = 1;
 const int kMasterRepetitionThreshold = 3;
 
 // Appwrite configuration
-const String kAppwriteDatabaseId = 'learnlang';
-const String kAppwriteWords = 'words';
-const String kAppwriteSentences = 'sentences';
-const String kAppwriteAudioLinks = 'audio_links';
-const String kAppwriteSrs = 'srs_data';
-const String kAppwriteCustomWords = 'custom_words';
-const String kAppwriteTasks = 'tasks';
-const String kAppwriteTaskHistory = 'task_history';
+const String kAppwriteDatabaseId = '686c67840007e0dd589f';
+const String kAppwriteLanguages = 'languages';
+const String kAppwriteWords = '686c67d800103afca060';
+const String kAppwriteSentences = '686c6bef001892379efa';
+const String kAppwriteWordSentenceLinks = 'word_sentence_links';
+const String kAppwriteReadingMaterials = 'reading_materials';
+const String kAppwriteMaterialSentences = 'material_sentences';
+const String kAppwriteUserWordStatus = 'user_word_status';
+const String kAppwriteTasks = '686dc239001f86d73af8';
+const String kAppwriteSentenceTasks = 'sentence_tasks';
+const String kAppwriteUserSentenceTasks = 'user_sentence_tasks';
+const String kAppwriteTaskTranslations = 'task_translations';
+const String kAppwriteUserVocabulary = 'user_vocabulary';
