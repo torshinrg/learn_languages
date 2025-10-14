@@ -1,4 +1,6 @@
 
+import '../../core/schema_fields.dart';
+
 class WordSentenceLink {
   final String id;
   final String wordId;
@@ -11,10 +13,12 @@ class WordSentenceLink {
   });
 
   factory WordSentenceLink.fromMap(Map<String, dynamic> map) {
+    final wKey = SchemaFields.linkWordRef;
+    final sKey = SchemaFields.linkSentenceRef;
     return WordSentenceLink(
       id: map['\$id'] as String,
-      wordId: map['wordId'] as String,
-      sentenceId: map['sentenceId'] as String,
+      wordId: (map[wKey] ?? map['wordId'] ?? map['word']) as String,
+      sentenceId: (map[sKey] ?? map['sentenceId'] ?? map['sentence']) as String,
     );
   }
 

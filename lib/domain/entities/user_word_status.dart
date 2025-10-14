@@ -20,7 +20,7 @@ class UserWordStatus {
 
   factory UserWordStatus.fromMap(Map<String, dynamic> map) {
     return UserWordStatus(
-      id: map['\$id'] as String,
+      id: (map['\$id'] ?? map['id'] ?? '') as String,
       userId: map['userId'] as String,
       wordId: map['wordId'] as String,
       status: WordStatus.values.byName(map['status'] as String),

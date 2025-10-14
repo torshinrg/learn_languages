@@ -4,6 +4,7 @@ import 'package:learn_languages/presentation/screens/stats_screen.dart';
 import 'package:learn_languages/presentation/screens/study_screen.dart';
 import 'package:learn_languages/presentation/screens/review_screen.dart';
 import 'package:learn_languages/presentation/screens/settings_screen.dart';
+import 'reading/reading_library_screen.dart';
 import '../providers/home_provider.dart';
 import '../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,34 +26,42 @@ class HomeScreen extends StatelessWidget {
     final lastDate = settingsProvider.lastStreakDate;
     final loc = AppLocalizations.of(context)!;
     final learningCodes = settingsProvider.learningLanguageCodes;
-    final leadCode = learningCodes.isNotEmpty
-        ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ?? ''
-        : '';
+    final leadCode =
+        learningCodes.isNotEmpty
+            ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ??
+                ''
+            : '';
 
     Future<String?> showAddLanguageDialog() {
-      final available = AppLanguage.values
-          .where((lang) =>
-              !settingsProvider.learningLanguageCodes.contains(lang.code) &&
-              lang.code != settingsProvider.nativeLanguageCode)
-          .toList();
+      final available =
+          AppLanguage.values
+              .where(
+                (lang) =>
+                    !settingsProvider.learningLanguageCodes.contains(
+                      lang.code,
+                    ) &&
+                    lang.code != settingsProvider.nativeLanguageCode,
+              )
+              .toList();
       if (available.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No more languages')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No more languages')));
         return Future.value(null);
       }
       return showDialog<String>(
         context: context,
-        builder: (ctx) => SimpleDialog(
-          title: Text(loc.add_language),
-          children: [
-            for (final lang in available)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, lang.code),
-                child: Text('${lang.flag} ${lang.displayName}'),
-              )
-          ],
-        ),
+        builder:
+            (ctx) => SimpleDialog(
+              title: Text(loc.add_language),
+              children: [
+                for (final lang in available)
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(ctx, lang.code),
+                    child: Text('${lang.flag} ${lang.displayName}'),
+                  ),
+              ],
+            ),
       );
     }
 
@@ -95,19 +104,16 @@ class HomeScreen extends StatelessWidget {
                         }
                         return;
                       }
-                      context
-                          .read<SettingsProvider>()
-                          .switchLearningLanguage(code);
+                      context.read<SettingsProvider>().switchLearningLanguage(
+                        code,
+                      );
                     },
                   ),
                 const SizedBox(height: 20),
 
                 // Streak circle
                 Center(
-                  child: _StreakVisual(
-                    streak: streak,
-                    lastDate: lastDate,
-                  ),
+                  child: _StreakVisual(streak: streak, lastDate: lastDate),
                 ),
                 const SizedBox(height: 40),
 
@@ -203,6 +209,16 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const StatsScreen(),
+                          ),
+                        ),
+                  ),
+                  _NavCircleButton(
+                    icon: Icons.menu_book,
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ReadingLibraryScreen(),
                           ),
                         ),
                   ),
@@ -372,8 +388,6 @@ class _StreakVisual extends StatelessWidget {
       emoji = '🎆';
     }
 
-
-
     return Container(
       width: 160,
       height: 160,
@@ -410,8 +424,7 @@ class _StreakVisual extends StatelessWidget {
                   child: Text(
                     message,
                     textAlign: TextAlign.center,
-                    style:
-                        const TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 14, color: Colors.white),
                     maxLines: 3,
                     softWrap: true,
                     overflow: TextOverflow.ellipsis,
@@ -420,8 +433,6 @@ class _StreakVisual extends StatelessWidget {
               );
             },
           ),
-
-
         ],
       ),
     );
@@ -452,20 +463,14 @@ class _NavCircleButton extends StatelessWidget {
   }
 }
 
-
 class _LanguageMenu extends StatelessWidget {
   final List<String> codes;
   final void Function(String) onTap;
 
-  const _LanguageMenu({
-
-    required this.codes,
-    required this.onTap,
-  });
+  const _LanguageMenu({required this.codes, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-
     final selectedCode = codes.isNotEmpty ? codes.first : '';
     final selectedLang = AppLanguageExtension.fromCode(selectedCode);
     final selectedLabel =
@@ -482,16 +487,15 @@ class _LanguageMenu extends StatelessWidget {
             if (code == selectedCode) continue;
             final lang = AppLanguageExtension.fromCode(code);
             final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
-            items.add(PopupMenuItem<String>(
-              value: code,
-              child: Text(label),
-            ));
+            items.add(PopupMenuItem<String>(value: code, child: Text(label)));
           }
           items.add(const PopupMenuDivider());
-          items.add(const PopupMenuItem<String>(
-            value: 'add_more',
-            child: Text('+ Add'),
-          ));
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'add_more',
+              child: Text('+ Add'),
+            ),
+          );
           return items;
         },
         child: Container(
@@ -510,15 +514,11 @@ class _LanguageMenu extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                selectedLabel,
-                style: const TextStyle(color: Colors.white),
-              ),
+              Text(selectedLabel, style: const TextStyle(color: Colors.white)),
               const Icon(Icons.arrow_drop_down, color: Colors.white),
             ],
           ),
         ),
-
       ),
     );
   }

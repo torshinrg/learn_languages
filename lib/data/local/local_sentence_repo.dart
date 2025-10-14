@@ -11,4 +11,14 @@ class LocalSentenceRepository implements ISentenceRepository {
   Future<List<Sentence>> fetchByWord(String wordId) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<Sentence>> fetchByGroupAndLanguage(String groupId, String languageId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Sentence>> fetchByGroupsAndLanguage(List<String> groupIds, String languageId) {
+    throw UnimplementedError();
+  }
 }

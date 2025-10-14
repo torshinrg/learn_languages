@@ -8,7 +8,15 @@ class LocalTaskRepository implements ITaskRepository {
   LocalTaskRepository(this._db);
 
   @override
-  Future<List<Task>> fetchBySentence(String sentenceId) {
+  Future<List<Task>> fetchBySentence(
+    String sentenceId, {
+    String? sentenceGroupId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Task>> fetchAllSentenceTasks() {
     throw UnimplementedError();
   }
 }

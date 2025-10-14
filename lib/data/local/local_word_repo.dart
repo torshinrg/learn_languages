@@ -16,4 +16,19 @@ class LocalWordRepository implements IWordRepository {
   Future<List<Word>> fetchTopN(String languageId, int n) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<Word>> fetchByIds(List<String> wordIds) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Word?> findByLemma(String lemma, String languageId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Word?> findBySurface(String surface, String languageId) {
+    throw UnimplementedError();
+  }
 }

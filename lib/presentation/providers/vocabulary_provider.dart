@@ -32,7 +32,11 @@ class VocabularyProvider extends ChangeNotifier {
       _pending = await _learningService.getWordsByStatus(user.$id, WordStatus.New);
       _mastered =
           await _learningService.getWordsByStatus(user.$id, WordStatus.known);
+      print('VocabularyProvider learningNow: ${_learningNow.length}');
+      print('VocabularyProvider pending: ${_pending.length}');
+      print('VocabularyProvider mastered: ${_mastered.length}');
     } catch (e) {
+      print('VocabularyProvider error: $e');
       _learningNow = [];
       _pending = [];
       _mastered = [];

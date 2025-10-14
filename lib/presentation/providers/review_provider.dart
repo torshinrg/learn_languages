@@ -49,7 +49,11 @@ class ReviewProvider extends ChangeNotifier {
 
   Future<void> _loadSentencesForCurrent() async {
     _initialLoaded = false;
-    _sentences = await _learning.getSentencesForWord(currentWord!.id);
+    try {
+      _sentences = await _learning.getSentencesForWord(currentWord!.id);
+    } catch (e) {
+      _sentences = [];
+    }
     _sentenceIndex = 0;
     _initialLoaded = true;
     notifyListeners();

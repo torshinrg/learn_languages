@@ -1,5 +1,9 @@
 import '../entities/material_sentence.dart';
 
 abstract class IMaterialSentenceRepository {
-  Future<List<MaterialSentence>> fetchByMaterial(String materialId);
+  Future<MaterialSentencePage> fetchByMaterial(
+    String materialId, {
+    int? limit,
+    int? startAfterOrder,
+  });
 }

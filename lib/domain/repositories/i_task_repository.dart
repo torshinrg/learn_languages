@@ -1,5 +1,10 @@
 import '../entities/task.dart';
 
 abstract class ITaskRepository {
-  Future<List<Task>> fetchBySentence(String sentenceId);
+  Future<List<Task>> fetchBySentence(
+    String sentenceId, {
+    String? sentenceGroupId,
+  });
+
+  Future<List<Task>> fetchAllSentenceTasks();
 }

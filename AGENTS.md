@@ -1,282 +1,54 @@
----
-name: "Flutter Dart Mobile Application Development Guide"
-description: "A comprehensive development guide for building modern mobile applications using Flutter, Dart, Provider, GetIt, and Appwrite with best practices and performance optimization"
-category: "Mobile Framework"
-author: "Agents.md Collection"
-authorUrl: "https://github.com/gakeez/agents_md_collection"
-tags:
-  [
-    "flutter",
-    "dart",
-    "mobile-development",
-    "provider",
-    "get_it",
-    "appwrite",
-    "state-management",
-  ]
-lastUpdated: "2025-06-16"
----
+# Repository Guidelines
 
-# Flutter Dart Mobile Application Development Guide
+## Project Structure & Modules
+- `lib/`: app source. Organize by features: `core/` (services, utils), `features/` (screens, widgets), `data/` (repos, models).
+- `test/`: unit/widget tests mirroring `lib/` structure (`*_test.dart`).
+- `assets/`: images, fonts, JSON; declare in `pubspec.yaml`.
+- Root configs: `pubspec.yaml`, `analysis_options.yaml`.
 
-## Project Overview
+## Build, Test, and Development
+- Install deps: `flutter pub get`.
+- Run app: `flutter run` (add `-d <device>` as needed).
+- Analyze lints: `flutter analyze`.
+- Format code: `dart format lib test`.
+- Generate code (if used): `flutter pub run build_runner build --delete-conflicting-outputs`.
+- Run tests: `flutter test`.
 
-This comprehensive guide outlines best practices for developing modern mobile applications using Flutter, Dart, Provider for state management, GetIt for dependency injection, and Appwrite for backend services. The guide emphasizes functional and declarative programming patterns, performance optimization, and maintainable code architecture.
+## Coding Style & Naming Conventions
+- Dart/Flutter style, 2‑space indentation, max line length ~80; prefer trailing commas for clean diffs.
+- Files: `snake_case.dart`; Classes/Enums: `PascalCase`; variables/methods: `lowerCamelCase`.
+- Booleans use auxiliaries: `isLoading`, `hasError`, `canSubmit`.
+- Prefer composition, functional/declarative widgets, `const` constructors, and arrow syntax for simple getters/functions.
+- Keep screens structured: exported widget → private subwidgets → helpers/extensions → constants.
 
-## Tech Stack
+## Testing Guidelines
+- Framework: `flutter_test`. Name files `*_test.dart` mirroring `lib/` paths.
+- Scope: unit tests for services/repos and widget tests for UI; keep tests fast and deterministic.
+- Mocks/Fakes: isolate external services (e.g., Appwrite) behind interfaces; inject via GetIt.
+- Commands: run with `flutter test`; add `-r expanded` for verbose output.
 
-- **Framework**: Flutter 3.16+
-- **Language**: Dart 3.7+
-- **State Management**: Provider 6+
-- **Dependency Injection**: GetIt 8+
-- **Local Storage**: Sqflite
-- **Backend**: Appwrite (Database, Auth)
-- **Navigation**: Navigator 2.0 or go_router
-- **HTTP Client**: http
-- **Notifications**: flutter_local_notifications
-- **Voice Recognition**: speech_to_text
-- **Testing**: flutter_test
+## Commit & Pull Request Guidelines
+- Use Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
+  - Example: `feat(auth): add email/password login with Provider`.
+- PRs must include: clear description, linked issue, screenshots/recordings for UI, and a short test plan.
+- Before opening PR: `dart format`, `flutter analyze`, `flutter test` all pass.
 
-## Development Environment Setup
+## Security & Configuration Tips
+- Do not hardcode secrets. Pass runtime config via `--dart-define`.
+  - Example: `flutter run --dart-define=APPWRITE_ENDPOINT=... --dart-define=APPWRITE_PROJECT_ID=...`.
+- Avoid logging sensitive data; prefer `log()` over `print()`.
+- Keep API/DB code in `core/services/`; handle errors explicitly and surface user‑friendly messages.
 
-### Installation Requirements
-
-- Flutter SDK 3.16+
-- Dart SDK 3.7+
-- Android Studio / VS Code with Flutter extensions
-- Xcode (for iOS development)
-- Appwrite CLI (optional)
-
-### Installation Steps
-
-```bash
-# Add core dependencies
-flutter pub add provider get_it sqflite http
-flutter pub add flutter_local_notifications timezone permission_handler
-flutter pub add record dart_levenshtein whisper_ggml receive_sharing_intent
-flutter pub add speech_to_text auto_size_text uuid appwrite
-
-# Development dependencies
-flutter pub add --dev flutter_test
-
-# Generate localization and other files if needed
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-## Project Structure
-
-```
-learn_languages/
-├── lib/
-│   ├── main.dart                    # App entry point
-│   ├── core/                        # Core utilities
-│   │   ├── services/                # External services like Appwrite
-│   │   └── utils/                   # Shared utilities
-│   ├── features/                    # Feature modules
-│   └── data/                        # Data layer
-├── test/                            # Test files
-├── assets/                          # Static assets
-├── pubspec.yaml
-└── analysis_options.yaml
-```
-
-## Key Principles and Guidelines
-
-### Core Development Philosophy
-
-- Write concise, technical Dart code with accurate examples
-- Use functional and declarative programming patterns where appropriate
-- Prefer composition over inheritance
-- Use descriptive variable names with auxiliary verbs (isLoading, hasError)
-- Structure files: exported widget, subwidgets, helpers, static content, types
-
-### Naming Conventions and Code Style
-
-```dart
-// Use descriptive variable names with auxiliary verbs
-bool isLoading = false;
-bool hasError = false;
-bool canSubmit = true;
-
-// Use const constructors for immutable widgets
-class CustomButton extends StatelessWidget {
-  const CustomButton({
-    super.key,
-    required this.onPressed,
-    required this.text,
-  });
-
-  final VoidCallback onPressed;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      child: Text(text),
-    );
-  }
-}
-
-// Use arrow syntax for simple functions
-String get fullName => '$firstName $lastName';
-bool get isValid => email.isNotEmpty && password.length >= 6;
-
-// Use trailing commas for better formatting
-Widget buildCard() {
-  return Card(
-    elevation: 4,
-    margin: const EdgeInsets.all(16),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Title'),
-          const SizedBox(height: 8),
-          Text('Content'),
-        ],
-      ),
-    ),
-  );
-}
-```
-
-### File Structure Convention
-
-```dart
-// user_profile_screen.dart - Proper file structure
-
-// 1. Exported widget
-class UserProfileScreen extends StatelessWidget {
-  const UserProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: const _ProfileContent(),
-    );
-  }
-}
-
-// 2. Subwidgets (private)
-class _ProfileContent extends StatelessWidget {
-  const _ProfileContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile data here'),
-    );
-  }
-}
-
-// 3. Helpers and utilities
-extension UserProfileHelpers on User {
-  String get displayName => name.isEmpty ? email : name;
-}
-
-// 4. Static content and constants
-class _Constants {
-  static const double profileImageSize = 120;
-  static const EdgeInsets contentPadding = EdgeInsets.all(16);
-}
-```
-
-## Core Feature Implementation
-
-### Provider State Management
-
-```dart
-// Example of a ChangeNotifier with Provider
-class AuthNotifier extends ChangeNotifier {
-  AuthNotifier(this._service);
-
-  final AppwriteService _service;
-
-  User? _user;
-  bool get isLoggedIn => _user != null;
-
-  Future<void> login(String email, String password) async {
-    _user = await _service.login(email: email, password: password);
-    notifyListeners();
-  }
-}
-```
-
-### Error Handling and Validation
-
-```dart
-class ErrorDisplay extends StatelessWidget {
-  const ErrorDisplay({required this.error});
-
-  final Object error;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Error: ${error.toString()}',
-        style: const TextStyle(color: Colors.red),
-      ),
-    );
-  }
-}
-```
-
-### Appwrite Integration
-
-```dart
-// services/appwrite_service.dart - Appwrite integration
-class AppwriteService {
-  AppwriteService(this.client);
-
-  final Client client;
-  late final Account account = Account(client);
-
-  Future<User?> login({required String email, required String password}) async {
-    try {
-      final session = await account.createEmailPasswordSession(
-        email: email,
-        password: password,
-      );
-      return account.get();
-    } on AppwriteException {
-      return null;
-    }
-  }
-}
-```
-
-## Best Practices Summary
-
-### Code Quality Guidelines
-
-- **Use const constructors** for immutable widgets to optimize rebuilds
-- **Prefer composition over inheritance** for better code reusability
-- **Use descriptive variable names** with auxiliary verbs (isLoading, hasError)
-- **Structure files properly** with exported widgets, subwidgets, helpers, and types
-- **Implement proper error handling** using dedicated widgets for error display
-- **Keep lines no longer than 80 characters** with trailing commas
-
-### Provider and GetIt
-
-- **Use Provider** for reactive state management
-- **Use GetIt** for dependency injection
-- **Avoid tight coupling** between UI and business logic
-
-### Performance Optimization
-
-- **Use const widgets** where possible to optimize rebuilds
-- **Implement ListView.builder** for large lists instead of ListView with children
-- **Use CachedNetworkImage or similar** for remote images if needed
-- **Implement proper error handling** for Appwrite operations, including network errors
-- **Use RefreshIndicator** for pull-to-refresh functionality
-
-### Development Workflow
-
-- **Run build_runner** when using code generation
-- **Use log instead of print** for debugging
-- **Follow official documentation** for Flutter, Provider, and Appwrite best practices
-```
+## Architecture & Migration Notes
+- Status: refactoring from a fully offline app to an online app with Appwrite.
+- Backend: Appwrite (Auth, Database). Collections (name → id):
+  - tasks → 686dc239001f86d73af8
+  - user_word_status → 686dbee10039c42a91f9
+  - material_sentences → 686dbcd6002465ccf468
+  - materials_types → 686daab3001d908cc80c
+  - reading_materials → 686daa12002cd5d38a9a
+  - word_sentence_links → 686da90c002dfb68b114
+  - languages → 686da5820011a3e3cde8
+  - sentences → 686c6bef001892379efa
+  - words → 686c67d800103afca060
+- Keep a clean separation between offline caches (e.g., `sqflite`) and online sources via repository interfaces; inject implementations with GetIt.

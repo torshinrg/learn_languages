@@ -30,6 +30,8 @@ import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/notification_settings_screen.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
+import 'presentation/screens/reading/reading_library_screen.dart';
+import 'presentation/screens/reading/reader_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Global color definitions
@@ -64,43 +66,48 @@ class MyApp extends StatelessWidget {
           create: (_) => SettingsProvider(),
         ),
         ChangeNotifierProvider<StudyProvider>(
-          create: (ctx) => StudyProvider(
-            ctx.read<LearningService>(),
-            ctx.read<SettingsProvider>(),
-            ctx.read<AppwriteService>(),
-          ),
+          create:
+              (ctx) => StudyProvider(
+                ctx.read<LearningService>(),
+                ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
+              ),
         ),
         ChangeNotifierProvider<ReviewProvider>(
-          create: (ctx) => ReviewProvider(
-            ctx.read<LearningService>(),
-            ctx.read<SettingsProvider>(),
-            ctx.read<AppwriteService>(),
-          ),
+          create:
+              (ctx) => ReviewProvider(
+                ctx.read<LearningService>(),
+                ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
+              ),
         ),
         ChangeNotifierProvider<VocabularyProvider>(
-          create: (ctx) => VocabularyProvider(
-            ctx.read<LearningService>(),
-            ctx.read<AppwriteService>(),
-          ),
+          create:
+              (ctx) => VocabularyProvider(
+                ctx.read<LearningService>(),
+                ctx.read<AppwriteService>(),
+              ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
           create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
         ),
         ChangeNotifierProvider<TaskProvider>(
-          create: (ctx) => TaskProvider(
-            getIt<ITaskRepository>(),
-            getIt<ISentenceTaskRepository>(),
-            getIt<IUserSentenceTaskRepository>(),
-            getIt<AppwriteService>(),
-            ctx.read<SettingsProvider>(),
-          ),
+          create:
+              (ctx) => TaskProvider(
+                getIt<ITaskRepository>(),
+                getIt<ISentenceTaskRepository>(),
+                getIt<IUserSentenceTaskRepository>(),
+                getIt<AppwriteService>(),
+                ctx.read<SettingsProvider>(),
+              ),
         ),
         ChangeNotifierProvider<HomeProvider>(
-          create: (ctx) => HomeProvider(
-            ctx.read<LearningService>(),
-            ctx.read<SettingsProvider>(),
-            ctx.read<AppwriteService>(),
-          ),
+          create:
+              (ctx) => HomeProvider(
+                ctx.read<LearningService>(),
+                ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
+              ),
         ),
       ],
       child: Consumer<SettingsProvider>(
@@ -227,8 +234,23 @@ class MyApp extends StatelessWidget {
               '/vocabulary': (_) => const VocabularyScreen(),
               '/settings': (_) => const SettingsScreen(),
               '/reminders': (_) => const NotificationSettingsScreen(),
+              '/reading': (_) => const ReadingLibraryScreen(),
+              '/reading/detail': (context) {
+                final args = ModalRoute.of(context)!.settings.arguments;
+                if (args is ReaderScreenArguments) {
+                  return ReaderScreen(
+                    materialId: args.materialId,
+                    material: args.material,
+                  );
+                }
+                if (args is String && args.isNotEmpty) {
+                  return ReaderScreen(materialId: args);
+                }
+                return const ReadingLibraryScreen();
+              },
               '/tasks': (context) {
-                final String sentenceId = ModalRoute.of(context)!.settings.arguments as String;
+                final String sentenceId =
+                    ModalRoute.of(context)!.settings.arguments as String;
                 return TasksScreen(sentenceId: sentenceId);
               },
             },
