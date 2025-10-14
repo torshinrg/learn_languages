@@ -3,29 +3,77 @@ import 'package:provider/provider.dart';
 import 'package:learn_languages/presentation/screens/stats_screen.dart';
 import 'package:learn_languages/presentation/screens/study_screen.dart';
 import 'package:learn_languages/presentation/screens/review_screen.dart';
-import 'package:learn_languages/presentation/screens/vocabulary_screen.dart';
 import 'package:learn_languages/presentation/screens/settings_screen.dart';
+import 'reading/reading_library_screen.dart';
 import '../providers/home_provider.dart';
 import '../providers/settings_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:learn_languages/core/app_language.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final homeProvider = context.watch<HomeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final dueCount = homeProvider.dueCount;
+    final dueCount = homeProvider.inProgressCount;
     final canStudy = homeProvider.canStudy;
     final studied = settingsProvider.studiedCount;
     final daily = settingsProvider.dailyCount;
     final progress = daily > 0 ? (studied / daily).clamp(0.0, 1.0) : 0.0;
     final streak = settingsProvider.streakCount;
+    final lastDate = settingsProvider.lastStreakDate;
     final loc = AppLocalizations.of(context)!;
+    final learningCodes = settingsProvider.learningLanguageCodes;
+    final leadCode =
+        learningCodes.isNotEmpty
+            ? AppLanguageExtension.fromCode(learningCodes.first)?.displayName ??
+                ''
+            : '';
+
+    Future<String?> showAddLanguageDialog() {
+      final available =
+          AppLanguage.values
+              .where(
+                (lang) =>
+                    !settingsProvider.learningLanguageCodes.contains(
+                      lang.code,
+                    ) &&
+                    lang.code != settingsProvider.nativeLanguageCode,
+              )
+              .toList();
+      if (available.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No more languages')));
+        return Future.value(null);
+      }
+      return showDialog<String>(
+        context: context,
+        builder:
+            (ctx) => SimpleDialog(
+              title: Text(loc.add_language),
+              children: [
+                for (final lang in available)
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(ctx, lang.code),
+                    child: Text('${lang.flag} ${lang.displayName}'),
+                  ),
+              ],
+            ),
+      );
+    }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: null,
+      ),
+
       body: Stack(
         children: [
           // Gradient background
@@ -42,55 +90,30 @@ class HomeScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 50),
+                const SizedBox(height: 20),
+                if (learningCodes.isNotEmpty)
+                  _LanguageMenu(
+                    codes: learningCodes,
+                    onTap: (code) async {
+                      if (code == 'add_more') {
+                        final newCode = await showAddLanguageDialog();
+                        if (newCode != null) {
+                          await context
+                              .read<SettingsProvider>()
+                              .addLearningLanguage(newCode);
+                        }
+                        return;
+                      }
+                      context.read<SettingsProvider>().switchLearningLanguage(
+                        code,
+                      );
+                    },
+                  ),
+                const SizedBox(height: 20),
 
                 // Streak circle
                 Center(
-                  child: Container(
-                    width: 160,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFFCA61), Color(0xFFFF6B6B)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.local_fire_department,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$streak',
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          loc.streak,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _StreakVisual(streak: streak, lastDate: lastDate),
                 ),
                 const SizedBox(height: 40),
 
@@ -190,6 +213,16 @@ class HomeScreen extends StatelessWidget {
                         ),
                   ),
                   _NavCircleButton(
+                    icon: Icons.menu_book,
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ReadingLibraryScreen(),
+                          ),
+                        ),
+                  ),
+                  _NavCircleButton(
                     icon: Icons.settings,
                     onTap:
                         () => Navigator.push(
@@ -218,14 +251,13 @@ class _SmallCard extends StatelessWidget {
   final double progress;
 
   const _SmallCard({
-    Key? key,
     required this.title,
     required this.icon,
     required this.buttonText,
     required this.onPressed,
     this.showProgress = false,
     this.progress = 0.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -306,11 +338,111 @@ class _SmallCard extends StatelessWidget {
   }
 }
 
+class _StreakVisual extends StatelessWidget {
+  final int streak;
+  final String? lastDate;
+  const _StreakVisual({required this.streak, required this.lastDate});
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateTime.now().toIso8601String().split('T').first;
+    final bool broken = streak == 0 && lastDate != null && lastDate != today;
+
+    Color color;
+    String emoji;
+    String message;
+
+    final loc = AppLocalizations.of(context)!;
+
+    if (broken) {
+      color = Colors.black54;
+      message = loc.streakDead;
+      emoji = '💀';
+    } else if (streak == 0) {
+      color = Colors.yellow;
+      message = loc.streakZero;
+      emoji = '🪔';
+    } else if (streak <= 4) {
+      color = Colors.orange;
+      message = loc.streakLow;
+      emoji = '🔥';
+    } else if (streak <= 9) {
+      color = Colors.red;
+      message = loc.streakMid;
+      emoji = '🔥🔥';
+    } else if (streak <= 19) {
+      color = Colors.deepOrange;
+      message = loc.streakStrong;
+      emoji = '🏮';
+    } else if (streak <= 29) {
+      color = Colors.deepOrangeAccent;
+      message = loc.streakHot;
+      emoji = '🔥🔥🔥';
+    } else if (streak <= 49) {
+      color = Colors.purple;
+      message = loc.streakRing;
+      emoji = '🔥⭕';
+    } else {
+      color = Colors.pinkAccent;
+      message = loc.streakLegend;
+      emoji = '🎆';
+    }
+
+    return Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 40)),
+          Text(
+            '$streak',
+            style: const TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth - 16; // padding inside circle
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: width),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    maxLines: 3,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NavCircleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  const _NavCircleButton({Key? key, required this.icon, required this.onTap})
-    : super(key: key);
+  const _NavCircleButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -326,6 +458,67 @@ class _NavCircleButton extends StatelessWidget {
           border: Border.all(color: primary, width: 2),
         ),
         child: Icon(icon, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _LanguageMenu extends StatelessWidget {
+  final List<String> codes;
+  final void Function(String) onTap;
+
+  const _LanguageMenu({required this.codes, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedCode = codes.isNotEmpty ? codes.first : '';
+    final selectedLang = AppLanguageExtension.fromCode(selectedCode);
+    final selectedLabel =
+        '${selectedLang?.flag ?? ''} ${selectedLang?.displayName ?? selectedCode}';
+
+    return Container(
+      alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: PopupMenuButton<String>(
+        onSelected: onTap,
+        itemBuilder: (context) {
+          final items = <PopupMenuEntry<String>>[];
+          for (final code in codes) {
+            if (code == selectedCode) continue;
+            final lang = AppLanguageExtension.fromCode(code);
+            final label = '${lang?.flag ?? ''} ${lang?.displayName ?? code}';
+            items.add(PopupMenuItem<String>(value: code, child: Text(label)));
+          }
+          items.add(const PopupMenuDivider());
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'add_more',
+              child: Text('+ Add'),
+            ),
+          );
+          return items;
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(selectedLabel, style: const TextStyle(color: Colors.white)),
+              const Icon(Icons.arrow_drop_down, color: Colors.white),
+            ],
+          ),
+        ),
       ),
     );
   }

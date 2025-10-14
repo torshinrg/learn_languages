@@ -1,16 +1,12 @@
-// get_due_reviews.dart
-import '../entities/word.dart';
-import '../repositories/i_srs_repository.dart';
-import '../repositories/i_word_repository.dart';
+import 'package:learn_languages/domain/entities/user_word_status.dart';
+import 'package:learn_languages/domain/repositories/i_user_word_status_repository.dart';
 
 class GetDueReviews {
-  final IWordRepository words;
-  final ISRSRepository srs;
-  GetDueReviews(this.words, this.srs);
+  final IUserWordStatusRepository _userWordStatusRepository;
 
-  Future<List<Word>> call() async {
-    final due = await srs.fetchDue();
-    final all = await words.fetchAll();
-    return all.where((w) => due.any((s) => s.wordId == w.id)).toList();
+  GetDueReviews(this._userWordStatusRepository);
+
+  Future<List<UserWordStatus>> call(String userId) {
+    return _userWordStatusRepository.fetchByStatus(userId, WordStatus.inProgress);
   }
 }

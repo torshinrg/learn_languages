@@ -11,7 +11,10 @@
   "@reviewsDue": {
     "description": "Cuántas revisiones están pendientes",
     "placeholders": {
-      "dueCount": { "type": "int", "example": "5" }
+      "dueCount": {
+        "type": "int",
+        "example": "5"
+      }
     }
   },
   "review": "Revisión",
@@ -30,26 +33,46 @@
   "@reminderSet": {
     "description": "Texto de confirmación al programar un nuevo recordatorio",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "14:30" },
-      "now": { "type": "String", "example": "2025-05-29 19:00" },
-      "next": { "type": "String", "example": "2025-05-30 14:30" }
+      "pickedTime": {
+        "type": "String",
+        "example": "14:30"
+      },
+      "now": {
+        "type": "String",
+        "example": "2025-05-29 19:00"
+      },
+      "next": {
+        "type": "String",
+        "example": "2025-05-30 14:30"
+      }
     }
   },
   "reminderUpdated": "Recordatorio actualizado a las {pickedTime}.",
   "@reminderUpdated": {
     "description": "Texto de confirmación al actualizar un recordatorio",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "08:00" }
+      "pickedTime": {
+        "type": "String",
+        "example": "08:00"
+      }
     }
   },
   "qualityAgain": "Otra vez",
-  "@qualityAgain": { "description": "Repetir revisión otra vez" },
+  "@qualityAgain": {
+    "description": "Repetir revisión otra vez"
+  },
   "qualityHard": "Difícil",
-  "@qualityHard": { "description": "Marcar como difícil" },
+  "@qualityHard": {
+    "description": "Marcar como difícil"
+  },
   "qualityGood": "Bueno",
-  "@qualityGood": { "description": "Marcar como bueno" },
+  "@qualityGood": {
+    "description": "Marcar como bueno"
+  },
   "qualityEasy": "Fácil",
-  "@qualityEasy": { "description": "Marcar como fácil" },
+  "@qualityEasy": {
+    "description": "Marcar como fácil"
+  },
   "words_per_day": "Palabras por día",
   "save": "Guardar",
   "study_reminders": "Recordatorios de estudio",
@@ -75,5 +98,105 @@
   "tap_to_speak": "Toca para hablar",
   "recorded_by": "Grabado por ",
   "licence": "Licencia: ",
-  "no_reviews": "Нет слов на повторение"
+  "no_reviews": "Нет слов на повторение",
+  "exercises_title": "🧠 Mini retos",
+  "reviewProgress": "Palabra {current} de {total}",
+  "@reviewProgress": {
+    "description": "Texto de progreso en la pantalla de repaso",
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "streakDead": "💀 Racha terminada. ¡Inténtalo ahora!",
+  "streakZero": "🪔 ¡Encendamos tu racha!",
+  "streakLow": "🔥 ¡Sigue así!",
+  "streakMid": "🔥🔥 ¡Buen ritmo!",
+  "streakStrong": "🏮 ¡Antorcha encendida!",
+  "streakHot": "🔥🔥🔥 ¡Ya es una fogata!",
+  "streakRing": "🔥⭕ ¡Anillo de fuego!",
+  "streakLegend": "🎆 ¡Racha legendaria!",
+  "@streakDead": {
+    "description": "Se muestra cuando se rompe la racha"
+  },
+  "@streakZero": {
+    "description": "Se muestra cuando la racha es cero"
+  },
+  "@streakLow": {
+    "description": "Se muestra cuando la racha es 1–4"
+  },
+  "@streakMid": {
+    "description": "Se muestra cuando la racha es 5–9"
+  },
+  "@streakStrong": {
+    "description": "Se muestra cuando la racha es 10–19"
+  },
+  "@streakHot": {
+    "description": "Se muestra cuando la racha es 20–29"
+  },
+  "@streakRing": {
+    "description": "Se muestra cuando la racha es 30–49"
+  },
+  "@streakLegend": {
+    "description": "Se muestra cuando la racha es 50 o más"
+  },
+  "interface_language": "Idioma de la interfaz",
+  "add": "Agregar",
+  "add_language": "Agregar idioma",
+  "chooseLanguagesError": "Por favor, selecciona tu idioma nativo y los idiomas que quieres aprender.",
+  "chooseNativeLanguage": "1. Elige tu idioma nativo",
+  "chooseLearningLanguages": "2. Elige los idiomas que deseas aprender",
+  "chooseDailyWordCount": "3. ¿Cuántas palabras por día?",
+  "getStarted": "Comenzar",
+  "notification_access": "Esta app necesita acceso a las notificaciones para enviar recordatorios y actualizaciones.",
+  "record_access": "Se necesita permiso de audio para grabar tu voz y verificar la pronunciación.",
+  "allow": "Permitir",
+  "time_to_practice": "📝 Hora de practicar",
+  "daily_review": "¡No olvides tu repaso diario!",
+  "readingTitle": "Lectura",
+  "readingSearch": "Buscar",
+  "readingFilterAll": "Todo",
+  "readingFilterBooks": "Libros",
+  "readingEmpty": "No hay materiales disponibles todavía para este idioma.",
+  "readingResume": "Reanudar en la frase {order}",
+  "readingStart": "Comenzar a leer",
+  "readerLoadingWarning": "Algunas oraciones no se pudieron cargar. Continuamos con el contenido disponible.",
+  "readingError": "No se pudieron cargar los materiales de lectura.",
+  "readerNoSentences": "No hay oraciones disponibles todavía.",
+  "readerExamples": "Ejemplos",
+  "readerAddToVocabulary": "Añadir al vocabulario",
+  "readerWordMissing": "Aún no hay entrada de diccionario para esta palabra.",
+  "readerStatusNew": "Nueva",
+  "readerStatusLearning": "En estudio",
+  "readerStatusKnown": "Dominada",
+  "readerExamplesEmpty": "Aún no hay oraciones de ejemplo.",
+  "readerDictionaryTitle": "Definiciones",
+  "readerDictionaryLoading": "Cargando definiciones...",
+  "readerDictionaryError": "Definiciones no disponibles; verifica la conexión.",
+  "readerDictionaryRetry": "Reintentar",
+  "readerDictionaryFallback": "Definiciones en inglés",
+  "readerDictionaryNoDefinitions": "Aún no hay definiciones disponibles.",
+  "readerDictionaryPronunciations": "Pronunciaciones",
+  "readerDictionarySynonyms": "Sinónimos",
+  "readerDictionaryAntonyms": "Antónimos",
+  "readerDictionaryEtymology": "Etimología",
+  "readerDictionaryTranslation": "Traducción (LibreTranslate)",
+  "readerDictionaryTranslationAttribution": "LibreTranslate (libretranslate.com)",
+  "readerTranslationTitle": "Traducción",
+  "readerTranslationConfigError": "Traducciones no disponibles; selecciona primero tu idioma de estudio.",
+  "readerTranslationDisabled": "Traducción deshabilitada (falta configuración).",
+  "readerTranslationError": "Traducción no disponible; revisa tu conexión o inténtalo de nuevo.",
+  "readerTranslationEmpty": "No hay traducción disponible.",
+  "readerTranslationRetry": "Reintentar",
+  "readerTranslationSameLanguage": "El idioma de origen y destino son el mismo.",
+  "readerTranslationPivotNote": "Traducido vía {viaLanguage}.",
+  "readerTranslationAdded": "Añadido al vocabulario.",
+  "readerTranslationCopied": "Traducción copiada.",
+  "@readerTranslationPivotNote": {
+    "placeholders": {
+      "viaLanguage": {
+        "type": "String"
+      }
+    }
+  }
 }

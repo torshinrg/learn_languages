@@ -1,0 +1,202 @@
+{
+  "@@locale": "pt",
+  "appTitle": "Aprender Idiomas",
+  "homeGreeting": "Bem-vindo, vamos começar a aprender!",
+  "studyButton": "Começar Estudo",
+  "reviewButton": "Revisar",
+  "streak": "🔥 Série: ",
+  "day": "dia",
+  "days": "dias",
+  "reviewsDue": "{dueCount, plural, =0{Você não tem revisões pendentes} one{Você tem 1 revisão pendente} other{Você tem {dueCount} revisões pendentes}}",
+  "@reviewsDue": {
+    "description": "Quantas revisões estão pendentes",
+    "placeholders": {
+      "dueCount": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "review": "Revisar",
+  "today_session": "Sessão de Hoje",
+  "new_words_learned": "novas palavras aprendidas",
+  "start_study": "Começar Estudo",
+  "vocabulary": "Vocabulário",
+  "stats": "Estatísticas",
+  "settings": "Configurações",
+  "add_custom_word": "Adicionar Palavra Personalizada",
+  "new_word": "Nova palavra",
+  "added": "Adicionada ",
+  "reminder_settings": "Configurações de Lembrete",
+  "add_reminder": "Adicionar Lembrete",
+  "reminderSet": "Lembrete definido para {pickedTime}. Agora: {now}. Próximo: {next}.",
+  "@reminderSet": {
+    "description": "Texto de confirmação ao agendar um novo lembrete",
+    "placeholders": {
+      "pickedTime": {
+        "type": "String",
+        "example": "14:30"
+      },
+      "now": {
+        "type": "String",
+        "example": "2025-05-29 19:00"
+      },
+      "next": {
+        "type": "String",
+        "example": "2025-05-30 14:30"
+      }
+    }
+  },
+  "reminderUpdated": "Lembrete atualizado para {pickedTime}.",
+  "@reminderUpdated": {
+    "description": "Texto de confirmação ao atualizar um lembrete existente",
+    "placeholders": {
+      "pickedTime": {
+        "type": "String",
+        "example": "08:00"
+      }
+    }
+  },
+  "qualityAgain": "De Novo",
+  "@qualityAgain": {
+    "description": "Repetir revisão novamente"
+  },
+  "qualityHard": "Difícil",
+  "@qualityHard": {
+    "description": "Marcar como difícil"
+  },
+  "qualityGood": "Bom",
+  "@qualityGood": {
+    "description": "Marcar como bom"
+  },
+  "qualityEasy": "Fácil",
+  "@qualityEasy": {
+    "description": "Marcar como fácil"
+  },
+  "words_per_day": "Palavras por dia",
+  "save": "Salvar",
+  "study_reminders": "Lembretes de Estudo",
+  "per_day": "por dia",
+  "custom_words": "Palavras Personalizadas",
+  "today_learned": "Aprendido Hoje",
+  "current_streak": "Sequência Atual",
+  "total_words": "Total de Palavras",
+  "mastered_words": "Palavras Dominadas",
+  "no_words": "Nenhuma palavra para estudar.",
+  "study": "Estudar ",
+  "got_it": "Entendi",
+  "skip_word": "Pular palavra",
+  "learning_now": "Aprendendo Agora",
+  "pending": "Pendente",
+  "mastered": "Dominada",
+  "excellent": "🎉 Excelente! Você mandou bem!",
+  "great_job": "👍 Bom trabalho!",
+  "good_work": "🙂 Bom trabalho, continue assim!",
+  "try_again": "💪 Não desista, tente de novo!",
+  "tap_to_speak_again": "Toque para Falar Novamente",
+  "next_sentence": "Próxima Frase",
+  "tap_to_speak": "Toque para Falar",
+  "recorded_by": "Gravado por ",
+  "licence": "Licença: ",
+  "no_reviews": "Nenhuma revisão pendente agora.",
+  "exercises_title": "🧠 Tarefas Curtas",
+  "reviewProgress": "Palavra {current} de {total}",
+  "@reviewProgress": {
+    "description": "Texto de progresso na tela de revisão",
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "streakDead": "💀 Sequência perdida. Comece de novo!",
+  "streakZero": "🪔 Vamos acender sua sequência!",
+  "streakLow": "🔥 Continue assim!",
+  "streakMid": "🔥🔥 Você está indo bem!",
+  "streakStrong": "🏮 Forte progresso!",
+  "streakHot": "🔥🔥🔥 Fogaréu!",
+  "streakRing": "🔥⭕ Anel de fogo!",
+  "streakLegend": "🎆 Sequência lendária!",
+  "@streakDead": {
+    "description": "Mostrado quando a sequência é quebrada"
+  },
+  "@streakZero": {
+    "description": "Mostrado quando a sequência é zero"
+  },
+  "@streakLow": {
+    "description": "Sequência de 1 a 4 dias"
+  },
+  "@streakMid": {
+    "description": "Sequência de 5 a 9 dias"
+  },
+  "@streakStrong": {
+    "description": "Sequência de 10 a 19 dias"
+  },
+  "@streakHot": {
+    "description": "Sequência de 20 a 29 dias"
+  },
+  "@streakRing": {
+    "description": "Sequência de 30 a 49 dias"
+  },
+  "@streakLegend": {
+    "description": "Sequência de 50 dias ou mais"
+  },
+  "interface_language": "Idioma da Interface",
+  "add": "Adicionar",
+  "add_language": "Adicionar idioma",
+  "chooseLanguagesError": "Escolha o idioma nativo e o idioma que quer aprender.",
+  "chooseNativeLanguage": "1. Escolha seu idioma nativo",
+  "chooseLearningLanguages": "2. Escolha os idiomas para aprender",
+  "chooseDailyWordCount": "3. Quantas palavras por dia?",
+  "getStarted": "Começar",
+  "notification_access": "Este app precisa de acesso às notificações para enviar lembretes e atualizações.",
+  "record_access": "É necessária permissão de áudio para gravar sua voz e verificar a pronúncia.",
+  "allow": "Permitir",
+  "time_to_practice": "📝 Hora de praticar",
+  "daily_review": "Não se esqueça da revisão diária!",
+  "readingTitle": "Leitura",
+  "readingSearch": "Pesquisar",
+  "readingFilterAll": "Tudo",
+  "readingFilterBooks": "Livros",
+  "readingEmpty": "Ainda não há materiais disponíveis para este idioma.",
+  "readingResume": "Retomar na frase {order}",
+  "readingStart": "Começar a ler",
+  "readerLoadingWarning": "Algumas frases não puderam ser carregadas. Continuando com o conteúdo disponível.",
+  "readingError": "Não foi possível carregar os materiais de leitura.",
+  "readerNoSentences": "Nenhuma frase disponível ainda.",
+  "readerExamples": "Exemplos",
+  "readerAddToVocabulary": "Adicionar ao vocabulário",
+  "readerWordMissing": "Ainda não existe entrada de dicionário para esta palavra.",
+  "readerStatusNew": "Nova",
+  "readerStatusLearning": "Em estudo",
+  "readerStatusKnown": "Conhecida",
+  "readerExamplesEmpty": "Nenhum exemplo por enquanto.",
+  "readerDictionaryTitle": "Definições",
+  "readerDictionaryLoading": "Carregando definições...",
+  "readerDictionaryError": "Definições indisponíveis - verifique a conexão.",
+  "readerDictionaryRetry": "Tentar novamente",
+  "readerDictionaryFallback": "Definições em inglês",
+  "readerDictionaryNoDefinitions": "Ainda não há definições disponíveis.",
+  "readerDictionaryPronunciations": "Pronúncias",
+  "readerDictionarySynonyms": "Sinônimos",
+  "readerDictionaryAntonyms": "Antônimos",
+  "readerDictionaryEtymology": "Etimologia",
+  "readerDictionaryTranslation": "Tradução (LibreTranslate)",
+  "readerDictionaryTranslationAttribution": "LibreTranslate (libretranslate.com)",
+  "readerTranslationTitle": "Tradução",
+  "readerTranslationConfigError": "Traduções indisponíveis — selecione primeiro o seu idioma de estudo.",
+  "readerTranslationDisabled": "Tradução desativada (configuração ausente).",
+  "readerTranslationError": "Tradução indisponível — verifique a conexão ou tente novamente.",
+  "readerTranslationEmpty": "Nenhuma tradução disponível.",
+  "readerTranslationRetry": "Tentar novamente",
+  "readerTranslationSameLanguage": "O idioma de origem e o de destino são iguais.",
+  "readerTranslationPivotNote": "Traduzido via {viaLanguage}.",
+  "readerTranslationAdded": "Adicionado ao vocabulário.",
+  "readerTranslationCopied": "Tradução copiada.",
+  "@readerTranslationPivotNote": {
+    "placeholders": {
+      "viaLanguage": {
+        "type": "String"
+      }
+    }
+  }
+}

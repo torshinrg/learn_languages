@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:learn_languages/presentation/screens/custom_words_screen.dart';
+import 'package:learn_languages/presentation/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
 import '../providers/notification_settings_provider.dart';
@@ -102,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
             ListTile(
               leading: const Icon(Icons.language),
-              title: const Text('Interface Language'),
+              title: Text(loc.interface_language),
               subtitle: Text(_languageNames[settings.locale.languageCode]!),
               trailing: DropdownButton<String>(
                 value: settings.locale.languageCode,
@@ -141,6 +142,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const CustomWordsScreen(),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Login (test)'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LoginScreen(),
                 ),
               ),
             ),

@@ -2,48 +2,38 @@
 
 import 'package:flutter/material.dart';
 
-/// A full-width, fixed-height primary button.
-class PrimaryButton extends StatelessWidget {
-  final String label;
-  final VoidCallback? onPressed;  // allow null to disable
-  const PrimaryButton({
+/// Button variants supported by [FullWidthButton].
+enum ButtonVariant { primary, secondary }
+
+/// A full-width button with optional variant styling.
+class FullWidthButton extends StatelessWidget {
+  const FullWidthButton.primary({
     super.key,
     required this.label,
     required this.onPressed,
-  });
+  }) : variant = ButtonVariant.primary;
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: onPressed,      // can be null
-        child: Text(label),
-      ),
-    );
-  }
-}
+  const FullWidthButton.secondary({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  }) : variant = ButtonVariant.secondary;
 
-/// A full-width, fixed-height secondary (outlined) button.
-class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
-  const SecondaryButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
+  final ButtonVariant variant;
 
   @override
   Widget build(BuildContext context) {
+    final buttonChild = Text(label);
+    final button = variant == ButtonVariant.primary
+        ? ElevatedButton(onPressed: onPressed, child: buttonChild)
+        : OutlinedButton(onPressed: onPressed, child: buttonChild);
+
     return SizedBox(
       width: double.infinity,
       height: 48,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        child: Text(label),
-      ),
+      child: button,
     );
   }
 }

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:learn_languages/data/remote/appwrite_service.dart';
+import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
+import 'package:learn_languages/domain/repositories/i_sentence_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_user_sentence_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_user_vocabulary_repository.dart';
 import 'package:learn_languages/presentation/providers/task_provider.dart';
 import 'package:learn_languages/presentation/screens/tasks_screen.dart';
 import 'package:learn_languages/services/learning_service.dart';
-import 'package:learn_languages/services/notification_service.dart';
-import 'package:learn_languages/services/srs_service.dart';
 import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'core/di.dart';
 import 'core/navigation.dart';
-import 'domain/repositories/i_custom_word_repository.dart';
-import 'domain/repositories/i_srs_repository.dart';
 import 'domain/repositories/i_task_repository.dart';
-import 'domain/repositories/i_word_repository.dart';
 import 'presentation/widgets/share_handler.dart';
 import 'presentation/providers/custom_words_provider.dart';
 import 'presentation/providers/home_provider.dart';
@@ -23,13 +22,16 @@ import 'presentation/providers/review_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/study_provider.dart';
 import 'presentation/providers/vocabulary_provider.dart';
-import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/debug_screen.dart';
 import 'presentation/screens/study_screen.dart';
 import 'presentation/screens/review_screen.dart';
 import 'presentation/screens/vocabulary_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/notification_settings_screen.dart';
+import 'presentation/screens/login_screen.dart';
+import 'presentation/screens/onboarding_screen.dart';
+import 'presentation/screens/reading/reading_library_screen.dart';
+import 'presentation/screens/reading/reader_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Global color definitions
@@ -42,18 +44,14 @@ const double kPadding = 16.0;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
-  await NotificationService.init();
-  tz.initializeTimeZones();
 
-  if (await Permission.notification.isDenied) {
-    await Permission.notification.request();
-  }
+  tz.initializeTimeZones();
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -63,52 +61,52 @@ class MyApp extends StatelessWidget {
           create: (_) => NotificationSettingsProvider(),
         ),
         Provider<LearningService>(create: (_) => getIt<LearningService>()),
-        Provider<SRSService>(create: (_) => getIt<SRSService>()),
+        Provider<AppwriteService>(create: (_) => getIt<AppwriteService>()),
         ChangeNotifierProvider<SettingsProvider>(
           create: (_) => SettingsProvider(),
         ),
-
         ChangeNotifierProvider<StudyProvider>(
           create:
               (ctx) => StudyProvider(
                 ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
+                ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
               ),
         ),
         ChangeNotifierProvider<ReviewProvider>(
           create:
               (ctx) => ReviewProvider(
                 ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
+                ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
               ),
         ),
         ChangeNotifierProvider<VocabularyProvider>(
           create:
               (ctx) => VocabularyProvider(
                 ctx.read<LearningService>(),
-                ctx.read<SRSService>(),
+                ctx.read<AppwriteService>(),
               ),
         ),
         ChangeNotifierProvider<CustomWordsProvider>(
-          create:
-              (_) => CustomWordsProvider(
-                getIt<IWordRepository>(),
-                getIt<ISRSRepository>(),
-              ),
+          create: (_) => CustomWordsProvider(getIt<ICustomWordRepository>()),
         ),
         ChangeNotifierProvider<TaskProvider>(
           create:
               (ctx) => TaskProvider(
                 getIt<ITaskRepository>(),
-                () => ctx.read<SettingsProvider>().locale,
+                getIt<ISentenceTaskRepository>(),
+                getIt<IUserSentenceTaskRepository>(),
+                getIt<AppwriteService>(),
+                ctx.read<SettingsProvider>(),
               ),
         ),
         ChangeNotifierProvider<HomeProvider>(
           create:
               (ctx) => HomeProvider(
-                ctx.read<SRSService>(),
                 ctx.read<LearningService>(),
                 ctx.read<SettingsProvider>(),
+                ctx.read<AppwriteService>(),
               ),
         ),
       ],
@@ -125,12 +123,7 @@ class MyApp extends StatelessWidget {
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             localeResolutionCallback: (locale, supported) {
-              if (settings.locale != null) return settings.locale;
-              if (locale == null) return supported.first;
-              for (var l in supported) {
-                if (l.languageCode == locale.languageCode) return l;
-              }
-              return supported.first;
+              return settings.locale;
             },
             title: 'Learn Languages',
             theme: ThemeData(
@@ -232,15 +225,34 @@ class MyApp extends StatelessWidget {
                   ),
                   child: ShareHandler(child: child!),
                 ),
-            home: const HomeScreen(),
+            home: const InitialEntryRedirect(),
             routes: {
               '/debug': (_) => const DebugScreen(),
+              '/login': (_) => const LoginScreen(),
               '/study': (_) => const StudyScreen(),
               '/review': (_) => const ReviewScreen(),
               '/vocabulary': (_) => const VocabularyScreen(),
               '/settings': (_) => const SettingsScreen(),
               '/reminders': (_) => const NotificationSettingsScreen(),
-              '/tasks': (_) => const TaskScreen(),
+              '/reading': (_) => const ReadingLibraryScreen(),
+              '/reading/detail': (context) {
+                final args = ModalRoute.of(context)!.settings.arguments;
+                if (args is ReaderScreenArguments) {
+                  return ReaderScreen(
+                    materialId: args.materialId,
+                    material: args.material,
+                  );
+                }
+                if (args is String && args.isNotEmpty) {
+                  return ReaderScreen(materialId: args);
+                }
+                return const ReadingLibraryScreen();
+              },
+              '/tasks': (context) {
+                final String sentenceId =
+                    ModalRoute.of(context)!.settings.arguments as String;
+                return TasksScreen(sentenceId: sentenceId);
+              },
             },
           );
         },

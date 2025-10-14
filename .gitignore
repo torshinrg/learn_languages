@@ -12,11 +12,14 @@
 .swiftpm/
 migrate_working_dir/
 
+
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode
+.env
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -46,6 +49,12 @@ app.*.map.json
 
 
 # Ignore large database and CSV files
-assets/databases/spanish_app.db
+assets/databases/lang_data.db
 assets/databases/sentences_with_audio.csv
+script/
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/databases/spanish_app.db
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/models/ggml-small-q8_0.bin 
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/databases/spanish_app.db
+assets/models/ggml-small-q8_0.bin
+android/app/build/intermediates/assets/debug/mergeDebugAssets/flutter_assets/assets/models/ggml-small-q8_0.bin
 

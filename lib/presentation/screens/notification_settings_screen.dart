@@ -32,7 +32,7 @@ class NotificationSettingsScreen extends StatelessWidget {
           }
           final t = vm.times[i];
           return ListTile(
-            title: Text('${t.format(context)}'),
+            title: Text(t.format(context)),
             trailing: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () => vm.removeTime(i),

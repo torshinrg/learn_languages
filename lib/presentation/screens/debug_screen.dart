@@ -1,26 +1,28 @@
-// File: lib/presentation/screens/debug_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:learn_languages/domain/entities/user_word_status.dart';
+import 'package:learn_languages/domain/entities/word.dart';
+import 'package:learn_languages/domain/repositories/i_user_word_status_repository.dart';
+import 'package:learn_languages/domain/repositories/i_word_repository.dart';
+
 import '../../core/di.dart';
-import '../../domain/entities/srs_data.dart';
-import '../../domain/entities/word.dart';
-import '../../services/learning_service.dart';
-import '../../services/srs_service.dart';
+import '../../data/remote/appwrite_service.dart';
 
 class DebugScreen extends StatelessWidget {
   const DebugScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final learningService = getIt<LearningService>();
-    final srsService = getIt<SRSService>();
+    final wordRepo = getIt<IWordRepository>();
+    final userWordStatusRepo = getIt<IUserWordStatusRepository>();
+    final appwriteService = getIt<AppwriteService>();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Debug: Word SRS Info')),
+      appBar: AppBar(title: const Text('Debug: Word Status Info')),
       body: FutureBuilder<List<Object>>(
         future: Future.wait([
-          learningService.getAllWords(),
-          srsService.fetchAllData(),
+          wordRepo.fetchTopN('en', 100), // Placeholder for language
+          appwriteService.account.get().then((user) => userWordStatusRepo.fetchByStatus(user.$id, WordStatus.inProgress)),
         ]),
         builder: (ctx, snap) {
           if (snap.connectionState != ConnectionState.done) {
@@ -30,40 +32,20 @@ class DebugScreen extends StatelessWidget {
             return Center(child: Text('Error: ${snap.error}'));
           }
           final allWords = snap.data![0] as List<Word>;
-          final allSrs   = snap.data![1] as List<SRSData>;
-          final srsMap = { for (var s in allSrs) s.wordId : s };
-          final dateFmt = DateFormat('yyyy-MM-dd HH:mm');
+          final allStatuses = snap.data![1] as List<UserWordStatus>;
+          final statusMap = {for (var s in allStatuses) s.wordId: s};
 
           return ListView.builder(
             itemCount: allWords.length,
             itemBuilder: (_, i) {
               final w = allWords[i];
-              final s = srsMap[w.id];
-              final nextReviewStr = s != null
-                  ? dateFmt.format(s.nextReview)
-                  : '—';
-              final intervalStr = s?.interval.toString() ?? '—';
-              final easinessStr = s?.easiness.toStringAsFixed(2) ?? '—';
-              final repetitionStr = s?.repetition.toString() ?? '—';
-              final lastReviewStr = s != null
-                  ? dateFmt.format(s.nextReview.subtract(Duration(days: s.interval)))
-                  : '—';
+              final s = statusMap[w.id];
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
                   title: Text(w.text, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Interval: $intervalStr days'),
-                      Text('Easiness: $easinessStr'),
-                      Text('Repetitions: $repetitionStr'),
-                      Text('Next review: $nextReviewStr'),
-                      Text('Estimated last review: $lastReviewStr'),
-                    ],
-                  ),
-                  isThreeLine: true,
+                  subtitle: Text('Status: ${s?.status.name ?? 'N/A'}'),
                 ),
               );
             },
