@@ -70,7 +70,7 @@ class NotificationService {
 
   /// Schedules one notification per TimeOfDay in [times].
   /// Keeps your provider calls intact (no context argument needed).
-  Future<void> scheduleDailyNotifications(List<TimeOfDay> times) async {
+  static Future<void> scheduleDailyNotifications(List<TimeOfDay> times) async {
     final ctx = navigatorKey.currentContext!;
     final loc = AppLocalizations.of(ctx)!;
     await flutterLocalNotificationsPlugin.cancelAll();

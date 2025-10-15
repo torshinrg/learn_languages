@@ -1,49 +1,124 @@
-// lib/domain/entities/sentence.dart
-
-import 'package:learn_languages/core/app_language.dart';
+import '../../core/schema_fields.dart';
 
 class Sentence {
-  /// A map from two-letter code (e.g. "en", "ru", "es", …) → the `<lang>_text` column
-  final Map<String, String> textByCode;
+  final String id;
+  final String languageId;
+  final String content;
+  final String? audioUrl;
+  final String groupId;
+  final String? audioId;
+  final List<String> tokenSurfaces;
+  final List<String> tokenLemmas;
+  final List<String> normalizedWords;
+  final String? sentenceType;
 
-  /// A map from two-letter code → the `<lang>_id` column
-  final Map<String, String> idByCode;
+  Sentence({
+    required this.id,
+    required this.languageId,
+    required this.content,
+    this.audioUrl,
+    this.groupId = '',
+    this.audioId,
+    this.tokenSurfaces = const [],
+    this.tokenLemmas = const [],
+    this.normalizedWords = const [],
+    this.sentenceType,
+  });
 
-  Sentence({required this.textByCode, required this.idByCode});
+  factory Sentence.fromMap(Map<String, dynamic> map) {
+    final langKey = SchemaFields.sentenceLanguageRef;
 
-  /// Factory to build from a raw `Map<String, dynamic>` coming from SQLite.
-  factory Sentence.fromMap(Map<String, dynamic> m) {
-    final texts = <String, String>{};
-    final ids = <String, String>{};
-
-    // For every AppLanguage, pick out both `<name>_text` and `<name>_id`.
-    for (var lang in AppLanguage.values) {
-      final code = lang.code; // "en", "ru", "es", ...
-      final name = lang.name; // "english", "russian", "spanish", ...
-
-      // Read them as nullable String; if it’s null, default to empty string.
-      final textKey = '${name}_text';
-      final idKey = '${name}_id';
-
-      final textVal = (m[textKey] as String?) ?? '';
-      final idVal = (m[idKey] as String?) ?? '';
-
-      texts[code] = textVal;
-      ids[code] = idVal;
+    final rawLang =
+        map[langKey] ??
+        map['languageId'] ??
+        map['language'] ??
+        map['langId'] ??
+        map['language_code'] ??
+        '';
+    String langId;
+    if (rawLang is String) {
+      langId = rawLang;
+    } else if (rawLang is Map) {
+      final idVal = rawLang['\$id'] ?? rawLang['id'];
+      langId = idVal is String ? idVal : '';
+    } else {
+      langId = rawLang?.toString() ?? '';
     }
 
-    return Sentence(textByCode: texts, idByCode: ids);
+    // Group id can be string, number, or nested
+    final groupKey = SchemaFields.sentenceGroupId;
+    final rawGroup = map[groupKey];
+    String groupId = '';
+    if (rawGroup is String) {
+      groupId = rawGroup;
+    } else if (rawGroup is num) {
+      groupId = rawGroup.toString();
+    } else if (rawGroup is Map) {
+      final gid = rawGroup['\$id'] ?? rawGroup['id'];
+      groupId = gid is String ? gid : '';
+    }
+
+    // audio can be a URL string, numeric audio_id, or a storage file relation map
+    final rawAudio =
+        map['audioUrl'] ??
+        map['audio'] ??
+        map['audio_url'] ??
+        map['audio_id'] ??
+        map['audioId'];
+    String? audioUrl;
+    String? audioId;
+    if (rawAudio is String) {
+      audioUrl = rawAudio;
+      audioId = rawAudio;
+    } else if (rawAudio is num) {
+      audioUrl = rawAudio.toString();
+      audioId = audioUrl;
+    } else if (rawAudio is Map) {
+      final fid = rawAudio['\$id'] ?? rawAudio['id'];
+      audioUrl = fid is String ? fid : null;
+      audioId = audioUrl;
+    }
+
+    List<String> _safeStringList(dynamic value) {
+      if (value is List) {
+        return value
+            .map((e) => e?.toString() ?? '')
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+      return const [];
+    }
+
+    return Sentence(
+      id: map['\$id'] as String,
+      languageId: langId,
+      content:
+          (map['content'] ?? map['text'] ?? map['sentence'] ?? '') as String,
+      audioUrl: audioUrl,
+      groupId: groupId,
+      audioId: audioId,
+      tokenSurfaces: _safeStringList(
+        map['tokenSurfaces'] ?? map['token_surface'],
+      ),
+      tokenLemmas: _safeStringList(map['tokenLemma'] ?? map['token_lemma']),
+      normalizedWords: _safeStringList(
+        map['normalizedWords'] ?? map['normilized_words'],
+      ),
+      sentenceType: map['sentenceType']?.toString(),
+    );
   }
 
-  /// Return the sentence text for a given two-letter code (e.g. "en" or "ru").
-  /// If that language isn’t in the table, returns empty string.
-  String text(String code) {
-    return textByCode[code] ?? '';
-  }
-
-  /// Return the sentence’s unique ID for a given two-letter code (e.g. "en" or "ru").
-  /// If that language/ID isn’t in the table, returns empty string.
-  String id(String code) {
-    return idByCode[code] ?? '';
+  Map<String, dynamic> toMap() {
+    return {
+      'languageId': languageId,
+      'content': content,
+      'audioUrl': audioUrl,
+      'group_id': groupId,
+      'audioId': audioId,
+      'tokenSurfaces': tokenSurfaces,
+      'tokenLemma': tokenLemmas,
+      'normalizedWords': normalizedWords,
+      'sentenceType': sentenceType,
+    };
   }
 }

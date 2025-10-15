@@ -8,83 +8,98 @@
   "day": "day",
   "days": "days",
   "reviewsDue": "{dueCount, plural, =0{You have no reviews due} one{You have 1 review due} other{You have {dueCount} reviews due}}",
-    "@reviewsDue": {
-      "description": "How many reviews are due",
-      "placeholders": {
-        "dueCount": {
-          "type": "int",
-          "example": "5"
-        }
+  "@reviewsDue": {
+    "description": "How many reviews are due",
+    "placeholders": {
+      "dueCount": {
+        "type": "int",
+        "example": "5"
       }
-    },
-   "review": "Review",
-   "today_session":"Today's Session",
-   "new_words_learned": "new words learned",
-   "start_study":"Start Study",
-   "vocabulary": "Vocabulary",
-   "stats": "Stats",
-   "settings": "Settings",
-   "add_custom_word": "Add Custom Word",
-   "new_word": "New word",
-   "added": "Added ",
-   "reminder_settings":"Reminder Settings",
-   "add_reminder": "Add Reminder",
-   "reminderSet": "Reminder set at {pickedTime}. Now: {now}. Fires next at {next}.",
-     "@reminderSet": {
-       "description": "Confirmation text when scheduling a new reminder",
-       "placeholders": {
-         "pickedTime": { "type": "String", "example": "14:30" },
-         "now":       { "type": "String", "example": "2025-05-29 19:00" },
-         "next":      { "type": "String", "example": "2025-05-30 14:30" }
-       }
-     },
-
-     "reminderUpdated": "Reminder updated to {pickedTime}.",
-     "@reminderUpdated": {
-       "description": "Confirmation text when updating an existing reminder",
-       "placeholders": {
-         "pickedTime": { "type": "String", "example": "08:00" }
-       }
-     },
-     "qualityAgain": "Again",
-       "@qualityAgain": { "description": "Repeat review again" },
-
-       "qualityHard": "Hard",
-       "@qualityHard": { "description": "Mark review as hard" },
-
-       "qualityGood": "Good",
-       "@qualityGood": { "description": "Mark review as good" },
-
-       "qualityEasy": "Easy",
-       "@qualityEasy": { "description": "Mark review as easy" },
-       "words_per_day": "Words per day",
-       "save": "Save",
-       "study_reminders": "Study Reminders",
-       "per_day": "per day",
-       "custom_words": "Custom Words",
-       "today_learned": "Today Learned",
-       "current_streak": "Current Streak",
-       "total_words": "Total Words",
-       "mastered_words": "Mastered Words",
-       "no_words": "No words to study.",
-       "study": "Study ",
-       "got_it": "Got it",
-       "skip_word": "Skip word",
-       "learning_now": "Learning Now",
-       "pending": "Pending",
-       "mastered": "Mastered",
-       "excellent": "🎉 Excellent! You nailed it!",
-       "great_job": "👍 Great job!",
-       "good_work": "🙂 Good work, keep going!",
-       "try_again": "💪 Don’t give up, try again!",
-       "tap_to_speak_again": "Tap to Speak Again",
-       "next_sentence": "Next Sentence",
-       "tap_to_speak": "Tap to Speak",
-       "recorded_by": "Recorded by ",
-       "licence": "License: ",
-       "no_reviews": "No reviews due right now.",
-       "exercises_title": "🧠 Bite-sized Tasks",
-
+    }
+  },
+  "review": "Review",
+  "today_session": "Today's Session",
+  "new_words_learned": "new words learned",
+  "start_study": "Start Study",
+  "vocabulary": "Vocabulary",
+  "stats": "Stats",
+  "settings": "Settings",
+  "add_custom_word": "Add Custom Word",
+  "new_word": "New word",
+  "added": "Added ",
+  "reminder_settings": "Reminder Settings",
+  "add_reminder": "Add Reminder",
+  "reminderSet": "Reminder set at {pickedTime}. Now: {now}. Fires next at {next}.",
+  "@reminderSet": {
+    "description": "Confirmation text when scheduling a new reminder",
+    "placeholders": {
+      "pickedTime": {
+        "type": "String",
+        "example": "14:30"
+      },
+      "now": {
+        "type": "String",
+        "example": "2025-05-29 19:00"
+      },
+      "next": {
+        "type": "String",
+        "example": "2025-05-30 14:30"
+      }
+    }
+  },
+  "reminderUpdated": "Reminder updated to {pickedTime}.",
+  "@reminderUpdated": {
+    "description": "Confirmation text when updating an existing reminder",
+    "placeholders": {
+      "pickedTime": {
+        "type": "String",
+        "example": "08:00"
+      }
+    }
+  },
+  "qualityAgain": "Again",
+  "@qualityAgain": {
+    "description": "Repeat review again"
+  },
+  "qualityHard": "Hard",
+  "@qualityHard": {
+    "description": "Mark review as hard"
+  },
+  "qualityGood": "Good",
+  "@qualityGood": {
+    "description": "Mark review as good"
+  },
+  "qualityEasy": "Easy",
+  "@qualityEasy": {
+    "description": "Mark review as easy"
+  },
+  "words_per_day": "Words per day",
+  "save": "Save",
+  "study_reminders": "Study Reminders",
+  "per_day": "per day",
+  "custom_words": "Custom Words",
+  "today_learned": "Today Learned",
+  "current_streak": "Current Streak",
+  "total_words": "Total Words",
+  "mastered_words": "Mastered Words",
+  "no_words": "No words to study.",
+  "study": "Study ",
+  "got_it": "Got it",
+  "skip_word": "Skip word",
+  "learning_now": "Learning Now",
+  "pending": "Pending",
+  "mastered": "Mastered",
+  "excellent": "🎉 Excellent! You nailed it!",
+  "great_job": "👍 Great job!",
+  "good_work": "🙂 Good work, keep going!",
+  "try_again": "💪 Don’t give up, try again!",
+  "tap_to_speak_again": "Tap to Speak Again",
+  "next_sentence": "Next Sentence",
+  "tap_to_speak": "Tap to Speak",
+  "recorded_by": "Recorded by ",
+  "licence": "License: ",
+  "no_reviews": "No reviews due right now.",
+  "exercises_title": "🧠 Bite-sized Tasks",
   "reviewProgress": "Word {current} of {total}",
   "@reviewProgress": {
     "description": "Progress text in review screen",
@@ -93,35 +108,139 @@
       "total": {}
     }
   },
-    "streakDead": "💀 Streak’s dead. Try again now!",
-    "streakZero": "🪔 Let's ignite your streak!",
-    "streakLow": "🔥 Keep going!",
-    "streakMid": "🔥🔥 Momentum!",
-    "streakStrong": "🏮 Torch blazing!",
-    "streakHot": "🔥🔥🔥 Bonfire!",
-    "streakRing": "🔥⭕ Fire ring!",
-    "streakLegend": "🎆 Legendary streak!",
-
-    "@streakDead": { "description": "Shown when streak is broken" },
-    "@streakZero": { "description": "Shown when streak is zero" },
-    "@streakLow": { "description": "Shown when streak is 1–4" },
-    "@streakMid": { "description": "Shown when streak is 5–9" },
-    "@streakStrong": { "description": "Shown when streak is 10–19" },
-    "@streakHot": { "description": "Shown when streak is 20–29" },
-    "@streakRing": { "description": "Shown when streak is 30–49" },
-    "@streakLegend": { "description": "Shown when streak is 50+" },
-    "interface_language": "Interface language",
-    "add": "Add",
-    "add_language": "Add language",
-    "chooseLanguagesError": "Please choose native and learning languages.",
-      "chooseNativeLanguage": "1. Choose your native language",
-      "chooseLearningLanguages": "2. Choose languages to learn",
-      "chooseDailyWordCount": "3. How many words per day?",
-      "getStarted": "Get Started",
-      "notification_access":"This app requires notification access to deliver reminders and updates.",
-      "record_access": "Audio permission is needed to record your voice and check pronunciation.",
-      "allow":"Allow",
-      "time_to_practice":"📝 Time to practice",
-       "daily_review": "Don’t forget your daily review!"
-
+  "streakDead": "💀 Streak’s dead. Try again now!",
+  "streakZero": "🪔 Let's ignite your streak!",
+  "streakLow": "🔥 Keep going!",
+  "streakMid": "🔥🔥 Momentum!",
+  "streakStrong": "🏮 Torch blazing!",
+  "streakHot": "🔥🔥🔥 Bonfire!",
+  "streakRing": "🔥⭕ Fire ring!",
+  "streakLegend": "🎆 Legendary streak!",
+  "@streakDead": {
+    "description": "Shown when streak is broken"
+  },
+  "@streakZero": {
+    "description": "Shown when streak is zero"
+  },
+  "@streakLow": {
+    "description": "Shown when streak is 1–4"
+  },
+  "@streakMid": {
+    "description": "Shown when streak is 5–9"
+  },
+  "@streakStrong": {
+    "description": "Shown when streak is 10–19"
+  },
+  "@streakHot": {
+    "description": "Shown when streak is 20–29"
+  },
+  "@streakRing": {
+    "description": "Shown when streak is 30–49"
+  },
+  "@streakLegend": {
+    "description": "Shown when streak is 50+"
+  },
+  "interface_language": "Interface language",
+  "add": "Add",
+  "add_language": "Add language",
+  "chooseLanguagesError": "Please choose native and learning languages.",
+  "chooseNativeLanguage": "1. Choose your native language",
+  "chooseLearningLanguages": "2. Choose languages to learn",
+  "chooseDailyWordCount": "3. How many words per day?",
+  "getStarted": "Get Started",
+  "notification_access": "This app requires notification access to deliver reminders and updates.",
+  "record_access": "Audio permission is needed to record your voice and check pronunciation.",
+  "allow": "Allow",
+  "time_to_practice": "📝 Time to practice",
+  "daily_review": "Don’t forget your daily review!",
+  "readingTitle": "Reading",
+  "@readingTitle": {
+    "description": "Title for the reading library screen"
+  },
+  "readingSearch": "Search",
+  "@readingSearch": {
+    "description": "Placeholder text for reading search"
+  },
+  "readingFilterAll": "All",
+  "@readingFilterAll": {
+    "description": "Filter option for all materials"
+  },
+  "readingFilterBooks": "Books",
+  "@readingFilterBooks": {
+    "description": "Filter option for books"
+  },
+  "readingEmpty": "No materials available yet for this language.",
+  "@readingEmpty": {
+    "description": "Shown when there are no reading materials"
+  },
+  "readingResume": "Resume at sentence {order}",
+  "@readingResume": {
+    "description": "Label showing where the user left off",
+    "placeholders": {
+      "order": {
+        "type": "int"
+      }
+    }
+  },
+  "readingStart": "Start reading",
+  "@readingStart": {
+    "description": "Call to action when there is no progress yet"
+  },
+  "readerLoadingWarning": "Some sentences failed to load. Continuing with available content.",
+  "@readerLoadingWarning": {
+    "description": "Warning shown when partial data is loaded"
+  },
+  "readingError": "Unable to load reading materials.",
+  "@readingError": {
+    "description": "Shown when reading materials fail to load"
+  },
+  "readerNoSentences": "No sentences available yet.",
+  "@readerNoSentences": {
+    "description": "Shown when reader has no content"
+  },
+  "readerExamples": "Examples",
+  "@readerExamples": {
+    "description": "Heading for example sentences"
+  },
+  "readerAddToVocabulary": "Add to vocabulary",
+  "@readerAddToVocabulary": {
+    "description": "Heading for vocabulary actions"
+  },
+  "readerWordMissing": "No dictionary entry found yet for this word.",
+  "@readerWordMissing": {
+    "description": "Shown when no word record exists"
+  },
+  "readerStatusNew": "New",
+  "readerStatusLearning": "Learning",
+  "readerStatusKnown": "Known",
+  "readerExamplesEmpty": "No example sentences yet.",
+  "readerDictionaryTitle": "Definitions",
+  "readerDictionaryLoading": "Fetching definitions...",
+  "readerDictionaryError": "Definitions unavailable—check connection.",
+  "readerDictionaryRetry": "Retry",
+  "readerDictionaryFallback": "English fallback",
+  "readerDictionaryNoDefinitions": "No definitions available yet.",
+  "readerDictionaryPronunciations": "Pronunciations",
+  "readerDictionarySynonyms": "Synonyms",
+  "readerDictionaryAntonyms": "Antonyms",
+  "readerDictionaryEtymology": "Etymology",
+  "readerDictionaryTranslation": "Translation (LibreTranslate)",
+  "readerDictionaryTranslationAttribution": "LibreTranslate (libretranslate.com)",
+  "readerTranslationTitle": "Translation",
+  "readerTranslationConfigError": "Translations unavailable—select your study language first.",
+  "readerTranslationDisabled": "Translation disabled (missing configuration).",
+  "readerTranslationError": "Translation unavailable—check connection or try again.",
+  "readerTranslationEmpty": "No translation available.",
+  "readerTranslationRetry": "Retry",
+  "readerTranslationSameLanguage": "Source and target languages are the same.",
+  "readerTranslationPivotNote": "Translated via {viaLanguage}.",
+  "readerTranslationAdded": "Added to vocabulary.",
+  "readerTranslationCopied": "Translation copied.",
+  "@readerTranslationPivotNote": {
+    "placeholders": {
+      "viaLanguage": {
+        "type": "String"
+      }
+    }
+  }
 }

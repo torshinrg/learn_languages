@@ -1,82 +1,66 @@
-// File: lib/presentation/providers/task_provider.dart
-
 import 'package:flutter/material.dart';
-import '../../domain/entities/task.dart';
-import '../../domain/repositories/i_task_repository.dart';
+import 'package:learn_languages/domain/entities/sentence_task.dart';
+import 'package:learn_languages/domain/entities/task.dart';
+import 'package:learn_languages/domain/entities/user_sentence_task.dart';
+import 'package:learn_languages/domain/repositories/i_sentence_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_task_repository.dart';
+import 'package:learn_languages/domain/repositories/i_user_sentence_task_repository.dart';
+import 'package:learn_languages/presentation/providers/settings_provider.dart';
 
-/// Provides tasks of a given type and locale, and saves history.
+import '../../data/remote/appwrite_service.dart';
+
 class TaskProvider extends ChangeNotifier {
   final ITaskRepository _taskRepo;
-  final Locale Function() _localeSelector;
+  final ISentenceTaskRepository _sentenceTaskRepo;
+  final IUserSentenceTaskRepository _userSentenceTaskRepo;
+  final AppwriteService _appwriteService;
+  final SettingsProvider _settings;
 
-  TaskProvider(this._taskRepo, this._localeSelector) {
-    // As soon as the provider is created, load tasks for the current locale:
-    _initialize();
-  }
+  TaskProvider(
+    this._taskRepo,
+    this._sentenceTaskRepo,
+    this._userSentenceTaskRepo,
+    this._appwriteService,
+    this._settings,
+  );
 
-  List<Task> _sentenceTasks = [];
-  List<Task> get sentenceTasks => List.unmodifiable(_sentenceTasks);
+  List<Task> _tasks = [];
+  List<Task> get tasks => List.unmodifiable(_tasks);
 
-  List<Task> _screenTasks = [];
-  List<Task> get screenTasks => List.unmodifiable(_screenTasks);
+  Future<void> fetchTasksForSentence(String sentenceId) async {
+    final sentenceTasks = await _sentenceTaskRepo.fetchBySentence(sentenceId);
+    final taskIds = sentenceTasks.map((st) => st.taskId).toList();
 
-  Future<void> _initialize() async {
-    // Print out which locale we’re about to load:
-    final localeCode = _localeSelector().languageCode;
-    await loadAllTasks();
-  }
-
-  /// Load tasks of both types (“sentence” and “screen”) for current UI locale.
-  Future<void> loadAllTasks() async {
-    final localeCode = _localeSelector().languageCode;
-
-    // Fetch all “sentence” tasks for this locale
-    final fetchedSentences = await _taskRepo.fetchTasksByType(
-      'sentence',
-      localeCode,
-    );
-    _sentenceTasks = fetchedSentences;
-    for (var t in _sentenceTasks) {}
-
-    // Fetch all “screen” tasks for this locale
-    final fetchedScreens = await _taskRepo.fetchTasksByType(
-      'screen',
-      localeCode,
-    );
-    _screenTasks = fetchedScreens;
-    for (var t in _screenTasks) {}
-
+    // This is inefficient. In a real app, you'd fetch these in a single query
+    // or have the data denormalized.
+    final List<Task> fetchedTasks = [];
+    for (var id in taskIds) {
+      // This is a placeholder for fetching the actual task content.
+      // You'll need to implement a fetchById in your ITaskRepository.
+      // fetchedTasks.add(await _taskRepo.fetchById(id));
+    }
+    _tasks = fetchedTasks;
     notifyListeners();
   }
 
-  /// Called when user completes a task (type “sentence”) on a specific sentenceId.
-  Future<void> completeSentenceTask({
-    required String taskId,
-    required String sentenceId,
-    required String? result,
+  Future<void> completeTask({
+    required String sentenceTaskId,
+    required String response,
   }) async {
-    await _taskRepo.saveTaskHistory(
-      taskId: taskId,
-      sentenceId: sentenceId,
-      result: result,
-    );
-    // Optionally remove it from the in‐memory list so it never reappears:
-    // _sentenceTasks.removeWhere((t) => t.id == taskId);
-    notifyListeners();
-  }
-
-  /// Called when user completes a “screen‐level” task (no sentenceId).
-  Future<void> completeScreenTask({
-    required String taskId,
-    required String? result,
-  }) async {
-    await _taskRepo.saveTaskHistory(
-      taskId: taskId,
-      sentenceId: null,
-      result: result,
-    );
-    // Optionally remove it from _screenTasks if it should be one‐time:
-    // _screenTasks.removeWhere((t) => t.id == taskId);
-    notifyListeners();
+    try {
+      final user = await _appwriteService.account.get();
+      final userTask = UserSentenceTask(
+        id: '', // Appwrite will generate this
+        userId: user.$id,
+        sentenceTaskId: sentenceTaskId,
+        completed: true,
+        response: response,
+        completedAt: DateTime.now(),
+      );
+      await _userSentenceTaskRepo.createOrUpdate(userTask);
+      notifyListeners();
+    } catch (e) {
+      // Handle error
+    }
   }
 }

@@ -1,158 +1,204 @@
-/// lib/services/learning_service.dart
-library;
-
-import 'package:learn_languages/domain/repositories/i_custom_word_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../domain/entities/audio_link.dart';
-import '../domain/entities/word.dart';
 import '../domain/entities/sentence.dart';
-import '../domain/repositories/i_word_repository.dart';
+import 'package:appwrite/appwrite.dart';
+import '../domain/entities/user_word_status.dart';
+import '../domain/entities/word.dart';
 import '../domain/repositories/i_sentence_repository.dart';
-import '../domain/repositories/i_audio_repository.dart';
-import '../domain/repositories/i_srs_repository.dart';
+import '../domain/repositories/i_user_word_status_repository.dart';
+import '../domain/repositories/i_language_repository.dart';
+import '../domain/entities/language.dart';
+import '../domain/repositories/i_word_repository.dart';
+import '../domain/repositories/i_word_sentence_link_repository.dart';
 
 class LearningService {
-  final IWordRepository wordRepo;
-  final ISentenceRepository sentenceRepo;
-  final IAudioRepository audioRepo;
-  final ISRSRepository srsRepo;
-  final ICustomWordRepository customRepo;
+  final IWordRepository _wordRepo;
+  final ISentenceRepository _sentenceRepo;
+  final IWordSentenceLinkRepository _wordSentenceLinkRepo;
+  final IUserWordStatusRepository _userWordStatusRepo;
+  final ILanguageRepository _languageRepo;
+  Map<String, String>? _langIdByCodeCache;
 
   LearningService({
-    required this.wordRepo,
-    required this.sentenceRepo,
-    required this.audioRepo,
-    required this.srsRepo,
-    required this.customRepo,
-  });
+    required IWordRepository wordRepo,
+    required ISentenceRepository sentenceRepo,
+    required IWordSentenceLinkRepository wordSentenceLinkRepo,
+    required IUserWordStatusRepository userWordStatusRepo,
+    required ILanguageRepository languageRepo,
+  }) : _wordRepo = wordRepo,
+       _sentenceRepo = sentenceRepo,
+       _wordSentenceLinkRepo = wordSentenceLinkRepo,
+       _userWordStatusRepo = userWordStatusRepo,
+       _languageRepo = languageRepo;
 
-  Future<String> _activeLanguageCode() async {
-    final prefs = await SharedPreferences.getInstance();
-    final codes = prefs.getStringList('learningLanguages') ?? ['es'];
-    if (codes.isEmpty) return 'es';
-    return codes.first;
+  Future<List<Word>> getTopWords(String languageId, int count) async {
+    return _wordRepo.fetchTopN(languageId, count);
   }
 
-  Future<List<Word>> _allWords() async {
-    final base = await wordRepo.fetchAll();
-    final lang = await _activeLanguageCode();
-    final custom = await customRepo.fetchByLanguage(lang);
-    final customWords = custom
-        .map(
-          (c) => Word(
-            id: c.id,
-            text: c.text,
-            translation: null,
-            sentence: null,
-            type: WordType.custom,
-          ),
-        )
-        .toList();
-    return [...base, ...customWords];
+  Future<List<Sentence>> getSentencesForWord(String wordId) async {
+    return _sentenceRepo.fetchByWord(wordId);
   }
 
-  Future<List<Word>> getDailyBatch(int count) async {
-    final allWords = await _allWords();
-    final custom = allWords.where((w) => w.type == WordType.custom).toList();
-    if (custom.isNotEmpty) return custom.take(count).toList();
-
-    final dueData = await srsRepo.fetchDue();
-    final due =
-        allWords.where((w) => dueData.any((s) => s.wordId == w.id)).toList();
-    if (due.length >= count) return due.take(count).toList();
-
-    final scheduledIds =
-        (await srsRepo.fetchAll()).map((e) => e.wordId).toSet();
-    final needed = count - due.length;
-    final fresh =
-        allWords
-            .where((w) => !scheduledIds.contains(w.id))
-            .take(needed)
-            .toList();
-    return [...due, ...fresh];
-  }
-
-  Future<List<Word>> getFreshBatch(int count) async {
-    final allWords = await _allWords();
-    final allSrs = await srsRepo.fetchAll();
-    final scheduledIds = allSrs.map((e) => e.wordId).toSet();
-
-    final unscheduled =
-        allWords.where((w) => !scheduledIds.contains(w.id)).toList();
-    final custom = unscheduled.where((w) => w.type == WordType.custom).toList();
-    if (custom.length >= count) return custom.take(count).toList();
-
-    final remaining = count - custom.length;
-    final normal =
-        unscheduled
-            .where((w) => w.type != WordType.custom)
-            .take(remaining)
-            .toList();
-    return [...custom, ...normal];
-  }
-
-  Future<List<Word>> getAllWords() => _allWords();
-
-  Future<void> markLearned(String wordId, bool success) {
-    return srsRepo.scheduleNext(wordId, success);
-  }
-
-  /// NEW: Mark a word as completely known/mastered so it never appears again.
-  Future<void> markAsKnown(String wordId) async {
-    // Repetition threshold = 3.
-    await srsRepo.scheduleNextWithQuality(wordId, 5);
-    await srsRepo.scheduleNextWithQuality(wordId, 5);
-    await srsRepo.scheduleNextWithQuality(wordId, 5);
-  }
-
-  Future<List<Sentence>> getInitialSentencesForWord(
-    String wordText,
-    String languageCode, {
-    int limit = 3,
-    bool requireAudio = true,
-    String? translationCode,
-  }) {
-    return sentenceRepo.fetchForWord(
-      wordText,
-      languageCode,
-      limit: limit,
-      onlyWithAudio: requireAudio,
-      translationCode: translationCode,
+  Future<Sentence?> getTranslationForSentence({
+    required Sentence sentence,
+    required String nativeLanguageCode,
+  }) async {
+    final targetId = await _languageIdForCode(nativeLanguageCode);
+    if (targetId == null) return null;
+    if (sentence.groupId.isEmpty) return null;
+    final matches = await _sentenceRepo.fetchByGroupAndLanguage(
+      sentence.groupId,
+      targetId,
     );
+    return matches.isNotEmpty ? matches.first : null;
   }
 
-  Future<List<Sentence>> getRemainingSentencesForWord(
-    String wordText,
-    List<String> excludeIds,
-    String languageCode,
-    {bool requireAudio = true, String? translationCode}
+  Future<void> updateWordStatus(
+    String userId,
+    String wordId,
+    WordStatus status,
   ) async {
-    final all = await sentenceRepo.fetchForWord(
-      wordText,
-      languageCode,
-      onlyWithAudio: requireAudio,
-      translationCode: translationCode,
+    final existing = await _userWordStatusRepo.fetch(userId, wordId);
+    await _userWordStatusRepo.update(
+      UserWordStatus(
+        id: existing.id,
+        userId: userId,
+        wordId: wordId,
+        status: status,
+      ),
     );
-    return all
-        .where((s) => !excludeIds.contains(s.id(languageCode)))
-        .toList();
   }
 
-  Future<List<AudioLink>> getAudioForSentence(
-    String sentenceId,
-    String languageCode,
-  ) {
-    return audioRepo.fetchForSentence(sentenceId, languageCode);
+  Future<Map<WordStatus, int>> getProgressStats(String userId) async {
+    final known = await _userWordStatusRepo.count(userId, WordStatus.known);
+    final inProgress = await _userWordStatusRepo.count(
+      userId,
+      WordStatus.inProgress,
+    );
+    final news = await _userWordStatusRepo.count(userId, WordStatus.New);
+    return {
+      WordStatus.known: known,
+      WordStatus.inProgress: inProgress,
+      WordStatus.New: news,
+    };
   }
 
-  Future<List<Word>> getDueWords() async {
-    final srsList = await srsRepo.fetchDue();
-    final allWords = await _allWords();
-    return allWords.where((w) => srsList.any((s) => s.wordId == w.id)).toList();
+  Future<List<Word>> getWordsByStatus(String userId, WordStatus status) async {
+    final statuses = await _userWordStatusRepo.fetchByStatus(userId, status);
+    final wordIds = statuses.map((s) => s.wordId).toList();
+
+    // This is inefficient. In a real app, you'd fetch these in a single query
+    // or have the data denormalized.
+    final List<Word> words = [];
+    for (final wordId in wordIds) {
+      words.add(await _wordRepo.fetchById(wordId));
+    }
+    return words;
   }
 
-  Future<void> markWithQuality(String wordId, int quality) {
-    return srsRepo.scheduleNextWithQuality(wordId, quality);
+  Future<List<Word>> getDailyBatch(String userId, int limit) async {
+    final statuses = await _userWordStatusRepo.fetchByStatus(
+      userId,
+      WordStatus.New,
+    );
+    final wordIds = statuses.map((s) => s.wordId).take(limit).toList();
+    if (wordIds.isEmpty) return [];
+    return _wordRepo.fetchByIds(wordIds);
+  }
+
+  Future<Map<String, Sentence>> getTranslationsForGroups({
+    required Set<String> groupIds,
+    required String nativeLanguageCode,
+  }) async {
+    final out = <String, Sentence>{};
+    if (groupIds.isEmpty) return out;
+    final targetId = await _languageIdForCode(nativeLanguageCode);
+    if (targetId == null) return out;
+    final list = await _sentenceRepo.fetchByGroupsAndLanguage(
+      groupIds.toList(),
+      targetId,
+    );
+    for (final s in list) {
+      if (s.groupId.isNotEmpty && !out.containsKey(s.groupId)) {
+        out[s.groupId] = s;
+      }
+    }
+    return out;
+  }
+
+  Future<String?> resolveLanguageId(String code) {
+    return _languageIdForCode(code);
+  }
+
+  Future<String?> _languageIdForCode(String code) async {
+    if (_langIdByCodeCache == null) {
+      final langs = await _languageRepo.fetchAll();
+      _langIdByCodeCache = {for (final l in langs) l.code: l.id};
+    }
+    // return exact match or any available
+    return _langIdByCodeCache![code] ??
+        (_langIdByCodeCache!.isNotEmpty
+            ? _langIdByCodeCache!.values.first
+            : null);
+  }
+
+  /// Ensure there are initial New statuses for a given [languageCode].
+  /// If the user has zero New statuses, seed using the top N words.
+  Future<void> ensureSeedIfEmpty({
+    required String userId,
+    required String languageCode,
+    int seedCount = 100,
+  }) async {
+    final current = await _userWordStatusRepo.count(userId, WordStatus.New);
+    if (current > 0) return;
+
+    // Resolve languageId by code from the public languages collection
+    final languages = await _languageRepo.fetchAll();
+    final Language lang = languages.firstWhere(
+      (l) => l.code == languageCode,
+      orElse:
+          () =>
+              languages.isNotEmpty
+                  ? languages.first
+                  : Language(id: 'en', code: 'en', name: 'English'),
+    );
+
+    print(
+      '[Seed] Start ensureSeedIfEmpty: code=$languageCode -> langId=${lang.id}, target=$seedCount',
+    );
+    try {
+      final topWords = await _wordRepo.fetchTopN(lang.id, seedCount);
+      print('[Seed] Fetch with filter success, count=${topWords.length}');
+      await _seedStatuses(userId, topWords);
+    } on AppwriteException catch (e) {
+      if (e.code == 400) {
+        print('[Seed] 400 during filtered fetch. Retrying via repo fallback.');
+        try {
+          final topWords = await _wordRepo.fetchTopN(lang.id, seedCount);
+          print('[Seed] Fallback repo returned count=${topWords.length}');
+          await _seedStatuses(userId, topWords);
+        } catch (e2) {
+          print('[Seed] Final fallback aborted: $e2');
+        }
+      } else {
+        rethrow;
+      }
+    }
+    final after = await _userWordStatusRepo.count(userId, WordStatus.New);
+    print('[Seed] Completed. New statuses now=$after');
+  }
+
+  Future<void> _seedStatuses(String userId, List<Word> words) async {
+    int seeded = 0;
+    for (final w in words) {
+      await _userWordStatusRepo.create(
+        UserWordStatus(
+          id: '',
+          userId: userId,
+          wordId: w.id,
+          status: WordStatus.New,
+        ),
+      );
+      seeded++;
+    }
+    print('[Seed] Seeded $seeded statuses');
   }
 }

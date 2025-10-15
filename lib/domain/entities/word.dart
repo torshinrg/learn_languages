@@ -1,41 +1,43 @@
-// lib/domain/entities/word.dart
-
-enum WordType { normal, custom }
+import '../../core/schema_fields.dart';
 
 class Word {
   final String id;
+  final String languageId;
   final String text;
-  final String? translation;
-  final String? sentence;
-  final WordType type;
+  final int frequencyRank;
 
   Word({
     required this.id,
+    required this.languageId,
     required this.text,
-    this.translation,
-    this.sentence,
-    this.type = WordType.normal,
+    required this.frequencyRank,
   });
 
   factory Word.fromMap(Map<String, dynamic> map) {
-    return Word(
-      id: map['id'] as String,
-      text: map['text'] as String,
-      translation: map['translation'] as String?,
-      sentence: map['sentence'] as String?,
-      type: (map['type'] as String?) == 'custom'
-          ? WordType.custom
-          : WordType.normal,
-    );
+    final langKey = SchemaFields.wordLanguageRef;
+    final textKey = SchemaFields.wordText;
+    final rankKey = SchemaFields.wordRank;
+
+    final id = map['\$id'] as String;
+    final lang = (map[langKey] ?? map['languageId'] ?? map['language'] ?? map['langId'] ?? map['language_code'] ?? '') as String;
+    final txt = (map[textKey] ?? map['text'] ?? map['word'] ?? map['value'] ?? '') as String;
+
+    int rank = 0;
+    final rawRank = (rankKey.isNotEmpty ? map[rankKey] : null) ?? map['frequencyRank'] ?? map['rank'] ?? map['freq'];
+    if (rawRank is int) {
+      rank = rawRank;
+    } else if (rawRank is String) {
+      rank = int.tryParse(rawRank) ?? 0;
+    }
+
+    return Word(id: id, languageId: lang, text: txt, frequencyRank: rank);
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'languageId': languageId,
       'text': text,
-      'translation': translation,
-      'sentence': sentence,
-      'type': type == WordType.custom ? 'custom' : 'normal',
+      'frequencyRank': frequencyRank,
     };
   }
 }

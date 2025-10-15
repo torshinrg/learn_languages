@@ -33,30 +33,46 @@
   "@reminderSet": {
     "description": "Texto de confirmação ao agendar um novo lembrete",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "14:30" },
-      "now":       { "type": "String", "example": "2025-05-29 19:00" },
-      "next":      { "type": "String", "example": "2025-05-30 14:30" }
+      "pickedTime": {
+        "type": "String",
+        "example": "14:30"
+      },
+      "now": {
+        "type": "String",
+        "example": "2025-05-29 19:00"
+      },
+      "next": {
+        "type": "String",
+        "example": "2025-05-30 14:30"
+      }
     }
   },
   "reminderUpdated": "Lembrete atualizado para {pickedTime}.",
   "@reminderUpdated": {
     "description": "Texto de confirmação ao atualizar um lembrete existente",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "08:00" }
+      "pickedTime": {
+        "type": "String",
+        "example": "08:00"
+      }
     }
   },
   "qualityAgain": "De Novo",
-  "@qualityAgain": { "description": "Repetir revisão novamente" },
-
+  "@qualityAgain": {
+    "description": "Repetir revisão novamente"
+  },
   "qualityHard": "Difícil",
-  "@qualityHard": { "description": "Marcar como difícil" },
-
+  "@qualityHard": {
+    "description": "Marcar como difícil"
+  },
   "qualityGood": "Bom",
-  "@qualityGood": { "description": "Marcar como bom" },
-
+  "@qualityGood": {
+    "description": "Marcar como bom"
+  },
   "qualityEasy": "Fácil",
-  "@qualityEasy": { "description": "Marcar como fácil" },
-
+  "@qualityEasy": {
+    "description": "Marcar como fácil"
+  },
   "words_per_day": "Palavras por dia",
   "save": "Salvar",
   "study_reminders": "Lembretes de Estudo",
@@ -100,16 +116,30 @@
   "streakHot": "🔥🔥🔥 Fogaréu!",
   "streakRing": "🔥⭕ Anel de fogo!",
   "streakLegend": "🎆 Sequência lendária!",
-
-  "@streakDead": { "description": "Mostrado quando a sequência é quebrada" },
-  "@streakZero": { "description": "Mostrado quando a sequência é zero" },
-  "@streakLow": { "description": "Sequência de 1 a 4 dias" },
-  "@streakMid": { "description": "Sequência de 5 a 9 dias" },
-  "@streakStrong": { "description": "Sequência de 10 a 19 dias" },
-  "@streakHot": { "description": "Sequência de 20 a 29 dias" },
-  "@streakRing": { "description": "Sequência de 30 a 49 dias" },
-  "@streakLegend": { "description": "Sequência de 50 dias ou mais" },
-
+  "@streakDead": {
+    "description": "Mostrado quando a sequência é quebrada"
+  },
+  "@streakZero": {
+    "description": "Mostrado quando a sequência é zero"
+  },
+  "@streakLow": {
+    "description": "Sequência de 1 a 4 dias"
+  },
+  "@streakMid": {
+    "description": "Sequência de 5 a 9 dias"
+  },
+  "@streakStrong": {
+    "description": "Sequência de 10 a 19 dias"
+  },
+  "@streakHot": {
+    "description": "Sequência de 20 a 29 dias"
+  },
+  "@streakRing": {
+    "description": "Sequência de 30 a 49 dias"
+  },
+  "@streakLegend": {
+    "description": "Sequência de 50 dias ou mais"
+  },
   "interface_language": "Idioma da Interface",
   "add": "Adicionar",
   "add_language": "Adicionar idioma",
@@ -122,5 +152,51 @@
   "record_access": "É necessária permissão de áudio para gravar sua voz e verificar a pronúncia.",
   "allow": "Permitir",
   "time_to_practice": "📝 Hora de praticar",
-  "daily_review": "Não se esqueça da revisão diária!"
+  "daily_review": "Não se esqueça da revisão diária!",
+  "readingTitle": "Leitura",
+  "readingSearch": "Pesquisar",
+  "readingFilterAll": "Tudo",
+  "readingFilterBooks": "Livros",
+  "readingEmpty": "Ainda não há materiais disponíveis para este idioma.",
+  "readingResume": "Retomar na frase {order}",
+  "readingStart": "Começar a ler",
+  "readerLoadingWarning": "Algumas frases não puderam ser carregadas. Continuando com o conteúdo disponível.",
+  "readingError": "Não foi possível carregar os materiais de leitura.",
+  "readerNoSentences": "Nenhuma frase disponível ainda.",
+  "readerExamples": "Exemplos",
+  "readerAddToVocabulary": "Adicionar ao vocabulário",
+  "readerWordMissing": "Ainda não existe entrada de dicionário para esta palavra.",
+  "readerStatusNew": "Nova",
+  "readerStatusLearning": "Em estudo",
+  "readerStatusKnown": "Conhecida",
+  "readerExamplesEmpty": "Nenhum exemplo por enquanto.",
+  "readerDictionaryTitle": "Definições",
+  "readerDictionaryLoading": "Carregando definições...",
+  "readerDictionaryError": "Definições indisponíveis - verifique a conexão.",
+  "readerDictionaryRetry": "Tentar novamente",
+  "readerDictionaryFallback": "Definições em inglês",
+  "readerDictionaryNoDefinitions": "Ainda não há definições disponíveis.",
+  "readerDictionaryPronunciations": "Pronúncias",
+  "readerDictionarySynonyms": "Sinônimos",
+  "readerDictionaryAntonyms": "Antônimos",
+  "readerDictionaryEtymology": "Etimologia",
+  "readerDictionaryTranslation": "Tradução (LibreTranslate)",
+  "readerDictionaryTranslationAttribution": "LibreTranslate (libretranslate.com)",
+  "readerTranslationTitle": "Tradução",
+  "readerTranslationConfigError": "Traduções indisponíveis — selecione primeiro o seu idioma de estudo.",
+  "readerTranslationDisabled": "Tradução desativada (configuração ausente).",
+  "readerTranslationError": "Tradução indisponível — verifique a conexão ou tente novamente.",
+  "readerTranslationEmpty": "Nenhuma tradução disponível.",
+  "readerTranslationRetry": "Tentar novamente",
+  "readerTranslationSameLanguage": "O idioma de origem e o de destino são iguais.",
+  "readerTranslationPivotNote": "Traduzido via {viaLanguage}.",
+  "readerTranslationAdded": "Adicionado ao vocabulário.",
+  "readerTranslationCopied": "Tradução copiada.",
+  "@readerTranslationPivotNote": {
+    "placeholders": {
+      "viaLanguage": {
+        "type": "String"
+      }
+    }
+  }
 }

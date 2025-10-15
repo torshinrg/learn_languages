@@ -1,531 +1,361 @@
-/// lib/presentation/widgets/interactive_word_sentence_card.dart
-library;
-
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:learn_languages/presentation/widgets/task_widget.dart';
-import 'package:record/record.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-import '../../domain/entities/audio_link.dart';
-import '../../domain/entities/sentence.dart';
-import '../../domain/entities/task.dart';
-import '../../services/audio_check_service.dart';
-import '../../services/pronunciation_scoring_service.dart';
-import '../providers/task_provider.dart';
-import '../providers/settings_provider.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:learn_languages/domain/entities/sentence.dart';
+import 'package:learn_languages/domain/entities/word.dart';
 
 class InteractiveWordSentenceCard extends StatefulWidget {
-  final String wordText;
-  final List<Sentence> sentences;
-  final int sentenceIndex;
+  final Word word;
+  final List<Sentence> sentences; // full pool for the word
+  final Map<String, Sentence> translationsByGroup; // groupId -> translation
+  final int batchSize;
 
-  final bool audioLoading;
-  final List<AudioLink> audioLinks;
-  final bool isPlaying;
-  final Duration position;
-  final Duration duration;
-
-  final VoidCallback onToggleAudio;
-  final VoidCallback onReplayAudio;
-  final VoidCallback onPrevSentence;
-  final VoidCallback onNextSentence;
+  // Decisions
+  final VoidCallback onNextWord; // advance to next word
+  final VoidCallback onMarkKnown; // mark word as known
 
   const InteractiveWordSentenceCard({
     super.key,
-    required this.wordText,
+    required this.word,
     required this.sentences,
-    required this.sentenceIndex,
-    required this.audioLoading,
-    required this.audioLinks,
-    required this.isPlaying,
-    required this.position,
-    required this.duration,
-    required this.onToggleAudio,
-    required this.onReplayAudio,
-    required this.onPrevSentence,
-    required this.onNextSentence,
+    required this.translationsByGroup,
+    this.batchSize = 3,
+    required this.onNextWord,
+    required this.onMarkKnown,
   });
 
   @override
-  State<InteractiveWordSentenceCard> createState() =>
-      _InteractiveWordSentenceCardState();
+  State<InteractiveWordSentenceCard> createState() => _InteractiveWordSentenceCardState();
 }
 
-class _InteractiveWordSentenceCardState
-    extends State<InteractiveWordSentenceCard> {
-  final _recorder = AudioRecorder();
-  late final AudioCheckService _checker;
-  late final SpeechToText _stt;
-  bool _sttReady = false;
-
-  StreamSubscription<Amplitude>? _ampSub;
-  bool _recording = false;
-  bool _processing = false;
-  double? _score;
-  double _currentAmp = 0.0;
-
-  String _sttTranscription = '';
-  String _whisperTranscription = '';
-
-  DateTime? _sttStart;
-  DateTime? _sttEnd;
-  DateTime? _whisperStart;
-  DateTime? _whisperEnd;
-
-  Task? _selectedSentenceTask;
-  List<Task> _lastSeenSentenceTasks = [];
-  int _lastSentenceIndex = -1;
+class _InteractiveWordSentenceCardState extends State<InteractiveWordSentenceCard> {
+  late final AudioPlayer _player;
+  late final PageController _pageController;
+  late List<Sentence> _pool;
+  final Set<String> _servedIds = {};
+  final Set<String> _exposedThisBatch = {};
+  List<Sentence> _currentBatch = [];
+  int _batchesServed = 0;
+  int _activePage = 0;
+  Timer? _dwellTimer;
 
   @override
   void initState() {
     super.initState();
-    _checker = GetIt.instance<AudioCheckService>();
-    _checker.init();
-    _stt = SpeechToText();
-    _initSttIfPermitted();
+    _player = AudioPlayer();
+    _pageController = PageController();
+    _pool = List.of(widget.sentences);
+    _startNewBatch();
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Whenever dependencies (e.g. TaskProvider) change, maybe pick a new random task:
-    _maybePickRandomSentenceTask();
-  }
-
-  @override
-  void didUpdateWidget(covariant InteractiveWordSentenceCard old) {
-    super.didUpdateWidget(old);
-    // If the sentence index changed, clear selection so we pick again:
-    if (widget.sentenceIndex != old.sentenceIndex) {
-      _lastSentenceIndex = widget.sentenceIndex;
-      _selectedSentenceTask = null;
-      _maybePickRandomSentenceTask();
-    }
-    // If TaskProvider reloaded (list length changed), pick again:
-    _maybePickRandomSentenceTask();
-  }
-
-  void _maybePickRandomSentenceTask() {
-    final provider = context.watch<TaskProvider>();
-    final sentenceTasks =
-        provider.sentenceTasks.where((t) => t.taskType == 'sentence').toList();
-
-    // Re-pick if:
-    // 1) number of tasks changed, or
-    // 2) we have no selected task yet for this sentence, or
-    // 3) sentence index changed
-    if ((_lastSeenSentenceTasks.length != sentenceTasks.length) ||
-        (_selectedSentenceTask == null && sentenceTasks.isNotEmpty) ||
-        (_lastSentenceIndex != widget.sentenceIndex)) {
-      _lastSeenSentenceTasks = sentenceTasks;
-      _lastSentenceIndex = widget.sentenceIndex;
-
-      if (sentenceTasks.isEmpty) {
-        _selectedSentenceTask = null;
-      } else {
-        final randIndex = Random().nextInt(sentenceTasks.length);
-        _selectedSentenceTask = sentenceTasks[randIndex];
+  void didUpdateWidget(covariant InteractiveWordSentenceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.word.id != widget.word.id) {
+      _pool = List.of(widget.sentences);
+      _servedIds.clear();
+      _batchesServed = 0;
+      _startNewBatch();
+    } else if (oldWidget.sentences != widget.sentences) {
+      _pool = List.of(widget.sentences);
+      // keep served set; refresh batch if needed
+      if (_currentBatch.isEmpty) {
+        _startNewBatch();
       }
-      setState(() {});
     }
   }
 
-  Future<void> _initSttIfPermitted() async {
-    if (!_sttReady && await Permission.microphone.isGranted) {
-      _sttReady = await _stt.initialize();
-    }
-  }
-
-  Future<void> _startRecording() async {
-    if (!await _recorder.hasPermission()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Microphone permission denied')),
-      );
-      return;
-    }
-
-    await _initSttIfPermitted();
-
-    final dir = await getTemporaryDirectory();
-    final langCode =
-        context.read<SettingsProvider>().learningLanguageCodes.first;
-    final sid = widget.sentences[widget.sentenceIndex].id(langCode);
-    final path = '${dir.path}/user_$sid.wav';
-
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000),
-      path: path,
-    );
-
-    _sttStart = DateTime.now();
-    _stt.listen(
-      onResult: (result) {
-        if (!mounted) return;
-        setState(() {
-          _sttTranscription = result.recognizedWords;
-        });
-      },
-    );
-
-    _ampSub = _recorder
-        .onAmplitudeChanged(const Duration(milliseconds: 100))
-        .listen(_handleAmp);
-
-    setState(() {
-      _recording = true;
-      _processing = false;
-      _score = null;
-      _currentAmp = 0.0;
+  void _startNewBatch() {
+    _exposedThisBatch.clear();
+    _currentBatch = _computeNextBatch();
+    _activePage = 0;
+    _restartDwellTimerForActive();
+    _autoPlayActive();
+    setState(() {});
+    // After rebuild, snap to first page of new batch if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(0);
+      }
     });
   }
 
-  void _handleAmp(Amplitude amp) {
-    final now = DateTime.now();
-    final db = amp.current;
-    final lin = pow(10, db / 20).clamp(0.0, 1.0).toDouble();
-
-    if (db > -20.0) {
-      _sttStart = now;
-    } else {
-      final since = now.difference(_sttStart!);
-      if (_recording && since > const Duration(seconds: 2)) {
-        _stopAndScore();
-      }
-    }
-    if (!mounted) return;
-    setState(() => _currentAmp = lin);
+  List<Sentence> _computeNextBatch() {
+    final remaining = _pool.where((s) => !_servedIds.contains(s.id)).toList();
+    if (remaining.isEmpty) return [];
+    remaining.sort((a, b) => a.content.length.compareTo(b.content.length));
+    final take = remaining.take(widget.batchSize).toList();
+    _servedIds.addAll(take.map((e) => e.id));
+    _batchesServed += 1;
+    return take;
   }
 
-  Future<void> _stopAndScore() async {
-    _ampSub?.cancel();
-    _stt.stop();
-    _sttEnd = DateTime.now();
+  int get _exposureTarget => _currentBatch.isEmpty ? 0 : _currentBatch.length;
+  bool get _batchComplete => _exposedThisBatch.length >= _exposureTarget && _exposureTarget > 0;
 
-    final userPath = await _recorder.stop();
-    setState(() {
-      _processing = true;
-      _recording = false;
+  Future<void> _playFor(Sentence s) async {
+    final url = _resolveAudioUrl(s);
+    print('[Card] Play requested for sentence id=' + s.id + ' lang=' + s.languageId + ' group=' + s.groupId + ' audioRaw=' + (s.audioUrl ?? 'null'));
+    print('[Card] Resolved audio URL: ' + (url ?? 'null'));
+    if (url == null) return;
+    try {
+      await _player.stop();
+      await _player.setUrl(url);
+      // slight delay can improve reliability on rapid page changes
+      await Future.delayed(const Duration(milliseconds: 50));
+      await _player.play(); // completes on finished
+      _countExposure(s);
+    } catch (e) {
+      print('[Card] Audio playback error for sentence=' + s.id + ': ' + e.toString());
+    }
+  }
+
+  String? _resolveAudioUrl(Sentence s) {
+    final raw = s.audioUrl;
+    if (raw == null || raw.isEmpty) return null;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    final base = dotenv.env['TATOEBA_DOWNLOAD_BASE'] ?? 'https://tatoeba.org/audio/download';
+    return '$base/$raw';
+  }
+
+  void _countExposure(Sentence s) {
+    if (_exposedThisBatch.contains(s.id)) return;
+    _exposedThisBatch.add(s.id);
+    setState(() {});
+  }
+
+  void _restartDwellTimerForActive() {
+    _dwellTimer?.cancel();
+    if (_batchComplete) return;
+    if (_activePage < 0 || _activePage >= _currentBatch.length) return;
+    final s = _currentBatch[_activePage];
+    _dwellTimer = Timer(const Duration(milliseconds: 2000), () {
+      _countExposure(s);
     });
-    if (userPath == null) {
-      setState(() => _processing = false);
-      return;
-    }
-
-    final langCode =
-        context.read<SettingsProvider>().learningLanguageCodes.first;
-    _whisperStart = DateTime.now();
-    final result = await _checker.compare(
-      userAudioPath: userPath,
-      expectedText: widget.sentences[widget.sentenceIndex].text(langCode),
-      lang: langCode,
-    );
-    _whisperEnd = DateTime.now();
-
-    setState(() {
-      _processing = false;
-      _score = result.score;
-      _whisperTranscription = result.userText;
-    });
   }
 
-  String _removeDiacritics(String s) {
-    const withDia = 'áÁéÉíÍóÓúÚüÜñÑ';
-    const withoutDia = 'aAeEiIoOuUuUnN';
-    for (var i = 0; i < withDia.length; i++) {
-      s = s.replaceAll(withDia[i], withoutDia[i]);
-    }
-    return s;
-  }
-
-  Widget _buildColorizedSentence(TextTheme theme, String expectedSentence) {
-    final scorer = PronunciationScoringService();
-
-    final expected =
-        expectedSentence
-            .replaceAll(RegExp(r'[.,!?;:]'), '')
-            .split(RegExp(r'\s+'))
-            .map((w) => _removeDiacritics(w).toLowerCase())
-            .toList();
-
-    final actual =
-        (_whisperTranscription)
-            .replaceAll(RegExp(r'[.,!?;:]'), '')
-            .split(RegExp(r'\s+'))
-            .map((w) => _removeDiacritics(w).toLowerCase())
-            .toList();
-
-    final spans = <TextSpan>[];
-    for (var i = 0; i < expected.length; i++) {
-      final e = expected[i];
-      double similarity = 0.0;
-      if (i < actual.length) {
-        similarity = scorer.score(e, actual[i]);
-      }
-      final match = similarity >= 0.8;
-      final displayWord = expectedSentence.split(RegExp(r'\s+'))[i];
-
-      spans.add(
-        TextSpan(
-          text: '$displayWord ',
-          style: theme.titleMedium!.copyWith(
-            fontWeight: FontWeight.bold,
-            color: match ? Colors.green : Colors.red,
-          ),
-        ),
-      );
-    }
-
-    return RichText(text: TextSpan(children: spans));
+  void _autoPlayActive() {
+    if (_activePage < 0 || _activePage >= _currentBatch.length) return;
+    final s = _currentBatch[_activePage];
+    final url = _resolveAudioUrl(s);
+    print('[Card] Active page index=' + _activePage.toString() + ' sentenceId=' + s.id + ' audioRaw=' + (s.audioUrl ?? 'null') + ' resolved=' + (url ?? 'null'));
+    _playFor(s);
   }
 
   @override
   void dispose() {
-    _ampSub?.cancel();
-    _recorder.dispose();
+    _dwellTimer?.cancel();
+    _player.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final hasSentence =
-        widget.sentences.isNotEmpty &&
-        widget.sentenceIndex < widget.sentences.length;
-    final current = hasSentence ? widget.sentences[widget.sentenceIndex] : null;
-    final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final remaining = _pool.where((s) => !_servedIds.contains(s.id)).length;
+    final int contentPages = _currentBatch.length + (_batchComplete ? 1 : 0); // +1 for End Card when complete
+    final int pagesCount = contentPages + (_batchComplete ? 1 : 0); // +1 sentinel to allow scrolling to next batch
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(widget.word.text, style: theme.textTheme.headlineSmall)),
+                _ProgressChip(
+                  done: _exposedThisBatch.length.clamp(0, widget.batchSize),
+                  total: widget.batchSize,
+                ),
+                Builder(builder: (context) {
+                  // Determine current sentence (if any)
+                  Sentence? s;
+                  if (_activePage >= 0 && _activePage < _currentBatch.length) {
+                    s = _currentBatch[_activePage];
+                  }
+                  final hasAudio = s != null && s.audioUrl != null && s.audioUrl!.isNotEmpty && _resolveAudioUrl(s) != null;
+                  return IconButton(
+                    tooltip: hasAudio ? 'Play audio' : 'No audio',
+                    icon: Icon(hasAudio ? Icons.volume_up : Icons.volume_off),
+                    onPressed: hasAudio && s != null ? () => _playFor(s!) : null,
+                  );
+                }),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                itemCount: pagesCount,
+                onPageChanged: (i) {
+                  _activePage = i;
+                  _restartDwellTimerForActive();
+                  _autoPlayActive();
+                },
+                itemBuilder: (ctx, i) {
+                  // Sentinel page to trigger next batch by scrolling beyond End Card
+                  if (_batchComplete && i == pagesCount - 1) {
+                    // Queue next batch and show a tiny loader placeholder
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) _startNewBatch();
+                    });
+                    return const Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)));
+                  }
+                  // End Card is last content page when batch is complete
+                  if (_batchComplete && i == contentPages - 1) {
+                    // End Card page
+                    return _EndCard(
+                      word: widget.word.text,
+                      canContinue: remaining > 0,
+                      onNextWord: widget.onNextWord,
+                      onContinue: () {
+                        _startNewBatch();
+                      },
+                      onMarkKnown: widget.onMarkKnown,
+                      seenCount: _exposedThisBatch.length.clamp(0, widget.batchSize),
+                      total: widget.batchSize,
+                    );
+                  }
+                  final s = _currentBatch[i];
+                  final t = s.groupId.isNotEmpty ? widget.translationsByGroup[s.groupId] : null;
+                  // Debug print of full sentence info and translation
+                  print('[Card] Build page i=' + i.toString() +
+                      ' id=' + s.id +
+                      ' lang=' + s.languageId +
+                      ' group=' + s.groupId +
+                      ' audioRaw=' + (s.audioUrl ?? 'null') +
+                      ' content="' + s.content + '"' +
+                      ' translationGroup=' + (t?.groupId ?? '') +
+                      ' translation="' + (t?.content ?? '') + '"');
+                  return _SentencePage(
+                    sentence: s,
+                    translation: t,
+                    onPlay: () => _playFor(s),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-    // Determine language codes: first item is the target language.
-    final codes = context.read<SettingsProvider>().learningLanguageCodes;
-    final learnCode = codes.first;
+class _SentencePage extends StatelessWidget {
+  final Sentence sentence;
+  final Sentence? translation;
+  final VoidCallback onPlay;
 
-    // Show translation in the user's native language when set; otherwise fall
-    // back to the second learning language (if any).
-    final nativeCode = context.read<SettingsProvider>().nativeLanguageCode;
-    String translateCode = '';
-    if (nativeCode != null && nativeCode != learnCode) {
-      translateCode = nativeCode;
-    } else if (codes.length > 1) {
-      translateCode = codes[1];
-    }
+  const _SentencePage({
+    required this.sentence,
+    required this.translation,
+    required this.onPlay,
+  });
 
-    // We no longer randomly re-pick in build; instead we rely on _selectedSentenceTask:
-    final sentenceTask = _selectedSentenceTask;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onPlay,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(sentence.content, style: theme.textTheme.bodyLarge),
+            const SizedBox(height: 8),
+            if (translation != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                translation!.content,
+                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-    final navRow = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Row(
+class _ProgressChip extends StatelessWidget {
+  final int done;
+  final int total;
+  const _ProgressChip({required this.done, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text('$done/$total'),
+    );
+  }
+}
+
+class _EndCard extends StatelessWidget {
+  final String word;
+  final bool canContinue;
+  final VoidCallback onContinue;
+  final VoidCallback onMarkKnown;
+  final VoidCallback onNextWord;
+  final int seenCount;
+  final int total;
+
+  const _EndCard({
+    required this.word,
+    required this.canContinue,
+    required this.onContinue,
+    required this.onMarkKnown,
+    required this.onNextWord,
+    required this.seenCount,
+    required this.total,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: widget.onPrevSentence,
-          ),
           Expanded(
             child: Center(
-              child: Text(
-                widget.sentences.isNotEmpty
-                    ? '${widget.sentenceIndex + 1} / ${widget.sentences.length}'
-                    : '0 / 0',
-                style: theme.bodySmall,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('You\'ve seen $seenCount example${seenCount == 1 ? '' : 's'} for "$word".', style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Text('Word $word • $seenCount/$total done', style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
+                ],
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            onPressed: widget.onNextSentence,
+          ElevatedButton(
+            onPressed: canContinue ? onContinue : null,
+            child: const Text('Continue learning this word'),
           ),
-        ],
-      ),
-    );
-
-    final body = SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 80),
-      child: Column(
-        children: [
-          // ── Word + Sentence + icon row ───────────────────────────
-          SizedBox(
-            width: 350,
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 4,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Word text
-                    SelectableText(
-                      widget.wordText,
-                      style: theme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Either spinner, play row, or colorized result:
-                    InkWell(
-                      onTap: hasSentence ? widget.onReplayAudio : null,
-                      child:
-                          widget.audioLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : (!hasSentence
-                                  ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                  : (_whisperTranscription.isNotEmpty
-                                      ? _buildColorizedSentence(
-                                        theme,
-                                        current!.text(learnCode),
-                                      )
-                                      : Row(
-                                        children: [
-                                          if (widget.audioLinks.isNotEmpty)
-                                            Icon(
-                                              Icons.volume_up,
-                                              color:
-                                                  Theme.of(context).primaryColor,
-                                            ),
-                                          if (widget.audioLinks.isNotEmpty)
-                                            const SizedBox(width: 8),
-                                          Expanded(
-                                            child: SelectableText(
-                                              current!.text(learnCode),
-                                              style: theme.titleMedium!
-                                                  .copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        ],
-                                      ))),
-                    ),
-
-                    // “Translation” (second language), if available:
-                    widget.audioLoading
-                        ? const SizedBox()
-                        : (hasSentence && translateCode.isNotEmpty
-                            ? Row(
-                              children: [
-                                Expanded(
-                                  child: SelectableText(
-                                    current!.text(translateCode),
-                                    style: theme.bodyMedium,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            )
-                            : const SizedBox()),
-                    // ── Attribution (audio source) ────────────────────────────
-                    if (widget.audioLinks.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Divider(),
-                      Text(
-                        '${loc.recorded_by} ${widget.audioLinks.first.username}.',
-                        style: theme.bodySmall,
-                        textAlign: TextAlign.right,
-                      ),
-                      if (widget.audioLinks.first.license.isNotEmpty)
-                        Text(
-                          '${loc.licence} ${widget.audioLinks.first.license}.',
-                          style: theme.bodySmall,
-                          textAlign: TextAlign.right,
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: onMarkKnown,
+            child: const Text('I know this word'),
           ),
-          const SizedBox(height: 12),
-
-          // ── Recording / processing / feedback area ─────────────────
-          if (widget.audioLoading || !hasSentence)
-            const SizedBox()
-          else if (_processing)
-            const CircularProgressIndicator()
-          else if (_recording)
-            GestureDetector(
-              onTap: _stopAndScore,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                width: 60 + (_currentAmp * 40),
-                height: 60 + (_currentAmp * 40),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue.withOpacity(0.3 + _currentAmp * 0.7),
-                ),
-              ),
-            )
-          else if (_score != null) ...[
-            Text(
-              _score! >= 0.9
-                  ? loc.excellent
-                  : _score! >= 0.75
-                  ? loc.great_job
-                  : _score! >= 0.6
-                  ? loc.good_work
-                  : loc.try_again,
-              style: theme.headlineMedium!.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            if (_score! < 0.6)
-              OutlinedButton.icon(
-                icon: const Icon(Icons.mic),
-                label: Text(loc.tap_to_speak_again),
-                onPressed: _startRecording,
-              )
-            else
-              ElevatedButton(
-                onPressed: widget.onNextSentence,
-                child: Text(loc.next_sentence),
-              ),
-          ] else
-            OutlinedButton.icon(
-              icon: const Icon(Icons.mic),
-              label: Text(loc.tap_to_speak),
-              onPressed: _startRecording,
-            ),
-
-          // ── Show the one picked Task (no longer re-picking on every build) ──
-          if (sentenceTask != null) ...[
-            const SizedBox(height: 16),
-            TaskWidget(task: sentenceTask),
-          ] else ...[
-            const SizedBox(height: 0),
-          ],
-
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      child: Stack(
-        children: [
-          Positioned.fill(child: body),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: navRow,
-            ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: onNextWord,
+            child: const Text('Next word'),
           ),
         ],
       ),

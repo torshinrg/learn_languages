@@ -27,8 +27,7 @@ class PermissionRequestScreen extends StatelessWidget {
 
     // 4) Re-schedule any saved reminders
     final times = context.read<NotificationSettingsProvider>().times;
-    final notifService = GetIt.I<NotificationService>();
-    await notifService.scheduleDailyNotifications(times);
+    await NotificationService.scheduleDailyNotifications(times);
 
     // 5) Finally enter the app
     Navigator.of(context).pushReplacement(

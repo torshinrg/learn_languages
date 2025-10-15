@@ -5,7 +5,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../core/app_language.dart';
 import '../providers/settings_provider.dart';
-import '../providers/home_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/constants.dart';
 import 'permission_request_screen.dart';
@@ -25,7 +24,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     text: '',
   );
 
-
   @override
   void initState() {
     super.initState();
@@ -43,9 +41,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _onSubmit() async {
     final loc = AppLocalizations.of(context)!;
     if (_selectedNative == null || _selectedLearning.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loc.chooseLanguagesError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.chooseLanguagesError)));
       return;
     }
     final count =
@@ -53,10 +51,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     // Сохраняем всё в SettingsProvider
     final settings = context.read<SettingsProvider>();
-    await settings.setNativeLanguage(_selectedNative!);
-    await settings.setLearningLanguages(_selectedLearning);
-    await settings.setDailyCount(count);
-    await context.read<HomeProvider>().refresh();
+    await settings.applyOnboardingSelection(
+      nativeLanguageCode: _selectedNative!,
+      learningLanguageCodes: List<String>.from(_selectedLearning),
+      dailyCount: count,
+    );
 
     // After saving, show permission request screen
     Navigator.of(context).pushReplacement(
@@ -68,7 +67,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final allLanguages = AppLanguage.values;
-
 
     return Scaffold(
       appBar: AppBar(title: Text(loc.appTitle)),

@@ -11,7 +11,10 @@
   "@reviewsDue": {
     "description": "Сколько повторений нужно сделать",
     "placeholders": {
-      "dueCount": { "type": "int", "example": "5" }
+      "dueCount": {
+        "type": "int",
+        "example": "5"
+      }
     }
   },
   "review": "Повторение",
@@ -30,26 +33,46 @@
   "@reminderSet": {
     "description": "Подтверждение при установке нового напоминания",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "14:30" },
-      "now": { "type": "String", "example": "2025-05-29 19:00" },
-      "next": { "type": "String", "example": "2025-05-30 14:30" }
+      "pickedTime": {
+        "type": "String",
+        "example": "14:30"
+      },
+      "now": {
+        "type": "String",
+        "example": "2025-05-29 19:00"
+      },
+      "next": {
+        "type": "String",
+        "example": "2025-05-30 14:30"
+      }
     }
   },
   "reminderUpdated": "Напоминание обновлено на {pickedTime}.",
   "@reminderUpdated": {
     "description": "Подтверждение обновления напоминания",
     "placeholders": {
-      "pickedTime": { "type": "String", "example": "08:00" }
+      "pickedTime": {
+        "type": "String",
+        "example": "08:00"
+      }
     }
   },
   "qualityAgain": "Ещё раз",
-  "@qualityAgain": { "description": "Повторить ещё раз" },
+  "@qualityAgain": {
+    "description": "Повторить ещё раз"
+  },
   "qualityHard": "Сложно",
-  "@qualityHard": { "description": "Отметить как сложное" },
+  "@qualityHard": {
+    "description": "Отметить как сложное"
+  },
   "qualityGood": "Хорошо",
-  "@qualityGood": { "description": "Отметить как хорошее" },
+  "@qualityGood": {
+    "description": "Отметить как хорошее"
+  },
   "qualityEasy": "Легко",
-  "@qualityEasy": { "description": "Отметить как лёгкое" },
+  "@qualityEasy": {
+    "description": "Отметить как лёгкое"
+  },
   "words_per_day": "Слов в день",
   "save": "Сохранить",
   "study_reminders": "Напоминания об обучении",
@@ -76,8 +99,8 @@
   "recorded_by": "Автор: ",
   "licence": "Лицензия: ",
   "no_reviews": "Пока нечего повторять!",
-"exercises_title": "🧠 Микроупражнения",
-"reviewProgress": "Слово {current} из {total}",
+  "exercises_title": "🧠 Микроупражнения",
+  "reviewProgress": "Слово {current} из {total}",
   "@reviewProgress": {
     "description": "Текст прогресса на экране повторения",
     "placeholders": {
@@ -86,33 +109,94 @@
     }
   },
   "streakDead": "💀 Серия окончена. Попробуй снова!",
-    "streakZero": "🪔 Зажжём твою серию!",
-    "streakLow":  "🔥 Так держать!",
-    "streakMid": "🔥🔥 Хороший темп!",
-    "streakStrong": "🏮 Пылает как факел!",
-    "streakHot": "🔥🔥🔥 Уже костёр!",
-    "streakRing": "🔥⭕ Огненное кольцо!",
-    "streakLegend": "🎆 Легендарная серия!",
-
-    "@streakDead": { "description": "Показывается, когда серия прервана" },
-    "@streakZero": { "description": "Показывается, когда серия равна нулю" },
-    "@streakLow": { "description": "Показывается, когда серия 1–4" },
-    "@streakMid": { "description": "Показывается, когда серия 5–9" },
-    "@streakStrong": { "description": "Показывается, когда серия 10–19" },
-    "@streakHot": { "description": "Показывается, когда серия 20–29" },
-    "@streakRing": { "description": "Показывается, когда серия 30–49" },
-    "@streakLegend": { "description": "Показывается, когда серия 50+" },
-    "interface_language": "Язык интерфейса",
-    "add": "Добавить",
-    "add_language": "Добавить язык",
-    "chooseLanguagesError": "Пожалуйста, выберите родной и изучаемые языки.",
-      "chooseNativeLanguage": "1. Выберите родной язык",
-      "chooseLearningLanguages": "2. Выберите языки для изучения",
-      "chooseDailyWordCount": "3. Сколько слов в день?",
-      "getStarted": "Начать",
-      "notification_access": "Приложению нужен доступ к уведомлениям, чтобы присылать напоминания и обновления.",
+  "streakZero": "🪔 Зажжём твою серию!",
+  "streakLow": "🔥 Так держать!",
+  "streakMid": "🔥🔥 Хороший темп!",
+  "streakStrong": "🏮 Пылает как факел!",
+  "streakHot": "🔥🔥🔥 Уже костёр!",
+  "streakRing": "🔥⭕ Огненное кольцо!",
+  "streakLegend": "🎆 Легендарная серия!",
+  "@streakDead": {
+    "description": "Показывается, когда серия прервана"
+  },
+  "@streakZero": {
+    "description": "Показывается, когда серия равна нулю"
+  },
+  "@streakLow": {
+    "description": "Показывается, когда серия 1–4"
+  },
+  "@streakMid": {
+    "description": "Показывается, когда серия 5–9"
+  },
+  "@streakStrong": {
+    "description": "Показывается, когда серия 10–19"
+  },
+  "@streakHot": {
+    "description": "Показывается, когда серия 20–29"
+  },
+  "@streakRing": {
+    "description": "Показывается, когда серия 30–49"
+  },
+  "@streakLegend": {
+    "description": "Показывается, когда серия 50+"
+  },
+  "interface_language": "Язык интерфейса",
+  "add": "Добавить",
+  "add_language": "Добавить язык",
+  "chooseLanguagesError": "Пожалуйста, выберите родной и изучаемые языки.",
+  "chooseNativeLanguage": "1. Выберите родной язык",
+  "chooseLearningLanguages": "2. Выберите языки для изучения",
+  "chooseDailyWordCount": "3. Сколько слов в день?",
+  "getStarted": "Начать",
+  "notification_access": "Приложению нужен доступ к уведомлениям, чтобы присылать напоминания и обновления.",
   "record_access": "Для записи голоса и проверки произношения требуется доступ к микрофону.",
   "allow": "Разрешить",
   "time_to_practice": "📝 Время практиковаться",
-  "daily_review": "Не забудь про ежедневный повтор!"
+  "daily_review": "Не забудь про ежедневный повтор!",
+  "readingTitle": "Чтение",
+  "readingSearch": "Поиск",
+  "readingFilterAll": "Все",
+  "readingFilterBooks": "Книги",
+  "readingEmpty": "Для этого языка пока нет материалов.",
+  "readingResume": "Продолжить с предложения {order}",
+  "readingStart": "Начать чтение",
+  "readerLoadingWarning": "Некоторые предложения не удалось загрузить. Продолжаем с доступным содержимым.",
+  "readingError": "Не удалось загрузить материалы для чтения.",
+  "readerNoSentences": "Пока нет предложений.",
+  "readerExamples": "Примеры",
+  "readerAddToVocabulary": "Добавить в словарь",
+  "readerWordMissing": "Для этого слова пока нет словарной записи.",
+  "readerStatusNew": "Новое",
+  "readerStatusLearning": "В изучении",
+  "readerStatusKnown": "Знаю",
+  "readerExamplesEmpty": "Примеров пока нет.",
+  "readerDictionaryTitle": "Определения",
+  "readerDictionaryLoading": "Загружаем определения...",
+  "readerDictionaryError": "Определения недоступны — проверьте соединение.",
+  "readerDictionaryRetry": "Повторить",
+  "readerDictionaryFallback": "Английские определения",
+  "readerDictionaryNoDefinitions": "Определения пока отсутствуют.",
+  "readerDictionaryPronunciations": "Произношение",
+  "readerDictionarySynonyms": "Синонимы",
+  "readerDictionaryAntonyms": "Антонимы",
+  "readerDictionaryEtymology": "Этимология",
+  "readerDictionaryTranslation": "Перевод (LibreTranslate)",
+  "readerDictionaryTranslationAttribution": "LibreTranslate (libretranslate.com)",
+  "readerTranslationTitle": "Перевод",
+  "readerTranslationConfigError": "Перевод недоступен — сначала выберите изучаемый язык.",
+  "readerTranslationDisabled": "Перевод отключён (нет настроек).",
+  "readerTranslationError": "Перевод недоступен — проверьте подключение или попробуйте снова.",
+  "readerTranslationEmpty": "Перевод отсутствует.",
+  "readerTranslationRetry": "Повторить",
+  "readerTranslationSameLanguage": "Исходный и целевой языки совпадают.",
+  "readerTranslationPivotNote": "Переведено через {viaLanguage}.",
+  "readerTranslationAdded": "Добавлено в словарь.",
+  "readerTranslationCopied": "Перевод скопирован.",
+  "@readerTranslationPivotNote": {
+    "placeholders": {
+      "viaLanguage": {
+        "type": "String"
+      }
+    }
+  }
 }

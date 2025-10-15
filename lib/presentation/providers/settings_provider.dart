@@ -66,8 +66,9 @@ class SettingsProvider extends ChangeNotifier {
       _localeCode = prefs.getString(_kLocaleKey)!;
     } else {
       final deviceCode = ui.window.locale.languageCode;
-      final supported =
-          AppLanguage.values.map((lang) => lang.code).contains(deviceCode);
+      final supported = AppLanguage.values
+          .map((lang) => lang.code)
+          .contains(deviceCode);
       _localeCode = supported ? deviceCode : 'en';
     }
 
@@ -109,9 +110,10 @@ class SettingsProvider extends ChangeNotifier {
     } else if (prefs.containsKey(_kStudiedCountKey)) {
       // migrate legacy single count to current active language
       final legacy = prefs.getInt(_kStudiedCountKey) ?? 0;
-      final lang = _learningLanguageCodes.isNotEmpty
-          ? _learningLanguageCodes.first
-          : 'und';
+      final lang =
+          _learningLanguageCodes.isNotEmpty
+              ? _learningLanguageCodes.first
+              : 'und';
       storedCounts[lang] = legacy;
     }
 
@@ -132,6 +134,29 @@ class SettingsProvider extends ChangeNotifier {
     _dailyCount = count;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(kDailyCountKey, count);
+    notifyListeners();
+  }
+
+  Future<void> applyOnboardingSelection({
+    required String nativeLanguageCode,
+    required List<String> learningLanguageCodes,
+    required int dailyCount,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    _nativeLanguageCode = nativeLanguageCode;
+    _learningLanguageCodes = List<String>.from(learningLanguageCodes);
+    _dailyCount = dailyCount;
+    _localeCode = nativeLanguageCode;
+    _studiedCounts = {};
+
+    await prefs.setString(_kNativeLanguageKey, nativeLanguageCode);
+    await prefs.setStringList(_kLearningLanguagesKey, _learningLanguageCodes);
+    await prefs.setInt(kDailyCountKey, dailyCount);
+    await prefs.setString(_kLocaleKey, _localeCode);
+    await prefs.setString(_kStudiedCountsKey, jsonEncode({}));
+    await prefs.remove(_kStudiedCountKey);
+
     notifyListeners();
   }
 

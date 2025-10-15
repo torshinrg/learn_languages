@@ -1,0 +1,1 @@
+- [ ] Route Wiktionary lookups through an Appwrite function (or build a custom translation DB) instead of direct client requests.
